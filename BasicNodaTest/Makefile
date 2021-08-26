@@ -28,13 +28,13 @@ OBJS := validation_data.o \
 APP_NAME := BasicNodaTest
 ARDUINO_LIBS := AUnit AceCommon AceTime
 MORE_CLEAN := more_clean
-include ../../../../EpoxyDuino/EpoxyDuino.mk
+include ../../EpoxyDuino/EpoxyDuino.mk
 
 # Location of the https://github.com/nodatime/nodatime repo.
 NODA_TIME_DIR := $(HOME)/dev/nodatime
 
 # Location of AceTimeTools, assumed to be sibling to this project.
-TOOLS := $(abspath ../../../../AceTimeTools)
+TOOLS := $(abspath ../../AceTimeTools)
 
 runtests:
 	./$(APP_NAME).out

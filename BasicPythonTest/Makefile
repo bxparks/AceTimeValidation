@@ -21,7 +21,7 @@ OBJS := validation_data.o \
 APP_NAME := BasicPythonTest
 ARDUINO_LIBS := AUnit AceCommon AceTime
 MORE_CLEAN := more_clean
-include ../../../../EpoxyDuino/EpoxyDuino.mk
+include ../../EpoxyDuino/EpoxyDuino.mk
 
 # Define the scope of the test data.
 #	* pytz (2019.3) uses 2019c
@@ -32,7 +32,7 @@ START_YEAR := 2000
 UNTIL_YEAR := 2038
 
 # Location of AceTimeTools, assumed to be sibling to this project.
-TOOLS := $(abspath ../../../../AceTimeTools)
+TOOLS := $(abspath ../../AceTimeTools)
 
 runtests:
 	./$(APP_NAME).out

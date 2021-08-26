@@ -21,7 +21,7 @@ OBJS := validation_data.o \
 APP_NAME := ExtendedHinnantDateTest
 ARDUINO_LIBS := AUnit AceCommon AceTime
 MORE_CLEAN := more_clean
-include ../../../../EpoxyDuino/EpoxyDuino.mk
+include ../../EpoxyDuino/EpoxyDuino.mk
 
 #.PHONY: $(GENERATED)
 
@@ -34,7 +34,7 @@ START_YEAR := 1974
 UNTIL_YEAR := 2050
 
 # Location of AceTimeTools, assumed to be sibling to this project.
-TOOLS := $(abspath ../../../../AceTimeTools)
+TOOLS := $(abspath ../../AceTimeTools)
 
 runtests:
 	./$(APP_NAME).out

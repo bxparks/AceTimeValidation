@@ -21,7 +21,7 @@ OBJS := validation_data.o \
 APP_NAME := BasicAcetzTest
 ARDUINO_LIBS := AUnit AceCommon AceTime
 MORE_CLEAN := more_clean
-include ../../../../EpoxyDuino/EpoxyDuino.mk
+include ../../EpoxyDuino/EpoxyDuino.mk
 
 # Define the scope of the test data.
 SCOPE := basic
@@ -30,7 +30,7 @@ START_YEAR := 2000
 UNTIL_YEAR := 2050
 
 # Location of AceTimeTools, assumed to be sibling to this project.
-TOOLS := $(abspath ../../../../AceTimeTools)
+TOOLS := $(abspath ../../AceTimeTools)
 
 runtests:
 	./$(APP_NAME).out
