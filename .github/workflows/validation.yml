@@ -1,0 +1,71 @@
+# See https://docs.github.com/en/actions/guides for documentation about GitHub
+# Actions.
+
+name: Validation Tests
+
+# Run on all branches.
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-18.04
+
+    # Tried to use
+    # https://github.com/actions/checkout#Checkout-multiple-repos-side-by-side,
+    # but it looks like GITHUB_WORKSPACE is set to
+    # /home/runner/work/AceTime/AceTime, so if path is set to 'main' as
+    # suggested in the article, then the repos is set to
+    # /home/runner/work/Acetime/AceTime/main/AceTime, which is really
+    # confusing. Instead, use 'cd ..' to go up a level and call 'git clone'
+    # manually.
+    steps:
+    - name: Checkout AceTime
+      uses: actions/checkout@v2
+
+    - name: Checkout Additional Repos
+      run: |
+        cd ..
+        git clone https://github.com/bxparks/EpoxyDuino
+        git clone https://github.com/bxparks/AUnit
+        git clone https://github.com/bxparks/AceCommon
+        git clone https://github.com/bxparks/AceTimeTools
+        git clone https://github.com/eggert/tz
+        git clone https://github.com/HowardHinnant/date
+
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+
+    - name: Display Python version
+      run: python -c "import sys; print(sys.version)"
+
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r ../AceTimeTools/requirements.txt
+
+    - name: Install libcurl4-openssl-dev
+      run: |
+        sudo apt update
+        sudo apt install -y libcurl4-openssl-dev
+
+    - name: Build compare_cpp
+      run: |
+        make -C ../AceTimeTools/compare_cpp
+
+    # Run just BasicHinnantDateTest and ExtendedHinnantDateTest. When a new
+    # TZDB version comes out, the Python pytz, dateutil, and Java validation
+    # tests will always fail because they depend on the obsolete TZ database on
+    # the hosted Operating System.
+
+    - name: BasicHinnantDateTest
+      run: |
+        make -C BasicHinnantDateTest
+        make -C BasicHinnantDateTest runtests
+
+    - name: ExtendedHinnantDateTest
+      run: |
+        make -C ExtendedHinnantDateTest
+        make -C ExtendedHinnantDateTest runtests
