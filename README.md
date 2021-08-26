@@ -41,6 +41,10 @@ library). However, it turned out that the number of timezones supported by the
 `BasicZoneProcessor` so it became infeasible to test the non-overlapping
 timezones.
 
+**Version**: (2021-08-26, initial split from AceTime)
+
+**Changelog**: [CHANGELOG.md](CHANGELOG.md)
+
 ## Table of Contents
 
 * [Dependencies](#Dependencies)
