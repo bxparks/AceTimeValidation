@@ -158,8 +158,8 @@ library has not upgraded its version of the IANA TZ database.
 The Python pytz library was a natural choice since the `tzcompiler.py` was
 already written in Python. I created:
 
-* [BasicPythonTest](../tests/validation/BasicPythonTest/)
-* [ExtendedPythonTest](../tests/validation/ExtendedPythonTest/)
+* [BasicPythonTest](BasicPythonTest/)
+* [ExtendedPythonTest](ExtendedPythonTest/)
 
 The `pytz` library is used to generate various C++ source code
 (`validation_data.cpp`, `validation_data.h`, `validation_tests.cpp`) which
@@ -190,8 +190,8 @@ have been listed in the `compare_pytz/blacklist.json` file.
 
 Validation against the Python dateutil library is similar to pytz. I created:
 
-* [BasicDateUtilTest](../tests/validation/BasicDateUtilTest/)
-* [ExtendedDateUtilTest](../tests/validation/ExtendedDateUtilTest/)
+* [BasicDateUtilTest](BasicDateUtilTest/)
+* [ExtendedDateUtilTest](ExtendedDateUtilTest/)
 
 Similar to the `pytz` library, the `dateutil` library supports [dates only until
 2038](https://github.com/dateutil/dateutil/issues/462). The
@@ -217,8 +217,8 @@ the `tzcompiler.py` program, and produced data points from year 2000 to year
 
 The result is 2 validation programs under `tests/validation`:
 
-* [BasicJavaTest](../tests/validation/BasicJavaTest/)
-* [ExtendedJavaTest](../tests/validation/ExtendedJavaTest/)
+* [BasicJavaTest](BasicJavaTest/)
+* [ExtendedJavaTest](ExtendedJavaTest/)
 
 The most difficult part of using Java is figuring out how to install it
 and figuring out which of the many variants of the JDK to use. On Ubuntu 18.04,
@@ -247,8 +247,8 @@ powerful, complex and difficult to use. I managed to incorporate it into 2 more
 validation tests, and verified that the AceTime library matches the Hinnant date
 library for all timezones from 2000 to 2049 (inclusive):
 
-* [BasicHinnantDateTest](../tests/validation/BasicHinnantDateTest/)
-* [ExtendedHinnantDateTest](../tests/validation/ExtendedHinnantDateTest/)
+* [BasicHinnantDateTest](BasicHinnantDateTest/)
+* [ExtendedHinnantDateTest](ExtendedHinnantDateTest/)
 
 I have validated the AceTime library with the Hinnant date library for the
 following TZ Dabase versions:
@@ -269,8 +269,8 @@ in C# to generate a `validation_data.cpp` using the
 [Noda Time](https://nodatime.org) library. The result is 2 validation programs
 under `tests/validation`:
 
-* [BasicNodaTest](../tests/validation/BasicNodaTest/)
-* [ExtendedNodaTest](../tests/validation/ExtendedNodaTest/)
+* [BasicNodaTest](BasicNodaTest/)
+* [ExtendedNodaTest](ExtendedNodaTest/)
 
 AceTime matches Noda Time on all data points from the year 2000 to 2050. No
 `blacklist.json` file was needed.
