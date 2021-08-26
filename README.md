@@ -1,8 +1,9 @@
-# Validation Tests
+# AceTime Validation
 
-These tests compare the algorithm implemented by `ZonedDateTime` and
-`ZoneProcessor` classes with the equivalent functionality from 5
-other libraries:
+These are integration tests to validate the algorithms in the
+[AceTime](https://github.com/bxparks/AceTime) library which are mostly
+implemented by `ZonedDateTime` and `ZoneProcessor` classes. The AceTime
+algorithms are compared to 5 other 3rd party timezone libraries:
 
 * [Python pytz](https://pypi.org/project/pytz/) library
 * [Python dateutil](https://pypi.org/project/python-dateutil/) library
@@ -10,15 +11,40 @@ other libraries:
 * [Hinnant date](https://github.com/HowardHinnant/date) C++ library
 * [Noda Time](https://nodatime.org) C# library
 
-These unit tests require a desktop-class machine running Linux or MacOS. They
-are too big to run on any Arduino microcontroller that I know of. They use the
-[EpoxyDuino](https://github.com/bxparks/EpoxyDuino) emulation layer to run
+These integration tests require a desktop-class machine running Linux or MacOS.
+They are too big to run on any Arduino microcontroller that I know of. They use
+the [EpoxyDuino](https://github.com/bxparks/EpoxyDuino) emulation layer to run
 these programs on the desktop machine. They also use various files (e.g.
 `validation_data.h`, `validation_data.cpp`, `validation_tests.cpp`) which are
 *generated* dynamically by the various `Makefile` files. (These files used to be
 manually generated, then checked into source control. But after it was clear
 that no Arduino microcontroller would be able to run these tests, it did not
 seem worth checking in the generated code.)
+
+## Dependencies
+
+* Ubuntu 18.04 or 20.04
+* Python 3.7 or higher
+* [AceTime](https://github.com/bxparks/AceTime)
+    * As sibling project to AceTimeValidation
+* [AceTimeTools](https://github.com/bxparks/AceTimeTools)
+    * As sibling project to AceTimeValidation
+* [EpoxyDuino](https://github.com/bxparks/EpoxyDuino)
+    * As sibling project to AceTimeValidation
+* [IANA TZDB](https://github.com/eggert/tz)
+    * As sibling project to AceTimeValidation
+* [Python pytz](https://pypi.org/project/pytz/) library
+    * `$ pip3 install --user pytz`
+* [Python dateutil](https://pypi.org/project/python-dateutil/) library
+    * `$ pip3 install --user dateutil`
+* [Java 11 Time](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/package-summary.html) library.
+    * `$ sudo apt install openjdk-11-jdk`
+* [Hinnant date](https://github.com/HowardHinnant/date) C++ library
+    * * libcurl library
+        * `$ sudo apt install libcurl4-openssl-dev`
+* [Noda Time](https://nodatime.org) C# library
+    * .Net 5.0 framework
+        * https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu
 
 ## Compiling and Running
 
@@ -54,12 +80,25 @@ those directories to build the Java and C++ binaries as necessary. Here is a
       to Noda Time and will be automatically retrieved by the `dotnet build`
       command.
 
+### Running the CI Validations
+
+These run just the 2 integration tests which run in the GitHub Actions workflow.
+They are known to be stable when the IANA TZDB is upgraded.
+
+```
+$ make clean
+$ make validations
+$ make runvalidations
+```
 ### Running the Tests
 
-You can run the tests in this directory by running the following commands:
+You can run all tests in this project by running the following commands:
 
 ```
 $ make clean
 $ make tests
 $ make runtests
 ```
+
+Some of them will often fail because of bugs in the 3rd party library or the
+library has not upgraded its version of the IANA TZ database.
