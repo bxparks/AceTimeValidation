@@ -41,7 +41,7 @@ validation_tests.cpp: validation_data.h
 
 # --blacklist $(TOOLS)/compare_acetz/blacklist.json
 validation_data.h: validation_data.json
-	$(TOOLS)/generate_validation.py \
+	$(TOOLS)/src/acetimetools/generate_validation.py \
 		--tz_version $(TZ_VERSION) \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
@@ -73,7 +73,7 @@ $(DB_NAMESPACE)/zones.txt: $(DB_NAMESPACE)/zone_infos.h
 $(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
 	mkdir -p $(DB_NAMESPACE); \
 	cd $(DB_NAMESPACE); \
-	$(TOOLS)/tzcompiler.py \
+	$(TOOLS)/src/acetimetools/tzcompiler.py \
 		--input_dir ../tzfiles/$(TZ_VERSION) \
 		--tz_version $(TZ_VERSION) \
 		--language arduino,zonelist \
