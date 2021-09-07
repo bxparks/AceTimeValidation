@@ -26,8 +26,6 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 #.PHONY: $(GENERATED)
 
 # Define the scope of the test data.
-# If START_YEAR < ~1974, then tzcompiler.py must be given the
-# --ignore_buf_size_too_large flag to prevent an exception.
 SCOPE := extended
 TZ_VERSION := 2021a
 START_YEAR := 1974
@@ -82,7 +80,6 @@ $(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
 	mkdir -p $(DB_NAMESPACE); \
 	cd $(DB_NAMESPACE); \
 	$(TOOLS)/src/acetimetools/tzcompiler.py \
-		--ignore_buf_size_too_large \
 		--input_dir ../tzfiles/$(TZ_VERSION) \
 		--tz_version $(TZ_VERSION) \
 		--language arduino,zonelist \
