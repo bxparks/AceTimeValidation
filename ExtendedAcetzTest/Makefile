@@ -26,7 +26,7 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 # Define the scope of the test data.
 SCOPE := extended
 TZ_VERSION := 2021a
-START_YEAR := 2000
+START_YEAR := 1974
 UNTIL_YEAR := 2050
 
 # Location of AceTimeTools, assumed to be sibling to this project.
@@ -45,6 +45,7 @@ validation_data.h: validation_data.json
 		--tz_version $(TZ_VERSION) \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
+		--skip_validation_buf_size \
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt
