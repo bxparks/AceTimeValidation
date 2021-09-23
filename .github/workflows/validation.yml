@@ -31,6 +31,7 @@ jobs:
         git clone https://github.com/bxparks/AceCommon
         git clone https://github.com/bxparks/AceTime
         git clone https://github.com/bxparks/AceTimeTools
+        git clone https://github.com/bxparks/AceTimePython
         git clone https://github.com/eggert/tz
         git clone https://github.com/HowardHinnant/date
 
@@ -47,6 +48,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r ../AceTimeTools/requirements.txt
         pip install -e ../AceTimeTools
+        pip install -e ../AceTimePython
 
     - name: Install libcurl4-openssl-dev
       run: |
