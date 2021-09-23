@@ -45,7 +45,6 @@ validation_data.h: validation_data.json
 		--tz_version $(TZ_VERSION) \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
-		--skip_validation_buf_size \
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt
