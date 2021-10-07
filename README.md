@@ -105,6 +105,7 @@ The required Python, Java and C++ tools and libraries are explained in:
 
 * [compare_pytz](https://github.com/bxparks/AceTimeTools/tree/master/compare_pytz)
 * [compare_dateutil](https://github.com/bxparks/AceTimeTools/tree/master/compare_dateutil)
+* [compare_acetz](https://github.com/bxparks/AceTimeTools/tree/master/compare_acetz)
 * [compare_java](https://github.com/bxparks/AceTimeTools/tree/master/compare_java)
 * [compare_cpp](https://github.com/bxparks/AceTimeTools/tree/master/compare_cpp)
 * [compare_noda](https://github.com/bxparks/AceTimeTools/tree/master/compare_noda)
