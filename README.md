@@ -7,6 +7,7 @@ algorithms are compared to 5 other third party timezone libraries:
 
 * [Python pytz](https://pypi.org/project/pytz/) library
 * [Python dateutil](https://pypi.org/project/python-dateutil/) library
+* [AceTimePython](https://github.com/bxparks/AceTimePython) library
 * [Java 11 Time](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/package-summary.html) library.
 * [Hinnant date](https://github.com/HowardHinnant/date) C++ library
 * [Noda Time](https://nodatime.org) C# library
@@ -41,7 +42,7 @@ library). However, it turned out that the number of timezones supported by the
 `BasicZoneProcessor` so it became infeasible to test the non-overlapping
 timezones.
 
-**Version**: (2021-08-26, initial split from AceTime)
+**Version**: v0.1 (2021-10-06, TZDB 2021c)
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
@@ -54,6 +55,7 @@ timezones.
 * [Validation Tests](#ValidationTests)
     * [Python pytz](#TestPythonPytz)
     * [Python dateutil](#TestPythonDateUtil)
+    * [AceTimePython](#TestAceTimePython)
     * [Java java.time](#TestJavaTime)
     * [C++ Hinnant Date](#TestHinnantDate)
     * [Noda Time](#TestNodaTime)
@@ -78,6 +80,12 @@ timezones.
     * `$ pip3 install --user pytz`
 * [Python dateutil](https://pypi.org/project/python-dateutil/) library
     * `$ pip3 install --user dateutil`
+* [AceTimePython](https://github.com/bxparks/AceTimePython) library
+    * This has not yet been uploaded to PyPI, so the installation process is
+      manual.
+    * `$ git clone https://github.com/bxparks/AceTimePython`
+    * `$ cd AceTimePython`
+    * `$ pip3 install --user -e .`
 * [Java 11 Time](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/package-summary.html) library.
     * `$ sudo apt install openjdk-11-jdk`
 * [Hinnant date](https://github.com/HowardHinnant/date) C++ library
@@ -201,6 +209,24 @@ following versions of `dateutil` have been tested:
 
 A number of zones did not match between dateutil and AceTime. Those
 have been listed in the `compare_dateutil/blacklist.json` file.
+
+<a name="TestAceTimePython"></a>
+### AceTimePython
+
+These validate against the `acetz` class of the
+[AceTimePython](https://github.com/bxparks/AceTimePython) library whose
+`zone_processor.py` module implements the exact same algorithm as the
+`ExtendedZoneProcessor.h` file in the
+[AceTime](https://github.com/bxparks/AceTime) library. The `zone_processor.py`
+algorithm is exposed through the `acetz` subclass of the `tzinfo` class of the
+standard `datetime` library.
+
+* [BasicAcetzTest](BasicAcetzTest/)
+* [ExtendedAcetzTest](ExtendedAcetzTest/)
+
+If the zoneinfo files in the `src/acetime/zonedbpy/` directory of the
+`AceTimePython` library is generated from the same version of the TZDB as the
+Makefiles in these two tests, then these validation tests should always pass.
 
 <a name="TestJavaTime"></a>
 ### Java java.time
