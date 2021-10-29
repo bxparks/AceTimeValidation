@@ -1,6 +1,9 @@
 # Changelog
 
 * Unreleased
+    * Update to TZDB 2021e.
+        * https://mm.icann.org/pipermail/tz-announce/2021-October/000069.html
+        * Palestine will fall back 10-29 (not 10-30) at 01:00.
 * v0.1 (2021-10-06, TZDB 2021c)
     * Remove `--ignore_buf_size_too_large` flag because `zone_processor.py`
       now calculates the exact maximum buffer sizes.
