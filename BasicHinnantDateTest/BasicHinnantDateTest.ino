@@ -6,11 +6,9 @@
  * a Linux or MacOS environment using the provided Makefile.
  */
 
-#include <AUnit.h>
-#include <AceTime.h>
+#include <AUnitVerbose.h>
 
-using namespace aunit;
-using namespace ace_time;
+using aunit::TestRunner;
 
 //---------------------------------------------------------------------------
 

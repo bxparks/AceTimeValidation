@@ -7,10 +7,8 @@
  */
 
 #include <AUnitVerbose.h>
-#include <AceTime.h>
 
-using namespace aunit;
-using namespace ace_time;
+using aunit::TestRunner;
 
 //---------------------------------------------------------------------------
 
@@ -20,11 +18,6 @@ void setup() {
 #endif
   SERIAL_PORT_MONITOR.begin(115200);
   while (!SERIAL_PORT_MONITOR); // Leonardo/Micro
-
-#if 0
-  TestRunner::exclude("*");
-  TestRunner::include("TransitionTest", "Adak");
-#endif
 }
 
 void loop() {

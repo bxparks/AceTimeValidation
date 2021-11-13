@@ -6,7 +6,7 @@
  * a Linux or MacOS environment using the provided Makefile.
  */
 
-#include <AUnit.h>
+#include <AUnitVerbose.h>
 
 using aunit::TestRunner;
 
@@ -18,12 +18,6 @@ void setup() {
 #endif
   SERIAL_PORT_MONITOR.begin(115200);
   while (!SERIAL_PORT_MONITOR); // Leonardo/Micro
-
-#if 0
-  TestRunner::exclude("*");
-  //TestRunner::include("TransitionTest", "America_Los_Angeles");
-  TestRunner::include("TransitionTest", "America_Moncton");
-#endif
 }
 
 void loop() {
