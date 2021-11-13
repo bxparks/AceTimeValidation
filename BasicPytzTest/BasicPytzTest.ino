@@ -1,4 +1,4 @@
-#line 2 "BasicPythonTest.ino"
+#line 2 "BasicPytzTest.ino"
 
 /*
  * This unit test depends on 'validation_data.cpp' which is so large that it
@@ -6,11 +6,9 @@
  * a Linux or MacOS environment using the provided Makefile.
  */
 
-#include <AUnit.h>
-#include <AceTime.h>
+#include <AUnitVerbose.h>
 
-using namespace aunit;
-using namespace ace_time;
+using aunit::TestRunner;
 
 //---------------------------------------------------------------------------
 
@@ -20,11 +18,6 @@ void setup() {
 #endif
   SERIAL_PORT_MONITOR.begin(115200);
   while (!SERIAL_PORT_MONITOR); // Leonardo/Micro
-
-#if 0
-  TestRunner::exclude("*");
-  TestRunner::include("TransitionTest", "Adak");
-#endif
 }
 
 void loop() {

@@ -1,7 +1,7 @@
 # See https://github.com/bxparks/EpoxyDuino for documentation about this
 # Makefile to compile and run Arduino programs natively on Linux or MacOS.
 
-DB_NAMESPACE := zonedbpytz
+DB_NAMESPACE := zonedbxpytz
 GENERATED := validation_data.cpp \
 	validation_data.h \
 	validation_tests.cpp \
@@ -18,7 +18,7 @@ OBJS := validation_data.o \
 	$(DB_NAMESPACE)/zone_infos.o \
 	$(DB_NAMESPACE)/zone_policies.o \
 	$(DB_NAMESPACE)/zone_registry.o
-APP_NAME := BasicPythonTest
+APP_NAME := ExtendedPytzTest
 ARDUINO_LIBS := AUnit AceCommon AceTime AceSorting
 MORE_CLEAN := more_clean
 include ../../EpoxyDuino/EpoxyDuino.mk
@@ -26,7 +26,7 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 # Define the scope of the test data.
 #	* pytz (2019.3) uses 2019c
 #	* pytz (2020.1) uses 2020a
-SCOPE := basic
+SCOPE := extended
 TZ_VERSION := 2021a
 START_YEAR := 2000
 UNTIL_YEAR := 2038

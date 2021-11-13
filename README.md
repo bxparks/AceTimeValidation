@@ -167,8 +167,8 @@ library has not upgraded its version of the IANA TZ database.
 The Python pytz library was a natural choice since the `tzcompiler.py` was
 already written in Python. I created:
 
-* [BasicPythonTest](BasicPythonTest/)
-* [ExtendedPythonTest](ExtendedPythonTest/)
+* [BasicPytzTest](BasicPytzTest/)
+* [ExtendedPytzTest](ExtendedPytzTest/)
 
 The `pytz` library is used to generate various C++ source code
 (`validation_data.cpp`, `validation_data.h`, `validation_tests.cpp`) which
