@@ -1,6 +1,9 @@
 # Changelog
 
 * Unreleased
+    * Add `BasicZoneInfoTest` and `ExtendedZoneInfoTest` which validate
+      against the Python 3.9 zoneinfo package.
+        * Validates from year 2000 until 2050.
 * v0.1.1 (2021-10-28, TZDB 2021e)
     * Update to TZDB 2021e.
         * https://mm.icann.org/pipermail/tz-announce/2021-October/000069.html
