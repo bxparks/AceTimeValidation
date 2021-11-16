@@ -20,21 +20,24 @@ SHELL=bash
 # Sometimes `make tests` fails because it tries to build the targets in
 # parallel. In that case, we can use `make tests-serial`.
 
-# Build just BasicHinnantDateTest and ExtendedHinnantDateTest tests in series.
+# This target is used by GitHub Actions workflow. We run only the following
+# validation tests (BasicHinnantDateTest, ExtendedHinnantDateTest,
+# BasicAcetzTest and ExtendedAcetzTest) because the Hinannt date library and the
+# AceTimePython libraries parse the TZDB raw files directly and ignore the
+# undeterministic version of the TZDB that is installed on the host operating
+# system that is used by the Docker image on GitHub.
 validations:
-	(set -e; \
-	trap 'kill 0' SIGHUP SIGINT SIGQUIT SIGKILL SIGTERM; \
-	for i in *HinnantDateTest/Makefile; do \
+	set -e; \
+	for i in *HinnantDateTest/Makefile *AcetzTest/Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
 		$(MAKE) -C $$(dirname $$i); \
-	done; \
-	wait)
+	done
 
 # Run the BasicHinnantDateTest and ExtendedHinnantDateTest validation tests.
 # These are used in the GitHub CI workflow.
 runvalidations:
 	set -e; \
-	for i in *HinnantDateTest/Makefile; do \
+	for i in *HinnantDateTest/Makefile *AcetzTest/Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
 		$$(dirname $$i)/$$(dirname $$i).out; \
 	done
@@ -60,7 +63,7 @@ tests-serial:
 	for i in */Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
 		$(MAKE) -C $$(dirname $$i) ; \
-	done;
+	done
 
 # Run *all* validation tests.
 runtests:
