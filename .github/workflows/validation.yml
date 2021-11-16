@@ -69,5 +69,5 @@ jobs:
 
     - name: Validations
       run: |
-        make validation
-        make runvalidation
+        make validations
+        make runvalidations
