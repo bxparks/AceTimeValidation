@@ -28,7 +28,7 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 # Define the scope of the test data.
 SCOPE := extended
 TZ_VERSION := 2021e
-START_YEAR := 2000
+START_YEAR := 1974
 UNTIL_YEAR := 2050
 
 # Location of AceTimeTools, assumed to be sibling to this project.
