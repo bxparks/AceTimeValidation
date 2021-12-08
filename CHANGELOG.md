@@ -1,9 +1,12 @@
 # Changelog
 
 * Unreleased
-    * Add `BasicZoneInfoTest` and `ExtendedZoneInfoTest` which validate
-      against the Python 3.9 zoneinfo package.
-        * Validates from year 2000 until 2050.
+* v1.0.0 (2021-12-08)
+    * Add `BasicZoneInfoTest` (2000 until 2050) and `ExtendedZoneInfoTest`
+      (1974 until 2050) which validate against the Python 3.9 zoneinfo package.
+    * Add new dependency to AceSorting library.
+    * Rename `{Basic,Extended}PythonTest` to `{Basic,Extended}PytzTest`.
+    * Validates against AceTime v1.9.0.
 * v0.1.1 (2021-10-28, TZDB 2021e)
     * Update to TZDB 2021e.
         * https://mm.icann.org/pipermail/tz-announce/2021-October/000069.html
