@@ -49,8 +49,10 @@ timezones.
 
 ## Table of Contents
 
+* [Overview](#Overview)
 * [Dependencies](#Dependencies)
-* [Compiling and Running](#CompilingandRunning)
+* [Compiling and Running](#CompilingAndRunning)
+    * [Prerequisites](#Prerequisites)
     * [Running CI Validations](#RunningCIValidations)
     * [Running All Validations](#RunningAllValidations)
 * [Validation Tests](#ValidationTests)
@@ -63,6 +65,105 @@ timezones.
 * [License](#License)
 * [Feedback and Support](#FeedbackAndSupport)
 * [Authors](#Authors)
+
+<a name="Overview"></a>
+## Overview
+
+These scripts live under the `AceTimeValidation/tools/` directory:
+
+* `compare_pytz` - Python `pytz` library
+* `compare_dateutil` - Python `python-dateutil` library
+* `compare_zoneinfo` - Python 3.9 `zoneinfo` library
+* `compare_acetz` - AceTimePython library
+* `compare_java` - Java JDK11 `java.time` library
+* `compare_cpp` - C++ Hinnant Date library
+* `compare_noda` - Noda Time library
+
+Each script reads the `zones.txt` file from the stdin. This file was generated
+from `zonelistgenerator.py` through the `tzcompiler.py` script in the
+AceTimeTools project. The `zones.txt` file contains the time zones which should
+be processed by the `compare_xxx` scripts.
+
+The output of each of these scripts is a `validation_data.json` file.
+
+The `validation_data.json` contains a list of `TestItem` records, each
+containing the `epoch_seconds` and the corresponding date/time component as
+calculated from various 3rd party date/time libraries.
+
+The `generate_validation.py` script reads the `validation_data.json` and
+produces a set of Arduino-compatible C++ files:
+
+* `validation_data.cpp`
+* `validation_data.h`
+* `validation_tests.cpp`
+
+Executing this code-generated program under EpoxyDuino verifies if the date-time
+components produced by the third party library matches the components calculated
+by the AceTime algorithms.
+
+Here is a partial data flow diagram:
+
+```
+AceTimeTools
+   |
+   v
+zones.txt
+   |
+   |     java.time
+   |        |
+   |        v
+   +--> compare_java/GenerateData.java ----------.
+   |                                             |
+   |                                             |
+   |    Hinnant/date                             |
+   |        |                                    |
+   |        v                                    |
+   +--> compare_cpp/generate_data.cpp ---------> +
+   |                                             |
+   |                                             |
+   |         pytz                                |
+   |          |                                  |
+   |          v         date_types/              |
+   |   tdgenerator.py   validation_types.py      |
+   |          |         /                        |
+   |          v        v                         |
+   +--> compare_pytz/generate_data.py ---------> +
+   |                                             |
+   |                                             |
+   |   python-dateutil                           |
+   |          |                                  |
+   |          v         data_types/              |
+   |   tdgenerator.py   validation_types.py      |
+   |          |         /                        |
+   |          v        v                         |
+   +--> compare_dateutil/generate_data.py -----> +
+   |                                             |
+   |                                             |
+   |   tzdata{yyyya}.tar.gz                      |
+   |          |                                  |
+   |          v                                  |
+   |     TzdbCompiler                            |
+   |          |                                  |
+   |          v                                  |
+   |   Noda Time library                         |
+   |          |                                  |
+   |          v                                  |
+   +--> compare_noda/Program.cs ---------------> +
+                                                 |
+                                                 v
+                                        validation_data.json
+                                                 |
+                                                 v
+        compare_*/blacklist.json ----> generate_validation.py
+                                                 |
+                                                 v
+                                        validation_data.{h,cpp}
+                                        validation_tests.cpp
+```
+
+The `AceTimeValidation` project contains a set of Arduino-compatible projects
+which can be compiled using EpoxyDuino, to validate the various third party
+libraries.
 
 <a name="Dependencies"></a>
 ## Dependencies
@@ -80,7 +181,7 @@ timezones.
 * [Python pytz](https://pypi.org/project/pytz/) library
     * `$ pip3 install --user pytz`
 * [Python dateutil](https://pypi.org/project/python-dateutil/) library
-    * `$ pip3 install --user dateutil`
+    * `$ pip3 install --user python-dateutil`
 * [AceTimePython](https://github.com/bxparks/AceTimePython) library
     * This has not yet been uploaded to PyPI, so the installation process is
       manual.
