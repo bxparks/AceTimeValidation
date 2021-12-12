@@ -43,7 +43,7 @@ runvalidations:
 	done
 
 # Build *all* validation tests in parallel for reduced waiting time.
-tests:
+allvalidations:
 	(set -e; \
 	trap 'kill 0' SIGHUP SIGINT SIGQUIT SIGKILL SIGTERM; \
 	for i in */Makefile; do \
@@ -52,13 +52,13 @@ tests:
 	done; \
 	wait)
 
-# Same as 'make tests' but in series not in parallel. I thought the serial
-# version would be useful for GitHub Actions, but even there it seems like the
-# workflow runners are allocated least 2 CPUs, and using the parallel version
-# above reduces the execution time from 11 min (serial) to 6 min (parallel).
-# Sometimes the serial version is needed when `make tests` failes due a race
-# condition.
-tests-serial:
+# Same as 'make allvalidations' but in series not in parallel. I thought the
+# serial version would be useful for GitHub Actions, but even there it seems
+# like the workflow runners are allocated least 2 CPUs, and using the parallel
+# version above reduces the execution time from 11 min (serial) to 6 min
+# (parallel). Sometimes the serial version is needed when `make tests` failes
+# due a race condition.
+allvalidations-serial:
 	set -e; \
 	for i in */Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
@@ -66,7 +66,7 @@ tests-serial:
 	done
 
 # Run *all* validation tests.
-runtests:
+runallvalidations:
 	set -e; \
 	for i in */Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
