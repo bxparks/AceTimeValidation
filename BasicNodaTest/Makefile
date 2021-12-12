@@ -33,8 +33,9 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 # Location of the https://github.com/nodatime/nodatime repo.
 NODA_TIME_DIR := $(HOME)/dev/nodatime
 
-# Location of AceTimeTools, assumed to be sibling to this project.
-TOOLS := $(abspath ../../AceTimeTools)
+# Location of various tools.
+COMPARE_TOOLS := $(abspath ../tools)
+ACETIME_TOOLS := $(abspath ../../AceTimeTools)
 
 runtests:
 	./$(APP_NAME).out
@@ -44,16 +45,16 @@ validation_data.cpp: validation_data.h
 validation_tests.cpp: validation_data.h
 
 validation_data.h: validation_data.json
-	$(TOOLS)/src/acetimetools/generate_validation.py \
+	$(ACETIME_TOOLS)/src/acetimetools/generate_validation.py \
 		--tz_version $(TZ_VERSION) \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt \
-		$(TOOLS)/compare_noda/Program.cs \
+		$(COMPARE_TOOLS)/compare_noda/Program.cs \
 		tzdata$(TZ_VERSION).nzd
-	dotnet run -p $(TOOLS)/compare_noda/compare_noda.csproj \
+	dotnet run -p $(COMPARE_TOOLS)/compare_noda/compare_noda.csproj \
 		--start_year $(START_YEAR) \
 		--until_year $(UNTIL_YEAR) \
 		--nzd_file tzdata$(TZ_VERSION).nzd \
@@ -89,7 +90,7 @@ $(DB_NAMESPACE)/zones.txt: $(DB_NAMESPACE)/zone_infos.h
 $(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
 	mkdir -p $(DB_NAMESPACE); \
 	cd $(DB_NAMESPACE); \
-	$(TOOLS)/src/acetimetools/tzcompiler.py \
+	$(ACETIME_TOOLS)/src/acetimetools/tzcompiler.py \
 		--input_dir ../tzfiles/$(TZ_VERSION) \
 		--tz_version $(TZ_VERSION) \
 		--language arduino,zonelist \
@@ -101,7 +102,7 @@ $(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
 # Extract and copy the tzfiles into a local directory to allow parallel
 # execution of validation/*Test makefiles.
 tzfiles/$(TZ_VERSION):
-	$(TOOLS)/copytz.sh --output_dir tzfiles $(TZ_VERSION)
+	$(ACETIME_TOOLS)/copytz.sh --output_dir tzfiles $(TZ_VERSION)
 
 more_clean:
 	rm -rf $(DB_NAMESPACE) tzfiles

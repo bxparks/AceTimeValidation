@@ -1,6 +1,6 @@
 # Location of https://github.com/HowardHinnant/date, assumed to be sibling to
 # this project.
-HINNANT_DATE_DIR := $(abspath ../../date)
+HINNANT_DATE_DIR := $(abspath ../../../date)
 
 generate_data.out: generate_data.cpp
 	$(CXX) -DHAS_REMOTE_API=1 -DAUTO_DOWNLOAD=0 \
