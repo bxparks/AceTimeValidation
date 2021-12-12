@@ -32,8 +32,8 @@ START_YEAR := 2000
 UNTIL_YEAR := 2050
 
 # Location of various tools.
-COMPARE_TOOLS := $(abspath ../tools)
-ACETIME_TOOLS := $(abspath ../../AceTimeTools)
+VALIDATION_TOOLS := $(abspath ../tools)
+ACE_TIME_TOOLS := $(abspath ../../AceTimeTools)
 
 runtests:
 	./$(APP_NAME).out
@@ -43,23 +43,23 @@ validation_data.cpp: validation_data.h
 validation_tests.cpp: validation_data.h
 
 validation_data.h: validation_data.json
-	$(ACETIME_TOOLS)/src/acetimetools/generate_validation.py \
+	$(VALIDATION_TOOLS)/generate_validation/generate_validation.py \
 		--tz_version $(TZ_VERSION) \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt \
-$(COMPARE_TOOLS)/compare_cpp/generate_data.out
-	$(COMPARE_TOOLS)/compare_cpp/generate_data.out \
+$(VALIDATION_TOOLS)/compare_cpp/generate_data.out
+	$(VALIDATION_TOOLS)/compare_cpp/generate_data.out \
 		--tz_version $(TZ_VERSION) \
 		--start_year $(START_YEAR) \
 		--until_year $(UNTIL_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
-$(COMPARE_TOOLS)/compare_cpp/generate_data.out:
-	$(MAKE) -C $(COMPARE_TOOLS)/compare_cpp/
+$(VALIDATION_TOOLS)/compare_cpp/generate_data.out:
+	$(MAKE) -C $(VALIDATION_TOOLS)/compare_cpp/
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
@@ -80,7 +80,7 @@ $(DB_NAMESPACE)/zones.txt: $(DB_NAMESPACE)/zone_infos.h
 $(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
 	mkdir -p $(DB_NAMESPACE); \
 	cd $(DB_NAMESPACE); \
-	$(ACETIME_TOOLS)/src/acetimetools/tzcompiler.py \
+	$(ACE_TIME_TOOLS)/src/acetimetools/tzcompiler.py \
 		--input_dir ../tzfiles/$(TZ_VERSION) \
 		--tz_version $(TZ_VERSION) \
 		--language arduino,zonelist \
@@ -92,7 +92,7 @@ $(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
 # Extract and copy the tzfiles into a local directory to allow parallel
 # execution of validation/*Test makefiles.
 tzfiles/$(TZ_VERSION):
-	$(ACETIME_TOOLS)/copytz.sh --output_dir tzfiles $(TZ_VERSION)
+	$(ACE_TIME_TOOLS)/copytz.sh --output_dir tzfiles $(TZ_VERSION)
 
 more_clean:
 	rm -rf $(DB_NAMESPACE) tzfiles

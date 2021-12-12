@@ -103,12 +103,12 @@ timezones.
 
 The required Python, Java and C++ tools and libraries are explained in:
 
-* [compare_pytz](https://github.com/bxparks/AceTimeTools/tree/master/compare_pytz)
-* [compare_dateutil](https://github.com/bxparks/AceTimeTools/tree/master/compare_dateutil)
-* [compare_acetz](https://github.com/bxparks/AceTimeTools/tree/master/compare_acetz)
-* [compare_java](https://github.com/bxparks/AceTimeTools/tree/master/compare_java)
-* [compare_cpp](https://github.com/bxparks/AceTimeTools/tree/master/compare_cpp)
-* [compare_noda](https://github.com/bxparks/AceTimeTools/tree/master/compare_noda)
+* [compare_pytz](tools/compare_pytz)
+* [compare_dateutil](tools/compare_dateutil)
+* [compare_acetz](tools/compare_acetz)
+* [compare_java](tools/compare_java)
+* [compare_cpp](tools/compare_cpp)
+* [compare_noda](tools/compare_noda)
 
 The various `Makefile` files under the subdirectories here will run `make -C` in
 those directories to build the Java and C++ binaries as necessary. Here is a
@@ -151,8 +151,8 @@ You can run all tests in this project by running the following commands:
 
 ```
 $ make clean
-$ make tests
-$ make runtests
+$ make allvalidations
+$ make runallvalidations
 ```
 
 Some of them will often fail because of bugs in the 3rd party library or the
@@ -236,7 +236,7 @@ The Java 11 `java.time` library is not limited to 2038 but supports years
 through the [year 1,000,000,000
 (billion)](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/class-use/Instant.html).
 I wrote the
-[compare_java](https://github.com/bxparks/AceTimeTools/tree/master/compare_java)
+[compare_java](tools/compare_java)
 program to generate a `validation_data.cpp` file in exactly the same format as
 the `tzcompiler.py` program, and produced data points from year 2000 to year
 2050, which is the exact range of years supported by the `zonedb::` and
@@ -291,7 +291,7 @@ AceTime matches Hinnant Date on all data points from the year 2000 to 2050. No
 ### Noda Time
 
 I wrote the test data generator
-[compare_noda](https://github.com/bxparks/AceTimeTools/tree/master/compare_noda)
+[compare_noda](tools/compare_noda)
 in C# to generate a `validation_data.cpp` using the
 [Noda Time](https://nodatime.org) library. The result is 2 validation programs
 under `tests/validation`:
