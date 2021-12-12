@@ -57,6 +57,10 @@ jobs:
         sudo apt update
         sudo apt install -y libcurl4-openssl-dev
 
+    - name: Validate Python Compare tools
+      run: |
+        make -C tools all
+
     - name: Build compare_cpp
       run: |
         make -C tools/compare_cpp
