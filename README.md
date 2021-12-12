@@ -3,10 +3,11 @@
 These are integration tests to validate the algorithms in the
 [AceTime](https://github.com/bxparks/AceTime) library which are mostly
 implemented by the `ZonedDateTime` and `ZoneProcessor` classes. The AceTime
-algorithms are compared to 5 other third party timezone libraries:
+algorithms are compared to the following third party timezone libraries:
 
 * [Python pytz](https://pypi.org/project/pytz/) library
 * [Python dateutil](https://pypi.org/project/python-dateutil/) library
+* [Python zoneinfo](https://docs.python.org/3/library/zoneinfo.html) library
 * [AceTimePython](https://github.com/bxparks/AceTimePython) library
 * [Java 11 Time](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/package-summary.html) library.
 * [Hinnant date](https://github.com/HowardHinnant/date) C++ library
@@ -42,7 +43,7 @@ library). However, it turned out that the number of timezones supported by the
 `BasicZoneProcessor` so it became infeasible to test the non-overlapping
 timezones.
 
-**Version**: v0.1.1 (2021-10-28, TZDB 2021e)
+**Version**: v1.0.0 (2021-12-08)
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
@@ -105,6 +106,7 @@ The required Python, Java and C++ tools and libraries are explained in:
 
 * [compare_pytz](tools/compare_pytz)
 * [compare_dateutil](tools/compare_dateutil)
+* [compare_zoneinfo](tools/compare_zoneinfo)
 * [compare_acetz](tools/compare_acetz)
 * [compare_java](tools/compare_java)
 * [compare_cpp](tools/compare_cpp)
