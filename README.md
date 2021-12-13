@@ -12,6 +12,7 @@ algorithms are compared to the following third party timezone libraries:
 * [Java 11 Time](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/package-summary.html) library.
 * [Hinnant date](https://github.com/HowardHinnant/date) C++ library
 * [Noda Time](https://nodatime.org) C# library
+* [Go Lang time](https://pkg.go.dev/time) package
 
 These integration tests require a desktop-class machine running Linux or MacOS.
 They are too big to run on any Arduino microcontroller that I know of. They use
@@ -78,6 +79,7 @@ These scripts live under the `AceTimeValidation/tools/` directory:
 * `compare_java` - Java JDK11 `java.time` library
 * `compare_cpp` - C++ Hinnant Date library
 * `compare_noda` - Noda Time library
+* `compare_go` - Go Lang time library
 
 Each script reads the `zones.txt` file from the stdin. This file was generated
 from `zonelistgenerator.py` through the `tzcompiler.py` script in the
@@ -196,6 +198,7 @@ libraries.
 * [Noda Time](https://nodatime.org) C# library
     * .Net 5.0 framework
         * https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu
+* [Go Lang 1.17 or higher](https://go.dev/doc/install)
 
 <a name="CompilingAndRunning"></a>
 ## Compiling and Running
@@ -212,6 +215,7 @@ The required Python, Java and C++ tools and libraries are explained in:
 * [compare_java](tools/compare_java)
 * [compare_cpp](tools/compare_cpp)
 * [compare_noda](tools/compare_noda)
+* [compare_go](tools/compare_go)
 
 The various `Makefile` files under the subdirectories here will run `make -C` in
 those directories to build the Java and C++ binaries as necessary. Here is a
