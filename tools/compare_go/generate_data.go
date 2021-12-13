@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -209,7 +210,14 @@ func processZone(zoneName string) ([]TestItemType, error) {
 	testItems := make([]TestItemType, 0, 500)
 	testItems = addTransitions(testItems, tz)
 	testItems = addSamples(testItems, tz)
+	sortSamples(testItems)
 	return testItems, nil
+}
+
+func sortSamples(testItems []TestItemType) {
+	sort.Slice(testItems, func(i, j int) bool {
+		return testItems[i].EpochSeconds < testItems[j].EpochSeconds
+	})
 }
 
 // AddTransition() finds the DST transitions of the timezone, and creates
