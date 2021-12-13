@@ -114,7 +114,6 @@ func parseArgs() ([]string, error) {
 		} else if len(args[i]) > 0 && args[i][0] == '-' {
 			return args[i:], errors.New(fmt.Sprintf("Invalid flag '%s'", args[i]))
 		}
-		fmt.Printf("%d: %s\n", i, args[i])
 	}
 
 	return args[i:], nil
@@ -291,9 +290,9 @@ func findTransitions(tz *time.Location) []TransitionTimes {
 	dtLocal := dt.In(tz)
 
 	transitions := make([]TransitionTimes, 0, 500)
+	samplingIntervalNanos := samplingInterval * 3600 * 1000000000
+	intervalDuration := time.Duration(samplingIntervalNanos)
 	for {
-		samplingIntervalNanos := samplingInterval * 3600 * 1000000000
-		intervalDuration := time.Duration(samplingIntervalNanos)
 		dtNext := dt.Add(intervalDuration)
 		dtNextLocal := dtNext.In(tz)
 		if dtNextLocal.Year() >= untilYear {
