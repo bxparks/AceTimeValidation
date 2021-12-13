@@ -1,31 +1,40 @@
+# Bash shell is required to allow using the `wait` command when invoking the
+# parallel build target 'allvalidations'
 SHELL=bash
 
 # There are 2 sets of validation test targets in this Makefile.
 #
-# 1) The minimal validation tests: BasicHinnantDateTest and
-# ExtendedHinnantDateTest. These are the only 2 validation tests which can be
-# configured to validate against a specific TZ version. These are used in the
-# GitHub CI workflow.
+# 1) The validation tests against libraries which can be configured to pass
+# deterministically because they allow the TZ version to be specified, instead
+# of picking up whatever random version that the underlying OS has installed.
+# That means that they can be used in the GitHub CI workflow. These
+# deterministic validation tests are:
+#
+#	* BasicHinnantDateTest
+#	* ExtendedHinnantDateTest
+#	* BasicAcetzTest
+#	* ExtendedAcetzTest
+#
+# They are invoked using:
 #
 # $ make validations
 # $ make runvalidations
 #
-# 2) The full validation tests (6 x Basic*Test and 6 Extended*Test). Some of
-# these will be broken when a new TZ DB is released because the dependent
-# library has not released a new version of the library yet.
+# 2) The full validation tests (Basic*Test and Extended*Test). Some of these
+# will be broken when a new TZ DB is released because the dependent library has
+# not released a new version of the library yet. The full set of validation
+# tests are invoked using:
 #
-# $ make tests (or make tests-serial)
-# $ make runtests
+# $ make allvalidations # compiles in parallel
+# $ make runallvalidations
 #
-# Sometimes `make tests` fails because it tries to build the targets in
-# parallel. In that case, we can use `make tests-serial`.
+# Sometimes `make allvalidations` fails because it tries to build the targets
+# in parallel. In that case, we can use:
+#
+# $ make allvalidations-serial
 
-# This target is used by GitHub Actions workflow. We run only the following
-# validation tests (BasicHinnantDateTest, ExtendedHinnantDateTest,
-# BasicAcetzTest and ExtendedAcetzTest) because the Hinannt date library and the
-# AceTimePython libraries parse the TZDB raw files directly and ignore the
-# undeterministic version of the TZDB that is installed on the host operating
-# system that is used by the Docker image on GitHub.
+# Build the deterministic validation tests. These can be trusted to pass no
+# matter which OS version is running in the docker image on GitHub.
 validations:
 	set -e; \
 	for i in *HinnantDateTest/Makefile *AcetzTest/Makefile; do \
@@ -33,8 +42,8 @@ validations:
 		$(MAKE) -C $$(dirname $$i); \
 	done
 
-# Run the BasicHinnantDateTest and ExtendedHinnantDateTest validation tests.
-# These are used in the GitHub CI workflow.
+# Run the deterministic validation tests. These are used in the GitHub CI
+# workflow.
 runvalidations:
 	set -e; \
 	for i in *HinnantDateTest/Makefile *AcetzTest/Makefile; do \
@@ -42,7 +51,9 @@ runvalidations:
 		$$(dirname $$i)/$$(dirname $$i).out; \
 	done
 
-# Build *all* validation tests in parallel for reduced waiting time.
+# Build *all* validation tests in parallel for reduced waiting time. Sometimes,
+# this fails for some race condition which I have not spent time figuring out.
+# When that happens, use the 'allvalidations-serial' instead.
 allvalidations:
 	(set -e; \
 	trap 'kill 0' SIGHUP SIGINT SIGQUIT SIGKILL SIGTERM; \
@@ -52,17 +63,13 @@ allvalidations:
 	done; \
 	wait)
 
-# Same as 'make allvalidations' but in series not in parallel. I thought the
-# serial version would be useful for GitHub Actions, but even there it seems
-# like the workflow runners are allocated least 2 CPUs, and using the parallel
-# version above reduces the execution time from 11 min (serial) to 6 min
-# (parallel). Sometimes the serial version is needed when `make tests` failes
-# due a race condition.
+# Same as 'make allvalidations' but in series not in parallel. Useful when
+# 'allvalidations` fails due to some sporadic race condition.
 allvalidations-serial:
 	set -e; \
 	for i in */Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
-		$(MAKE) -C $$(dirname $$i) ; \
+		$(MAKE) -C $$(dirname $$i); \
 	done
 
 # Run *all* validation tests.
