@@ -332,7 +332,7 @@ standard `datetime` library.
 * [BasicAcetzTest](BasicAcetzTest/)
 * [ExtendedAcetzTest](ExtendedAcetzTest/)
 
-If the zoneinfo files in the `src/acetime/zonedbpy/` directory of the
+If the zonedb files in the `src/acetime/zonedb/` directory of the
 `AceTimePython` library is generated from the same version of the TZDB as the
 Makefiles in these two tests, then these validation tests should always pass.
 

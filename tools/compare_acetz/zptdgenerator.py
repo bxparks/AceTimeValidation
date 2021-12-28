@@ -5,7 +5,7 @@
 """
 Implements the TestDataGenerator to generate the validation test data using
 acetz, which uses Python ZoneProcessor class. Pulling in ZoneProcessor also
-means that it pulls in the data structures defined by zonedbpy.
+means that it pulls in the data structures defined by zonedb.
 """
 
 from typing import Dict
@@ -20,7 +20,7 @@ from acetime.acetz import ZoneManager
 from acetime.zone_processor import ZoneProcessor
 from acetime.zone_processor import DateTuple
 from acetime.zone_info_types import ZoneInfoMap
-from acetime.zonedbpy.zone_registry import ZONE_REGISTRY
+from acetime.zonedb.zone_registry import ZONE_REGISTRY
 from acetimetools.data_types.at_types import SECONDS_SINCE_UNIX_EPOCH
 from acetimetools.data_types.validation_types import (
     TestItem, TestData, ValidationData
