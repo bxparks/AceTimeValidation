@@ -19,7 +19,7 @@ import acetime.version
 from acetime.acetz import ZoneManager
 from acetime.zone_processor import ZoneProcessor
 from acetime.zone_processor import DateTuple
-from acetime.zone_info_types import ZoneInfoMap
+from acetime.zonedb_types import ZoneInfoMap
 from acetime.zonedb.zone_registry import ZONE_REGISTRY
 from acetimetools.data_types.at_types import SECONDS_SINCE_UNIX_EPOCH
 from acetimetools.data_types.validation_types import (
