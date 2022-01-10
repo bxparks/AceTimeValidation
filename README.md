@@ -63,6 +63,7 @@ timezones.
     * [Java java.time](#TestJavaTime)
     * [C++ Hinnant Date](#TestHinnantDate)
     * [Noda Time](#TestNodaTime)
+    * [Go Lang Time](#TestGoLangTime)
 * [License](#License)
 * [Feedback and Support](#FeedbackAndSupport)
 * [Authors](#Authors)
@@ -384,22 +385,14 @@ library for all timezones from 2000 to 2049 (inclusive):
 * [BasicHinnantDateTest](BasicHinnantDateTest/)
 * [ExtendedHinnantDateTest](ExtendedHinnantDateTest/)
 
-I have validated the AceTime library with the Hinnant date library for the
-following TZ Dabase versions:
-* TZ DB version 2019a
-* TZ DB version 2019b
-* TZ DB version 2019c
-* TZ DB version 2020a
-
 AceTime matches Hinnant Date on all data points from the year 2000 to 2050. No
 `blacklist.json` file was needed.
 
 <a name="TestNodaTime"></a>
 ### Noda Time
 
-I wrote the test data generator
-[compare_noda](tools/compare_noda)
-in C# to generate a `validation_data.cpp` using the
+I wrote the test data generator [compare_noda](tools/compare_noda) in C# to
+generate a `validation_data.json` file using the
 [Noda Time](https://nodatime.org) library. The result is 2 validation programs
 under `tests/validation`:
 
@@ -408,6 +401,22 @@ under `tests/validation`:
 
 AceTime matches Noda Time on all data points from the year 2000 to 2050. No
 `blacklist.json` file was needed.
+
+<a name="TestGoLangTime"></a>
+### Go Lang Time
+
+The [compare_go](tools/compare_go) tool generates a `validation_data.json`
+file using the `time` package (https://pkg.go.dev/time) in the Golang standard
+library. I believe the `time` package uses the underlying TZDB installed on the
+host operating system. There are 2 validation programs that consume this test
+data set under `tests/validaiton`:
+
+* [BasicGoTest](BasicGoTest/)
+* [ExtendedGoTest](ExtendedGoTest/)
+
+AceTime matches the Go lang `time` package on all data points from the year 2000
+to 2050. No `blacklist.json` file was needed. The `time` package does not
+calculate the DST offset, so no validation for that field was performed.
 
 <a name="License"></a>
 ## License
