@@ -6,6 +6,8 @@
     * Add validation against the Go lang `time` package:
         * Add `tools/compare_go` scrip
         * Add `BasicGoTest` and `ExtendedGoTest`.
+    * Call `Print::setLineModeUnix()` from EpoxyDuino v1.2 to write Unix line
+      terminator instead of DOS terminator.
 * v1.0.0 (2021-12-08)
     * Add `BasicZoneInfoTest` (2000 until 2050) and `ExtendedZoneInfoTest`
       (1974 until 2050) which validate against the Python 3.9 zoneinfo package.
