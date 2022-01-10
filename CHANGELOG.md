@@ -1,6 +1,7 @@
 # Changelog
 
 * Unreleased
+* v1.1.0 (2022-01-10)
     * Move `tools/compare_xxx` scripts from `AceTimeTools`.
     * Move `tools/generate_validation` script from `AceTimeTools`.
     * Add validation against the Go lang `time` package:
