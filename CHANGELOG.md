@@ -1,7 +1,12 @@
 # Changelog
 
 * Unreleased
-* v1.1.0 (2022-01-10)
+* v1.1.1 (2022-03-20, TZDB 2022a)
+    * Update to TZDB 2022a.
+        * https://mm.icann.org/pipermail/tz-announce/2022-March.txt
+        * "Palestine will spring forward on 2022-03-27, not -03-26."
+    * No changes to code.
+* v1.1.0 (2022-01-10, TZDB 2021e)
     * Move `tools/compare_xxx` scripts from `AceTimeTools`.
     * Move `tools/generate_validation` script from `AceTimeTools`.
     * Add validation against the Go lang `time` package:
@@ -9,7 +14,7 @@
         * Add `BasicGoTest` and `ExtendedGoTest`.
     * Call `Print::setLineModeUnix()` from EpoxyDuino v1.2 to write Unix line
       terminator instead of DOS terminator.
-* v1.0.0 (2021-12-08)
+* v1.0.0 (2021-12-08, TZDB 2021e)
     * Add `BasicZoneInfoTest` (2000 until 2050) and `ExtendedZoneInfoTest`
       (1974 until 2050) which validate against the Python 3.9 zoneinfo package.
     * Add new dependency to AceSorting library.
