@@ -1,6 +1,13 @@
 # Changelog
 
 * Unreleased
+* v1.1.2 (2022-08-13, TZDB 2022b)
+    * Upgrade to TZDB 2022b.
+        * https://mm.icann.org/pipermail/tz-announce/2022-August/000071.html
+            * Chile's DST is delayed by a week in September 2022.
+            * Iran no longer observes DST after 2022.
+            * Rename Europe/Kiev to Europe/Kyiv.
+            * Finish moving duplicate-since-1970 zones to 'backzone'.
 * v1.1.1 (2022-03-20, TZDB 2022a)
     * Update to TZDB 2022a.
         * https://mm.icann.org/pipermail/tz-announce/2022-March.txt

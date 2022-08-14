@@ -27,7 +27,7 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 
 # Define the scope of the test data.
 SCOPE := extended
-TZ_VERSION := 2022a
+TZ_VERSION := 2022b
 START_YEAR := 1974
 UNTIL_YEAR := 2050
 
