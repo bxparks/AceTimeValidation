@@ -9,7 +9,7 @@ generate_data.out: \
 
 generate_data.o: generate_data.c test_data.h val_data.h
 
-transition.o: transition.h
+val_data.o: val_data.c val_data.h
 
 validation_data.json: generate_data.out small.txt
 	./generate_data.out \
