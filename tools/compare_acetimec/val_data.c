@@ -23,6 +23,12 @@ static void create_test_item_from_epoch_seconds(
       zone_info,
       epoch_seconds,
       &zdt);
+  struct AtcZonedExtra zet;
+  atc_zoned_extra_from_epoch_seconds(
+      &processing,
+      zone_info,
+      epoch_seconds,
+      &zet);
 
   ti->epoch_seconds = epoch_seconds;
   ti->year = zdt.year;
@@ -33,9 +39,10 @@ static void create_test_item_from_epoch_seconds(
   ti->second = zdt.second;
   ti->type = type;
 
-  ti->abbrev[0] = '\0';
-  ti->utc_offset = 0;
-  ti->dst_offset = 0;
+  strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
+  ti->abbrev[kAtcAbbrevSize - 1] = '\0';
+  ti->utc_offset = zet.utc_offset_minutes;
+  ti->dst_offset = zet.dst_offset_minutes;
 }
 
 static void add_test_item_from_epoch_seconds(

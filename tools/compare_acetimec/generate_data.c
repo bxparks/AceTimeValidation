@@ -148,15 +148,15 @@ void print_json(const struct TestData *test_data) {
       printf("%s{\n", indent2);
       {
         printf("%s\"epoch\": %ld,\n", indent3, item->epoch_seconds);
-        //printf("%s\"total_offset\": %d,\n", indent3, item->utc_offset);
-        //printf("%s\"dst_offset\": %d,\n", indent3, item->dst_offset);
+        printf("%s\"total_offset\": %d,\n", indent3, item->utc_offset);
+        printf("%s\"dst_offset\": %d,\n", indent3, item->dst_offset);
         printf("%s\"y\": %d,\n", indent3, item->year);
         printf("%s\"M\": %d,\n", indent3, item->month);
         printf("%s\"d\": %d,\n", indent3, item->day);
         printf("%s\"h\": %d,\n", indent3, item->hour);
         printf("%s\"m\": %d,\n", indent3, item->minute);
         printf("%s\"s\": %d,\n", indent3, item->second);
-        //printf("%s\"abbrev\": \"%s\",\n", indent3, item->abbrev);
+        printf("%s\"abbrev\": \"%s\",\n", indent3, item->abbrev);
         printf("%s\"type\": \"%c\"\n", indent3, item->type);
       }
       printf("%s}%s\n", indent2, (i < entry->num_items) ? "," : "");
