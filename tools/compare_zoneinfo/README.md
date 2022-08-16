@@ -1,6 +1,11 @@
-# Compare ZoneInfo
+# Compare with Python ZoneInfo
 
-Generate the test data points using the Python 3.9 `zoneinfo` package.
+Compare the [AceTime](https://github.com/bxparks/AceTime) library with the
+Python `zoneinfo` package added in Python 3.9.
+Generates the `validation_data.json` file needed by:
+
+* `BasicZoneInfoTest/`
+* `ExtendedZoneInfoTest/`
 
 ## Blacklist
 

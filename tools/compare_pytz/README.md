@@ -1,6 +1,11 @@
-# Compare DateUtil
+# Compare with Python Pytz
 
-Generate the test data points using the Python `pytz` package.
+Compare the [AceTime](https://github.com/bxparks/AceTime) library with  the
+Python `pytz` package.
+Generates the `validation_data.json` file needed by:
+
+* `BasicPytzTest/`
+* `ExtendedPytzTest/`
 
 ## Blacklist
 

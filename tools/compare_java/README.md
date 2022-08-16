@@ -1,6 +1,11 @@
-# Compare Java
+# Compare with Java
 
-Generate the test data points using the `java.time` package in Java JDK 11.
+Compare the [AceTime](https://github.com/bxparks/AceTime) library with the Java
+`java.time` package.
+Generates the `validation_data.json` file needed by:
+
+* `BasicJavaDateTest/`
+* `ExtendedJavaDateTest/`
 
 ## Requirements
 
