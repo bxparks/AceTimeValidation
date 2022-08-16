@@ -159,10 +159,10 @@ void print_json(const struct TestData *test_data) {
         printf("%s\"abbrev\": \"%s\",\n", indent3, item->abbrev);
         printf("%s\"type\": \"%c\"\n", indent3, item->type);
       }
-      printf("%s}%s\n", indent2, (i < entry->num_items) ? "," : "");
+      printf("%s}%s\n", indent2, (i < entry->num_items - 1) ? "," : "");
     }
 
-    printf("%s]%s\n", indent1, (z < test_data->num_zones) ? "," : "");
+    printf("%s]%s\n", indent1, (z < test_data->num_zones - 1) ? "," : "");
   }
 
   printf("%s}\n", indent0);
