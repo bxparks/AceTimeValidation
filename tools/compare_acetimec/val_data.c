@@ -52,16 +52,9 @@ static void add_test_item_from_epoch_seconds(
     atc_time_t epoch_seconds,
     char type)
 {
-  if (test_entry->num_items >= MAX_NUM_ITEMS) return;
-
-  struct TestItem *ti = &test_entry->items[test_entry->num_items];
+  (void) zone_name;
+  struct TestItem *ti = test_data_entry_next_item(test_entry);
   create_test_item_from_epoch_seconds(ti, zone_info, epoch_seconds, type);
-
-  // Increment to next item.
-  test_entry->num_items++;
-  if (test_entry->num_items >= MAX_NUM_ITEMS) {
-    fprintf(stderr, "Error: %s: exceeded test items\n", zone_name);
-  }
 }
 
 void add_transitions(

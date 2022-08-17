@@ -136,7 +136,7 @@ void print_json(const struct TestData *test_data) {
   printf("%s\"test_data\": {\n", indent0);
 
   // Print each zone
-  int num_zones = test_data->num_zones;
+  int num_zones = test_data->num_entries;
   for (int z = 0; z < num_zones; z++) {
     const struct TestDataEntry *entry = &test_data->entries[z];
     const char *zone_name = entry->zone_name;
@@ -162,7 +162,7 @@ void print_json(const struct TestData *test_data) {
       printf("%s}%s\n", indent2, (i < entry->num_items - 1) ? "," : "");
     }
 
-    printf("%s]%s\n", indent1, (z < test_data->num_zones - 1) ? "," : "");
+    printf("%s]%s\n", indent1, (z < test_data->num_entries - 1) ? "," : "");
   }
 
   printf("%s}\n", indent0);
@@ -184,22 +184,15 @@ void process_zone(
     fprintf(stderr, "Zone %s: NOT found\n", zone_name);
     return;
   }
-  if (test_data->num_zones >= MAX_NUM_ZONES) return;
 
-  struct TestDataEntry *tde = &test_data->entries[test_data->num_zones];
+  struct TestDataEntry *entry = test_data_next_entry(test_data);
   add_transitions(
-      tde,
+      entry,
       zone_name,
       zone_info,
       start_year,
       until_year);
-  //addMonthlySamples(tde, zone_name);
-
-  // Increment to next zone.
-  test_data->num_zones++;
-  if (test_data->num_zones >= MAX_NUM_ZONES) {
-    fprintf(stderr, "Error: Exceeded max number of zones\n");
-  }
+  //addMonthlySamples(entry, zone_name);
 }
 
 /**
@@ -290,16 +283,16 @@ int main(int argc, const char* const* argv) {
 
   // Process the zones on the STDIN
   fprintf(stderr, "Reading zones and generating validation data\n");
-  struct TestData *test_data = malloc(sizeof(struct TestData));
-  test_data->num_zones = 0;
-  read_and_process_zone(test_data);
+  struct TestData test_data;
+  test_data_init(&test_data);
+  read_and_process_zone(&test_data);
   //sortTestData(testData);
 
   fprintf(stderr, "Writing validation data\n");
-  print_json(test_data);
+  print_json(&test_data);
 
   fprintf(stderr, "Cleaning up\n");
-  free(test_data);
+  test_data_free(&test_data);
 
   fprintf(stderr, "Done\n");
   return 0;

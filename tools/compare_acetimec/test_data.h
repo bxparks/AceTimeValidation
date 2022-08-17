@@ -38,20 +38,48 @@ struct TestItem {
 };
 
 #define ZONE_NAME_SIZE 64
-#define MAX_NUM_ITEMS 200
-#define MAX_NUM_ZONES 600
 
 /** Test entries for a single zone. */
 struct TestDataEntry {
   char zone_name[ZONE_NAME_SIZE];
+  int capacity;
   int num_items;
-  struct TestItem items[MAX_NUM_ITEMS];
+  struct TestItem *items;
 };
 
 /** Array of test entries, for all zones. */
 struct TestData {
-  int num_zones;
-  struct TestDataEntry entries[MAX_NUM_ZONES];
+  int capacity;
+  int num_entries;
+  struct TestDataEntry *entries;
 };
+
+//-----------------------------------------------------------------------------
+
+/** Initialize the given TestDataEntry. */
+void test_data_entry_init(struct TestDataEntry *entry);
+
+/** Free the given TestDataEntry. */
+void test_data_entry_free(struct TestDataEntry *entry);
+
+/** Resize the array of items. */
+void test_data_entry_resize_items(struct TestDataEntry *entry, int newsize);
+
+/** Return the next test item if available. */
+struct TestItem *test_data_entry_next_item(struct TestDataEntry *entry);
+
+//-----------------------------------------------------------------------------
+
+/** Initialize the given TestData. */
+void test_data_init(struct TestData *data);
+
+/** Free the given TestData. */
+void test_data_free(struct TestData *data);
+
+/** Resize the array of entries. */
+void test_data_resize_entries(struct TestData *data, int newsize);
+
+/** Return the next test data entry. */
+struct TestDataEntry *test_data_next_entry(struct TestData *data);
 
 #endif
