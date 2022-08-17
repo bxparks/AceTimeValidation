@@ -20,4 +20,16 @@ void add_transitions(
     int16_t start_year,
     int16_t until_year);
 
+/**
+ * Add a TestItem for the 1st of each month (using the local time)
+ * as a sanity sample, to make sure things are working, even for timezones with
+ * no DST transitions.
+ */
+void add_monthly_samples(
+    struct TestDataEntry *test_entry,
+    const char *zone_name,
+    const struct AtcZoneInfo *zone_info,
+    int16_t start_year,
+    int16_t until_year);
+
 #endif

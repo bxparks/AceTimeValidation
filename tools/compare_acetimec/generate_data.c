@@ -31,77 +31,6 @@ const char *tz_version = "";
 //-----------------------------------------------------------------------------
 
 #if 0
-/**
- * Add a TestItem for the 1st of each month (using the local time)
- * as a sanity sample, to make sure things are working, even for timezones with
- * no DST transitions. See
- * https://github.com/HowardHinnant/date/wiki/Examples-and-Recipes#obtaining-a-time_point-from-ymd-hms-components
- * to get code for converting date/time components to a time_point<> (aka
- * sys_time<>).
- */
-void addMonthlySamples(TestData& testData, const time_zone& tz,
-    const string& zoneName, int startYear, int untilYear) {
-
-  for (int y = startYear; y < untilYear; y++) {
-    for (int m = 1; m <= 12; m++) {
-      char type = 'S';
-
-      // Add a sample test point on the *second* of each month instead of the
-      // first of the month. This prevents Jan 1, 2000 from being converted to a
-      // negative epoch seconds for certain timezones, which gets converted into
-      // a UTC date in 1999 when ExtendedZoneProcessor is used to convert the
-      // epoch seconds back to a ZonedDateTime. The UTC date in 1999 causes the
-      // actual max buffer size of ExtendedZoneProcessor to become different
-      // than the one predicted by BufSizeEstimator (which samples whole years
-      // from 2000 until 2050), and causes the
-      // AceTimeValidation/ExtendedHinnantDateTest to fail on the buffer size
-      // check.
-      //
-      // But if that day of the month (with the time of 00:00) is ambiguous, the
-      // Hinnant date library throws an exception. Unfortunately, I cannot
-      // understand the documentation to figure out how to do what I want, so
-      // just punt and use the next day. Use a loop to try every subsequent day
-      // of month up to the 28th (which exists in all months).
-      for (int d = 2; d <= 28; d++) {
-        local_days ld = local_days{month(m)/d/year(y)};
-        try {
-          zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
-
-          sys_seconds ss = zdt.get_sys_time();
-          TestItem item = toTestItem(tz, ss, type);
-          addTestItem(testData, zoneName, item);
-          // One day sample is enough, so break as soon as we get one.
-          break;
-        } catch (...) {
-          // Set type to 'T' to indicate that the initial attempted day of month
-          // was invalid, so this is the alternate.
-          type = 'T';
-        }
-      }
-    }
-
-    // Add the last day of the year...
-    local_days ld = local_days{year(y)/December/1};
-    try {
-      zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
-      sys_seconds ss = zdt.get_sys_time();
-      TestItem item = toTestItem(tz, ss, 'Y');
-      addTestItem(testData, zoneName, item);
-    } catch (...) {
-      // ...unless it's an ambiguous date, in which case just skip it.
-    }
-  }
-}
-
-/** Process each zoneName in zones and insert into testData map. */
-map<string, vector<TestItem>> processZones(const vector<string>& zones) {
-  TestData testData;
-  for (string zoneName : zones) {
-    processZone(testData, zoneName, startYear, untilYear);
-  }
-  return testData;
-}
-
 /** Sort the TestItems according to epochSeconds. */
 void sortTestData(TestData& testData) {
   for (auto& p : testData) {
@@ -112,7 +41,6 @@ void sortTestData(TestData& testData) {
     );
   }
 }
-
 #endif
 
 /**
@@ -192,7 +120,12 @@ void process_zone(
       zone_info,
       start_year,
       until_year);
-  //addMonthlySamples(entry, zone_name);
+  add_monthly_samples(
+      entry,
+      zone_name,
+      zone_info,
+      start_year,
+      until_year);
 }
 
 /**

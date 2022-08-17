@@ -110,3 +110,65 @@ void add_transitions(
     }
   }
 }
+
+void add_monthly_samples(
+    struct TestDataEntry *test_entry,
+    const char *zone_name,
+    const struct AtcZoneInfo *zone_info,
+    int16_t start_year,
+    int16_t until_year)
+{
+  for (int y = start_year; y < until_year; y++) {
+    for (int m = 1; m <= 12; m++) {
+      // Add a sample test point on the *second* of each month instead of the
+      // first of the month. This prevents Jan 1, 2000 from being converted to a
+      // negative epoch seconds for certain timezones, which gets converted into
+      // a UTC date in 1999 when ExtendedZoneProcessor is used to convert the
+      // epoch seconds back to a ZonedDateTime. The UTC date in 1999 causes the
+      // actual max buffer size of ExtendedZoneProcessor to become different
+      // than the one predicted by BufSizeEstimator (which samples whole years
+      // from 2000 until 2050), and causes the
+      // AceTimeValidation/ExtendedHinnantDateTest to fail on the buffer size
+      // check.
+      //
+      // But if that day of the month (with the time of 00:00) is ambiguous.
+      // I use a loop to try every subsequent day of month up to the 28th (which
+      // exists in all months).
+      for (int d = 2; d <= 28; d++) {
+        struct AtcZonedDateTime zdt;
+        bool status = atc_zoned_date_time_from_components(
+            &processing,
+            zone_info,
+            y, m, d, 0, 0, 0,
+            0 /*fold*/,
+            &zdt);
+        if (! status) continue;
+
+        atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
+        add_test_item_from_epoch_seconds(
+            test_entry,
+            zone_name,
+            zone_info,
+            epoch_seconds,
+            'S');
+      }
+    }
+
+    // Add the last day of the year...
+    struct AtcZonedDateTime zdt;
+    bool status = atc_zoned_date_time_from_components(
+        &processing,
+        zone_info,
+        y, 12, 31, 0, 0, 0,
+        0 /*fold*/,
+        &zdt);
+    if (! status) continue;
+    atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
+    add_test_item_from_epoch_seconds(
+        test_entry,
+        zone_name,
+        zone_info,
+        epoch_seconds,
+        'Y');
+  }
+}
