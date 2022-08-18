@@ -13,7 +13,7 @@
  *    > validation_data.json
  */
 
-#include <stdlib.h> // exit()
+#include <stdlib.h> // exit(), qsort()
 #include <string.h> // strcmp(), strncmp()
 #include <stdio.h> // printf(), fprintf()
 #include <acetimec.h>
@@ -30,18 +30,27 @@ const char *tz_version = "";
 
 //-----------------------------------------------------------------------------
 
-#if 0
-/** Sort the TestItems according to epochSeconds. */
-void sortTestData(TestData& testData) {
-  for (auto& p : testData) {
-    sort(p.second.begin(), p.second.end(),
-      [](const TestItem& a, const TestItem& b) {
-        return a.epochSeconds < b.epochSeconds;
-      }
-    );
+static int compare_test_item(const void *a, const void *b)
+{
+  const struct TestItem *ta = a;
+  const struct TestItem *tb = b;
+  if (ta->epoch_seconds < tb->epoch_seconds) return -1;
+  if (ta->epoch_seconds > tb->epoch_seconds) return 1;
+  return 0;
+}
+
+/** Sort the TestItems of each TestDataEntry according to epochSeconds. */
+void sort_test_data(struct TestData *test_data)
+{
+  for (int i = 0; i < test_data->num_entries; i++) {
+    struct TestDataEntry *entry = &test_data->entries[i];
+    qsort(
+        entry->items,
+        entry->num_items,
+        sizeof(struct TestItem),
+        compare_test_item);
   }
 }
-#endif
 
 /**
  * Generate the JSON output on STDOUT which will be redirect into
@@ -225,7 +234,7 @@ int main(int argc, const char* const* argv) {
   struct TestData test_data;
   test_data_init(&test_data);
   read_and_process_zone(&processing, &test_data);
-  //sortTestData(testData);
+  sort_test_data(&test_data);
 
   fprintf(stderr, "Writing validation data\n");
   print_json(&test_data);
