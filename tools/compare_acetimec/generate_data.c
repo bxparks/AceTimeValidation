@@ -99,6 +99,7 @@ void print_json(const struct TestData *test_data) {
 
 /** Insert TestItems for the given 'zone_name' into test_data. */
 void process_zone(
+    struct AtcZoneProcessing *processing,
     struct TestData *test_data,
     const char *zone_name)
 {
@@ -117,12 +118,14 @@ void process_zone(
   add_transitions(
       entry,
       zone_name,
+      processing,
       zone_info,
       start_year,
       until_year);
   add_monthly_samples(
       entry,
       zone_name,
+      processing,
       zone_info,
       start_year,
       until_year);
@@ -132,7 +135,9 @@ void process_zone(
  * Read the list of zones from the 'zones.txt' in the stdin. Ignore blank lines
  * and comments (starting with '#'), and process each zone, one per line.
  */
-void read_and_process_zone(struct TestData *test_data)
+void read_and_process_zone(
+    struct AtcZoneProcessing *processing,
+    struct TestData *test_data)
 {
   char line[MAX_LINE_LENGTH];
   while (1) {
@@ -148,7 +153,7 @@ void read_and_process_zone(struct TestData *test_data)
     if (strcmp(word, "") == 0) continue;
     if (word[0] == '#') continue;
 
-    process_zone(test_data, word);
+    process_zone(processing, test_data, word);
   }
 }
 
@@ -212,13 +217,14 @@ int main(int argc, const char* const* argv) {
       kAtcZoneAndLinkRegistrySize);
 
   // Initialize val_data module.
-  val_data_init();
+  struct AtcZoneProcessing processing;
+  atc_processing_init(&processing);
 
   // Process the zones on the STDIN
   fprintf(stderr, "Reading zones and generating validation data\n");
   struct TestData test_data;
   test_data_init(&test_data);
-  read_and_process_zone(&test_data);
+  read_and_process_zone(&processing, &test_data);
   //sortTestData(testData);
 
   fprintf(stderr, "Writing validation data\n");

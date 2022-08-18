@@ -4,8 +4,6 @@
 #include <acetimec.h>
 #include "test_data.h"
 
-void val_data_init();
-
 /**
  * Add a TestItem for one second before a DST transition, and right at the
  * the DST transition. Calculates the active transitions inside the
@@ -16,6 +14,7 @@ void val_data_init();
 void add_transitions(
     struct TestDataEntry *test_entry,
     const char *zone_name,
+    struct AtcZoneProcessing *processing,
     const struct AtcZoneInfo *info,
     int16_t start_year,
     int16_t until_year);
@@ -28,6 +27,7 @@ void add_transitions(
 void add_monthly_samples(
     struct TestDataEntry *test_entry,
     const char *zone_name,
+    struct AtcZoneProcessing *processing,
     const struct AtcZoneInfo *zone_info,
     int16_t start_year,
     int16_t until_year);

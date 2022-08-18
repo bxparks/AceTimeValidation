@@ -4,28 +4,22 @@
 #include <acetimec.h>
 #include "val_data.h"
 
-static struct AtcZoneProcessing processing;
-
-void val_data_init()
-{
-  atc_processing_init(&processing);
-}
-
 static void create_test_item_from_epoch_seconds(
     struct TestItem *ti,
+    struct AtcZoneProcessing *processing,
     const struct AtcZoneInfo *zone_info,
     atc_time_t epoch_seconds,
     char type)
 {
   struct AtcZonedDateTime zdt;
   atc_zoned_date_time_from_epoch_seconds(
-      &processing,
+      processing,
       zone_info,
       epoch_seconds,
       &zdt);
   struct AtcZonedExtra zet;
   atc_zoned_extra_from_epoch_seconds(
-      &processing,
+      processing,
       zone_info,
       epoch_seconds,
       &zet);
@@ -48,18 +42,21 @@ static void create_test_item_from_epoch_seconds(
 static void add_test_item_from_epoch_seconds(
     struct TestDataEntry *test_entry,
     const char *zone_name,
+    struct AtcZoneProcessing *processing,
     const struct AtcZoneInfo *zone_info,
     atc_time_t epoch_seconds,
     char type)
 {
   (void) zone_name;
   struct TestItem *ti = test_data_entry_next_item(test_entry);
-  create_test_item_from_epoch_seconds(ti, zone_info, epoch_seconds, type);
+  create_test_item_from_epoch_seconds(
+      ti, processing, zone_info, epoch_seconds, type);
 }
 
 void add_transitions(
     struct TestDataEntry *test_entry,
     const char *zone_name,
+    struct AtcZoneProcessing *processing,
     const struct AtcZoneInfo *zone_info,
     int16_t start_year,
     int16_t until_year)
@@ -68,8 +65,8 @@ void add_transitions(
   test_entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
 
   for (int16_t year = start_year; year < until_year; ++year) {
-    atc_processing_init_for_year(&processing, zone_info, year);
-    struct AtcTransitionStorage *ts = &processing.transition_storage;
+    atc_processing_init_for_year(processing, zone_info, year);
+    struct AtcTransitionStorage *ts = &processing->transition_storage;
     struct AtcTransition **begin =
         atc_transition_storage_get_active_pool_begin(ts);
     struct AtcTransition **end =
@@ -95,6 +92,7 @@ void add_transitions(
       add_test_item_from_epoch_seconds(
           test_entry,
           zone_name,
+          processing,
           zone_info,
           epoch_seconds - 1,
           'A');
@@ -104,6 +102,7 @@ void add_transitions(
       add_test_item_from_epoch_seconds(
           test_entry,
           zone_name,
+          processing,
           zone_info,
           epoch_seconds,
           'B');
@@ -114,6 +113,7 @@ void add_transitions(
 void add_monthly_samples(
     struct TestDataEntry *test_entry,
     const char *zone_name,
+    struct AtcZoneProcessing *processing,
     const struct AtcZoneInfo *zone_info,
     int16_t start_year,
     int16_t until_year)
@@ -137,7 +137,7 @@ void add_monthly_samples(
       for (int d = 2; d <= 28; d++) {
         struct AtcZonedDateTime zdt;
         bool status = atc_zoned_date_time_from_components(
-            &processing,
+            processing,
             zone_info,
             y, m, d, 0, 0, 0,
             0 /*fold*/,
@@ -148,6 +148,7 @@ void add_monthly_samples(
         add_test_item_from_epoch_seconds(
             test_entry,
             zone_name,
+            processing,
             zone_info,
             epoch_seconds,
             'S');
@@ -157,7 +158,7 @@ void add_monthly_samples(
     // Add the last day of the year...
     struct AtcZonedDateTime zdt;
     bool status = atc_zoned_date_time_from_components(
-        &processing,
+        processing,
         zone_info,
         y, 12, 31, 0, 0, 0,
         0 /*fold*/,
@@ -167,6 +168,7 @@ void add_monthly_samples(
     add_test_item_from_epoch_seconds(
         test_entry,
         zone_name,
+        processing,
         zone_info,
         epoch_seconds,
         'Y');
