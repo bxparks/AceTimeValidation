@@ -1,5 +1,5 @@
-#ifndef COMPARE_ACETIMEC_VAL_DATA_H
-#define COMPARE_ACETIMEC_VAL_DATA_H
+#ifndef COMPARE_ACETIMEC_SAMPLING_H
+#define COMPARE_ACETIMEC_SAMPLING_H
 
 #include <acetimec.h>
 #include "test_data.h"

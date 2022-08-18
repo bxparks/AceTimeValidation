@@ -2,7 +2,7 @@
 #include <string.h> // strncpy()
 #include <stdio.h> // printf()
 #include <acetimec.h>
-#include "val_data.h"
+#include "sampling.h"
 
 static void create_test_item_from_epoch_seconds(
     struct TestItem *ti,

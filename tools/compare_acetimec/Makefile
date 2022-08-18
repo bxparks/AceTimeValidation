@@ -4,15 +4,15 @@ CFLAGS := -Wall -Wextra -Werror -ansi -pedantic -std=c11 \
 generate_data.out: \
 	generate_data.o \
 	test_data.o \
-	val_data.o \
+	sampling.o \
 	../../../AceTimeC/src/acetimec.a
 	$(CC) -o $@ $^
 
-generate_data.o: generate_data.c test_data.h val_data.h
+generate_data.o: generate_data.c test_data.h sampling.h
 
 test_data.o: test_data.c test_data.h
 
-val_data.o: val_data.c val_data.h
+sampling.o: sampling.c sampling.h
 
 validation_data.json: generate_data.out small.txt
 	./generate_data.out \

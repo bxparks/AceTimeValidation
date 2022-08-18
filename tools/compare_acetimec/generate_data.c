@@ -18,7 +18,7 @@
 #include <stdio.h> // printf(), fprintf()
 #include <acetimec.h>
 #include "test_data.h"
-#include "val_data.h"
+#include "sampling.h"
 
 // Command line arguments
 int16_t start_year = 2000;
@@ -216,7 +216,7 @@ int main(int argc, const char* const* argv) {
       kAtcZoneAndLinkRegistry,
       kAtcZoneAndLinkRegistrySize);
 
-  // Initialize val_data module.
+  // Initialize an AtcZoneProcessing instance.
   struct AtcZoneProcessing processing;
   atc_processing_init(&processing);
 
