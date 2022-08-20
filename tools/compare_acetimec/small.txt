@@ -8,6 +8,7 @@ Africa/Johannesburg
 Africa/Tunis
 America/Costa_Rica
 America/Los_Angeles
+US/Pacific
 America/Indiana/Marengo
 Asia/Yangon
 Europe/Kiev
