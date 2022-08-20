@@ -35,8 +35,8 @@ static void create_test_item_from_epoch_seconds(
 
   strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
   ti->abbrev[kAtcAbbrevSize - 1] = '\0';
-  ti->utc_offset = zet.utc_offset_minutes;
   ti->dst_offset = zet.dst_offset_minutes;
+  ti->utc_offset = zet.std_offset_minutes + zet.dst_offset_minutes;
 }
 
 static void add_test_item_from_epoch_seconds(
@@ -123,17 +123,15 @@ void add_monthly_samples(
       // Add a sample test point on the *second* of each month instead of the
       // first of the month. This prevents Jan 1, 2000 from being converted to a
       // negative epoch seconds for certain timezones, which gets converted into
-      // a UTC date in 1999 when ExtendedZoneProcessor is used to convert the
-      // epoch seconds back to a ZonedDateTime. The UTC date in 1999 causes the
-      // actual max buffer size of ExtendedZoneProcessor to become different
-      // than the one predicted by BufSizeEstimator (which samples whole years
-      // from 2000 until 2050), and causes the
-      // AceTimeValidation/ExtendedHinnantDateTest to fail on the buffer size
-      // check.
+      // a UTC date in 1999 when epoch seconds is converted back to a
+      // ZonedDateTime. The UTC date in 1999 causes the actual max buffer
+      // size of ExtendedZoneProcessor to become different than the one
+      // predicted by BufSizeEstimator (which samples whole years from 2000
+      // until 2050), and causes the AceTimeValidation/ExtendedAceTimeCTest
+      // to fail on the buffer size check.
       //
-      // But if that day of the month (with the time of 00:00) is ambiguous.
-      // I use a loop to try every subsequent day of month up to the 28th (which
-      // exists in all months).
+      // But if that day of the month (with the time of 00:00) is ambiguous, I
+      // use a loop to try subsequent days of month to find a day that works.
       for (int d = 2; d <= 28; d++) {
         struct AtcZonedDateTime zdt;
         bool status = atc_zoned_date_time_from_components(
@@ -142,7 +140,7 @@ void add_monthly_samples(
             y, m, d, 0, 0, 0,
             0 /*fold*/,
             &zdt);
-        if (! status) continue;
+        if (!status) continue;
 
         atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
         add_test_item_from_epoch_seconds(
@@ -152,6 +150,7 @@ void add_monthly_samples(
             zone_info,
             epoch_seconds,
             'S');
+        break;
       }
     }
 
