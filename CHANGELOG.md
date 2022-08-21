@@ -1,6 +1,8 @@
 # Changelog
 
 * Unreleased
+    * Add `BasicAceTimeCTest` and `ExtendedAceTimeCTest` which validates
+      against the [AceTimeC](https://github.com/bxparks/AceTimeC) C library.
 * v1.1.2 (2022-08-13, TZDB 2022b)
     * Upgrade to TZDB 2022b.
         * https://mm.icann.org/pipermail/tz-announce/2022-August/000071.html
