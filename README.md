@@ -13,6 +13,7 @@ algorithms are compared to the following third party timezone libraries:
 * [Hinnant date](https://github.com/HowardHinnant/date) C++ library
 * [Noda Time](https://nodatime.org) C# library
 * [Go Lang time](https://pkg.go.dev/time) package
+* [AceTimeC](https://github.com/bxparks/AceTimeC) library
 
 These integration tests require a desktop-class machine running Linux or MacOS.
 They are too big to run on any Arduino microcontroller that I know of. They use
@@ -64,6 +65,7 @@ timezones.
     * [C++ Hinnant Date](#TestHinnantDate)
     * [Noda Time](#TestNodaTime)
     * [Go Lang Time](#TestGoLangTime)
+    * [AceTimeC](#TestAceTimeC)
 * [License](#License)
 * [Feedback and Support](#FeedbackAndSupport)
 * [Authors](#Authors)
@@ -73,14 +75,15 @@ timezones.
 
 These scripts live under the `AceTimeValidation/tools/` directory:
 
-* `compare_pytz` - Python `pytz` library
-* `compare_dateutil` - Python `python-dateutil` library
-* `compare_zoneinfo` - Python 3.9 `zoneinfo` library
+* `compare_acetimec` - AceTimeC library
 * `compare_acetz` - AceTimePython library
-* `compare_java` - Java JDK11 `java.time` library
 * `compare_cpp` - C++ Hinnant Date library
-* `compare_noda` - Noda Time library
+* `compare_dateutil` - Python `python-dateutil` library
 * `compare_go` - Go Lang time library
+* `compare_java` - Java JDK11 `java.time` library
+* `compare_noda` - Noda Time library
+* `compare_pytz` - Python `pytz` library
+* `compare_zoneinfo` - Python 3.9 `zoneinfo` library
 
 Each script reads the `zones.txt` file from the stdin. This file was generated
 from `zonelistgenerator.py` through the `tzcompiler.py` script in the
@@ -200,6 +203,7 @@ libraries.
     * .Net 5.0 framework
         * https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu
 * [Go Lang 1.17 or higher](https://go.dev/doc/install)
+* [AceTimeC](https://github.com/bxparks/AceTimeC)
 
 <a name="CompilingAndRunning"></a>
 ## Compiling and Running
@@ -209,14 +213,15 @@ libraries.
 
 The required Python, Java and C++ tools and libraries are explained in:
 
-* [compare_pytz](tools/compare_pytz)
-* [compare_dateutil](tools/compare_dateutil)
-* [compare_zoneinfo](tools/compare_zoneinfo)
+* [compare_acetimec](tools/compare_acetimec)
 * [compare_acetz](tools/compare_acetz)
-* [compare_java](tools/compare_java)
 * [compare_cpp](tools/compare_cpp)
-* [compare_noda](tools/compare_noda)
+* [compare_dateutil](tools/compare_dateutil)
 * [compare_go](tools/compare_go)
+* [compare_java](tools/compare_java)
+* [compare_noda](tools/compare_noda)
+* [compare_pytz](tools/compare_pytz)
+* [compare_zoneinfo](tools/compare_zoneinfo)
 
 The various `Makefile` files under the subdirectories here will run `make -C` in
 those directories to build the Java and C++ binaries as necessary. Here is a
@@ -350,7 +355,7 @@ the `tzcompiler.py` program, and produced data points from year 2000 to year
 2050, which is the exact range of years supported by the `zonedb::` and
 `zonedbx::` zoneinfo files.
 
-The result is 2 validation programs under `tests/validation`:
+The result is 2 validation programs:
 
 * [BasicJavaTest](BasicJavaTest/)
 * [ExtendedJavaTest](ExtendedJavaTest/)
@@ -393,8 +398,7 @@ AceTime matches Hinnant Date on all data points from the year 2000 to 2050. No
 
 I wrote the test data generator [compare_noda](tools/compare_noda) in C# to
 generate a `validation_data.json` file using the
-[Noda Time](https://nodatime.org) library. The result is 2 validation programs
-under `tests/validation`:
+[Noda Time](https://nodatime.org) library. The result is 2 validation programs:
 
 * [BasicNodaTest](BasicNodaTest/)
 * [ExtendedNodaTest](ExtendedNodaTest/)
@@ -408,8 +412,7 @@ AceTime matches Noda Time on all data points from the year 2000 to 2050. No
 The [compare_go](tools/compare_go) tool generates a `validation_data.json`
 file using the `time` package (https://pkg.go.dev/time) in the Golang standard
 library. I believe the `time` package uses the underlying TZDB installed on the
-host operating system. There are 2 validation programs that consume this test
-data set under `tests/validaiton`:
+host operating system. There are 2 validation programs: that consume this test
 
 * [BasicGoTest](BasicGoTest/)
 * [ExtendedGoTest](ExtendedGoTest/)
@@ -417,6 +420,17 @@ data set under `tests/validaiton`:
 AceTime matches the Go lang `time` package on all data points from the year 2000
 to 2050. No `blacklist.json` file was needed. The `time` package does not
 calculate the DST offset, so no validation for that field was performed.
+
+<a name="TestAceTimeC"></a>
+### AceTimeC
+
+I wrote the test data generator [compare_acetimec](tools/compare_acetimec) in
+the C language to generate a `validation_data.json` file using the
+[AceTimeC](https://github.com/bxparks/AceTimeC) library. The result is 2
+validation programs:
+
+* [BasicAceTimeCTest](BasicAceTimeCTest/)
+* [ExtendedAceTimeCTest](ExtendedAceTimeCTest/)
 
 <a name="License"></a>
 ## License
