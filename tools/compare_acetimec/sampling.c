@@ -35,8 +35,8 @@ static void create_test_item_from_epoch_seconds(
 
   strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
   ti->abbrev[kAtcAbbrevSize - 1] = '\0';
-  ti->dst_offset = zet.dst_offset_minutes;
-  ti->utc_offset = zet.std_offset_minutes + zet.dst_offset_minutes;
+  ti->dst_offset = 60 * (zet.dst_offset_minutes);
+  ti->utc_offset = 60 * (zet.std_offset_minutes + zet.dst_offset_minutes);
 }
 
 static void add_test_item_from_epoch_seconds(
