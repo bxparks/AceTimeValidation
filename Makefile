@@ -37,9 +37,7 @@ SHELL=bash
 # matter which OS version is running in the docker image on GitHub.
 validations:
 	set -e; \
-	for i in *HinnantDateTest/Makefile \
-			*AcetzTest/Makefile \
-			*AceTimeCTest/Makefile; do \
+	for i in *HinnantDateTest/Makefile *AcetzTest/Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
 		$(MAKE) -C $$(dirname $$i); \
 	done
@@ -48,9 +46,7 @@ validations:
 # workflow.
 runvalidations:
 	set -e; \
-	for i in *HinnantDateTest/Makefile \
-			*AcetzTest/Makefile \
-			*AceTimeCTest/Makefile; do \
+	for i in *HinnantDateTest/Makefile *AcetzTest/Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
 		$$(dirname $$i)/$$(dirname $$i).out; \
 	done
