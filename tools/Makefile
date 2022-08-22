@@ -32,4 +32,7 @@ flake8:
 		--statistics \
 		--max-line-length=80
 
-
+clean:
+	for i in */Makefile; do \
+		$(MAKE) -C $$(dirname $$i) clean; \
+	done
