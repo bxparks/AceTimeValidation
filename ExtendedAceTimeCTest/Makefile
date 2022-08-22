@@ -54,6 +54,9 @@ validation_data.json: $(DB_NAMESPACE)/zones.txt
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
+$(VALIDATION_TOOLS)/compare_acetimec/generate_data.out:
+	$(MAKE) -C $(VALIDATION_TOOLS)/compare_acetimec/
+
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
