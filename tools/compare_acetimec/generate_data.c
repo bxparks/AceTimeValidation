@@ -1,12 +1,10 @@
 /*
  * Generate the validation JSON output for the zones given on the STDIN. The
- * transition time and UTC offsets are calculated using Howard Hinnant's date.h
- * and tz.h library. The Hinnant date library requires the --tz_version flag
- * even though we don't need it here.
+ * transition time and UTC offsets are calculated using the AceTimeC library
+ * (https://github.com/bxparks/AceTimeC).
  *
  * Usage:
  * $ ./generate_data.out
- *    [--tz_version {version}]
  *    [--start_year start]
  *    [--until_year until]
  *    < zones.txt
@@ -26,8 +24,6 @@ int16_t start_year = 2000;
 int16_t until_year = 2050;
 
 bool is_registry_sorted;
-
-const char *tz_version = "";
 
 //-----------------------------------------------------------------------------
 
@@ -68,7 +64,7 @@ void print_json(const struct TestData *test_data) {
   printf("%s\"until_year\": %d,\n", indent0, until_year);
   printf("%s\"source\": \"AceTimeC\",\n", indent0);
   printf("%s\"version\": \"%s\",\n", indent0, ACE_TIME_C_VERSION_STRING);
-  printf("%s\"tz_version\": \"%s\",\n", indent0, tz_version);
+  printf("%s\"tz_version\": \"%s\",\n", indent0, kAtcTzDatabaseVersion);
   printf("%s\"has_valid_abbrev\": true,\n", indent0);
   printf("%s\"has_valid_dst\": true,\n", indent0);
   printf("%s\"test_data\": {\n", indent0);
@@ -175,7 +171,7 @@ bool read_and_process_zone(
 
 void usage_and_exit() {
   fprintf(stderr,
-    "Usage: generate_data [--install_dir {dir}] [--tz_version {version}]\n"
+    "Usage: generate_data [--install_dir {dir}]\n"
     "   [--start_year start] [--until_year until]\n"
     "   < zones.txt\n");
   exit(1);
@@ -206,10 +202,6 @@ int main(int argc, const char* const* argv) {
       SHIFT(argc, argv);
       if (argc == 0) usage_and_exit();
       until = argv[0];
-    } else if (argEquals(argv[0], "--tz_version")) {
-      SHIFT(argc, argv);
-      if (argc == 0) usage_and_exit();
-      tz_version = argv[0];
     } else if (argEquals(argv[0], "--")) {
       SHIFT(argc, argv);
       break;
