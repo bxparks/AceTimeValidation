@@ -13,6 +13,7 @@
  *    > validation_data.json
  */
 
+#include <stdbool.h>
 #include <stdlib.h> // exit(), qsort()
 #include <string.h> // strcmp(), strncmp()
 #include <stdio.h> // printf(), fprintf()
@@ -107,7 +108,7 @@ void print_json(const struct TestData *test_data) {
 }
 
 /** Insert TestItems for the given 'zone_name' into test_data. */
-void process_zone(
+bool process_zone(
     struct AtcZoneProcessing *processing,
     struct TestData *test_data,
     const char *zone_name)
@@ -119,8 +120,8 @@ void process_zone(
       is_registry_sorted);
 
   if (zone_info == NULL) {
-    fprintf(stderr, "Zone %s: NOT found\n", zone_name);
-    return;
+    fprintf(stderr, "ERROR: Zone %s: not found\n", zone_name);
+    return false;
   }
 
   struct TestDataEntry *entry = test_data_next_entry(test_data);
@@ -138,13 +139,14 @@ void process_zone(
       zone_info,
       start_year,
       until_year);
+  return true;
 }
 
 /**
  * Read the list of zones from the 'zones.txt' in the stdin. Ignore blank lines
  * and comments (starting with '#'), and process each zone, one per line.
  */
-void read_and_process_zone(
+bool read_and_process_zone(
     struct AtcZoneProcessing *processing,
     struct TestData *test_data)
 {
@@ -162,8 +164,11 @@ void read_and_process_zone(
     if (strcmp(word, "") == 0) continue;
     if (word[0] == '#') continue;
 
-    process_zone(processing, test_data, word);
+    bool status = process_zone(processing, test_data, word);
+    if (! status) return status;
   }
+
+  return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -230,18 +235,14 @@ int main(int argc, const char* const* argv) {
   atc_processing_init(&processing);
 
   // Process the zones on the STDIN
-  fprintf(stderr, "Reading zones and generating validation data\n");
   struct TestData test_data;
   test_data_init(&test_data);
-  read_and_process_zone(&processing, &test_data);
+  bool status = read_and_process_zone(&processing, &test_data);
+  if (! status) exit(1);
+
   sort_test_data(&test_data);
-
-  fprintf(stderr, "Writing validation data\n");
   print_json(&test_data);
-
-  fprintf(stderr, "Cleaning up\n");
   test_data_free(&test_data);
 
-  fprintf(stderr, "Done\n");
   return 0;
 }
