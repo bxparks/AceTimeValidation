@@ -72,11 +72,11 @@ $(DB_NAMESPACE)/zone_registry.cpp: $(DB_NAMESPACE)/zone_infos.h
 $(DB_NAMESPACE)/zones.txt: $(DB_NAMESPACE)/zone_infos.h
 
 # Generate the zones.txt and zonedb files under the $(DB_NAMESPACE) directory.
-$(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
+$(DB_NAMESPACE)/zone_infos.h: tzfiles
 	mkdir -p $(DB_NAMESPACE); \
 	cd $(DB_NAMESPACE); \
 	$(ACE_TIME_TOOLS)/src/acetimetools/tzcompiler.py \
-		--input_dir ../tzfiles/$(TZ_VERSION) \
+		--input_dir ../tzfiles \
 		--tz_version $(TZ_VERSION) \
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
@@ -86,8 +86,8 @@ $(DB_NAMESPACE)/zone_infos.h: tzfiles/$(TZ_VERSION)
 
 # Extract and copy the tzfiles into a local directory to allow parallel
 # execution of validation/*Test makefiles.
-tzfiles/$(TZ_VERSION):
-	$(ACE_TIME_TOOLS)/copytz.sh --output_dir tzfiles $(TZ_VERSION)
+tzfiles:
+	$(ACE_TIME_TOOLS)/copytz.sh --tag $(TZ_VERSION) ~/src/tz tzfiles
 
 more_clean:
 	rm -rf $(DB_NAMESPACE) tzfiles
