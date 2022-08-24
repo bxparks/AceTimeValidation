@@ -86,7 +86,7 @@ $(DB_NAMESPACE)/zone_infos.h: tzfiles
 # Extract and copy the tzfiles into a local directory to allow parallel
 # execution of validation/*Test makefiles.
 tzfiles:
-	$(ACE_TIME_TOOLS)/copytz.sh --tag $(TZ_VERSION) ~/src/tz tzfiles
+	$(ACE_TIME_TOOLS)/copytz.sh --tag $(TZ_VERSION) ../../tz tzfiles
 
 more_clean:
 	rm -rf $(DB_NAMESPACE) tzfiles
