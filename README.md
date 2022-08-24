@@ -174,7 +174,7 @@ libraries.
 <a name="Dependencies"></a>
 ## Dependencies
 
-* Ubuntu 18.04 or 20.04
+* Ubuntu 18.04, 20.04, or MacOS 11.6.8 (Big Sur)
 * Python 3.7 or higher
 * [AceTime](https://github.com/bxparks/AceTime)
     * As sibling project to AceTimeValidation
