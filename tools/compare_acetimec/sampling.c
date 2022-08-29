@@ -134,15 +134,17 @@ void add_monthly_samples(
       // use a loop to try subsequent days of month to find a day that works.
       for (int d = 2; d <= 28; d++) {
         struct AtcZonedDateTime zdt;
-        bool status = atc_zoned_date_time_from_components(
+        struct AtcLocalDateTime ldt = { y, m, d, 0, 0, 0 };
+        int8_t err = atc_zoned_date_time_from_local_date_time(
             processing,
             zone_info,
-            y, m, d, 0, 0, 0,
+            &ldt,
             0 /*fold*/,
             &zdt);
-        if (!status) continue;
+        if (err) continue;
 
         atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
+        if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
         add_test_item_from_epoch_seconds(
             test_entry,
             zone_name,
@@ -156,14 +158,17 @@ void add_monthly_samples(
 
     // Add the last day of the year...
     struct AtcZonedDateTime zdt;
-    bool status = atc_zoned_date_time_from_components(
+    struct AtcLocalDateTime ldt = { y, 12, 31, 0, 0, 0 };
+    int8_t err = atc_zoned_date_time_from_local_date_time(
         processing,
         zone_info,
-        y, 12, 31, 0, 0, 0,
+        &ldt,
         0 /*fold*/,
         &zdt);
-    if (! status) continue;
+    if (err) continue;
+
     atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
+    if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
     add_test_item_from_epoch_seconds(
         test_entry,
         zone_name,

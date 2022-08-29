@@ -104,7 +104,7 @@ void print_json(const struct TestData *test_data) {
 }
 
 /** Insert TestItems for the given 'zone_name' into test_data. */
-bool process_zone(
+int8_t process_zone(
     struct AtcZoneProcessing *processing,
     struct TestData *test_data,
     const char *zone_name)
@@ -117,7 +117,7 @@ bool process_zone(
 
   if (zone_info == NULL) {
     fprintf(stderr, "ERROR: Zone %s: not found\n", zone_name);
-    return false;
+    return kAtcErrGeneric;
   }
 
   struct TestDataEntry *entry = test_data_next_entry(test_data);
@@ -135,14 +135,14 @@ bool process_zone(
       zone_info,
       start_year,
       until_year);
-  return true;
+  return kAtcErrOk;
 }
 
 /**
  * Read the list of zones from the 'zones.txt' in the stdin. Ignore blank lines
  * and comments (starting with '#'), and process each zone, one per line.
  */
-bool read_and_process_zone(
+int8_t read_and_process_zone(
     struct AtcZoneProcessing *processing,
     struct TestData *test_data)
 {
@@ -160,11 +160,14 @@ bool read_and_process_zone(
     if (strcmp(word, "") == 0) continue;
     if (word[0] == '#') continue;
 
-    bool status = process_zone(processing, test_data, word);
-    if (! status) return status;
+    int8_t err = process_zone(processing, test_data, word);
+    if (err) {
+      fprintf(stderr, "Error processing zone '%s'\n", word);
+      return err;
+    }
   }
 
-  return true;
+  return kAtcErrOk;
 }
 
 //-----------------------------------------------------------------------------
@@ -229,8 +232,8 @@ int main(int argc, const char* const* argv) {
   // Process the zones on the STDIN
   struct TestData test_data;
   test_data_init(&test_data);
-  bool status = read_and_process_zone(&processing, &test_data);
-  if (! status) exit(1);
+  int8_t err = read_and_process_zone(&processing, &test_data);
+  if (err) exit(1);
 
   sort_test_data(&test_data);
   print_json(&test_data);
