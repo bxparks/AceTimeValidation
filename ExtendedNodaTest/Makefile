@@ -1,12 +1,6 @@
 # See https://github.com/bxparks/EpoxyDuino for documentation about this
 # Makefile to compile and run Arduino programs natively on Linux or MacOS.
 
-# Define the scope of the test data.
-SCOPE = extended
-TZ_VERSION = 2021a
-START_YEAR = 1974
-UNTIL_YEAR = 2050
-
 DB_NAMESPACE := zonedbxnoda
 GENERATED := validation_data.cpp \
 	validation_data.h \
@@ -32,6 +26,12 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 
 # Location of various tools.
 NODA_TIME_DIR := $(HOME)/dev/nodatime
+
+# Define the scope of the test data.
+SCOPE = extended
+TZ_VERSION := 2022d
+START_YEAR := 1974
+UNTIL_YEAR := 2050
 
 # Location of various compare_xxx tools.
 VALIDATION_TOOLS := $(abspath ../tools)

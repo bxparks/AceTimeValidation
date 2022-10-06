@@ -6,6 +6,16 @@
     * Update `copytz.sh` to avoid `flock(1)` which does not exist on MacOS.
     * Verify that `make validations` and `make runvalidations` work on MacOS
       11.6.8.
+    * Upgrade TZDB from 2022b to 2022d
+        * 2022c
+            * https://mm.icann.org/pipermail/tz-announce/2022-August/000072.html
+                * Work around awk bug in FreeBSD, macOS, etc.
+                * Improve tzselect on intercontinental Zones.
+            * Skipped because there were no changes that affected AceTime.
+        * 2022d
+            * https://mm.icann.org/pipermail/tz-announce/2022-September/000073.html
+                * Palestine transitions are now Saturdays at 02:00.
+                * Simplify three Ukraine zones into one.
 * v1.1.2 (2022-08-13, TZDB 2022b)
     * Upgrade to TZDB 2022b.
         * https://mm.icann.org/pipermail/tz-announce/2022-August/000071.html

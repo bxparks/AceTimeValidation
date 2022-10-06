@@ -43,7 +43,7 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 #	Europe_Dublin failed.
 #	Pacific_Auckland failed.
 SCOPE := basic
-TZ_VERSION := 2021a
+TZ_VERSION := 2022d
 START_YEAR := 2000
 UNTIL_YEAR := 2037
 

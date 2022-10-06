@@ -30,7 +30,7 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 #	* openjdk 11.0.8 2020-07-14 uses 2020a
 #	* openjdk 11.0.10 2020-07-14 uses 2020d
 SCOPE := extended
-TZ_VERSION := 2020d
+TZ_VERSION := 2022d
 START_YEAR := 2000
 UNTIL_YEAR := 2050
 
