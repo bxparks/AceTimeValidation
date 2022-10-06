@@ -1,7 +1,8 @@
 # Changelog
 
 * Unreleased
-    * Add `BasicAceTimeCTest` and `ExtendedAceTimeCTest` which validates
+* v1.1.3 (2022-10-06, TZDB 2022d)
+    * Add `BasicAceTimeCTest` and `ExtendedAceTimeCTest` which validate
       against the [AceTimeC](https://github.com/bxparks/AceTimeC) C library.
     * Update `copytz.sh` to avoid `flock(1)` which does not exist on MacOS.
     * Verify that `make validations` and `make runvalidations` work on MacOS
