@@ -1,6 +1,9 @@
 # Changelog
 
 * Unreleased
+    * Upgrade TZDB from 2022d to 2022e
+        * https://mm.icann.org/pipermail/tz-announce/2022-October/000074.html
+            * Jordan and Syria switch from +02/+03 with DST to year-round +03.
 * v1.1.3 (2022-10-06, TZDB 2022d)
     * Add `BasicAceTimeCTest` and `ExtendedAceTimeCTest` which validate
       against the [AceTimeC](https://github.com/bxparks/AceTimeC) C library.
