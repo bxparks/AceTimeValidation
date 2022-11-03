@@ -37,14 +37,20 @@ class TestDataGenerator:
         self,
         start_year: int,
         until_year: int,
+        epoch_year: int,
         sampling_interval: int,
         zone_infos: ZoneInfoMap = cast(ZoneInfoMap, ZONE_REGISTRY),
     ):
         self.start_year = start_year
         self.until_year = until_year
+        self.epoch_year = epoch_year
         self.sampling_interval = timedelta(hours=sampling_interval)
         self.zone_infos = zone_infos
         self.zone_manager = ZoneManager(zone_infos)
+
+        self.seconds_to_acetime_epoch_from_unix_epoch = int(
+            datetime(epoch_year, 1, 1, tzinfo=timezone.utc).timestamp()
+        )
 
     def create_test_data(self, zones: List[str]) -> None:
         test_data: TestData = {}
@@ -58,6 +64,7 @@ class TestDataGenerator:
         return {
             'start_year': self.start_year,
             'until_year': self.until_year,
+            'epoch_year': self.epoch_year,
             'source': 'acetz',
             'version': str(acetime.version.__version__),
             'tz_version': 'unknown',
@@ -197,15 +204,21 @@ class TestDataGenerator:
         transition time calculated by the ZoneProcessor class.
 
         Return the TestItem with the following fields:
-            epoch: epoch seconds from AceTime epoch (2000-01-01T00:00:00Z)
-            total_offset: the expected total UTC offset at epoch_seconds
-            dst_offset: the expected DST offset at epoch_seconds
-            y, M, d, h, m, s: expected date&time components at epoch_seconds
-            type: 'a', 'b', 'A', 'B', 'S', 'Y'
+        * epoch: epoch seconds from acetz epoch (2000-01-01T00:00:00Z),
+            the AceTime epoch is determined by the epoch_year parameter
+        * total_offset: the expected total UTC offset at epoch_seconds
+        * dst_offset: the expected DST offset at epoch_seconds
+        * y, M, d, h, m, s: expected date&time components at epoch_seconds
+        * type: 'a', 'b', 'A', 'B', 'S', 'Y'
         """
 
-        # Convert AceTime epoch_seconds to Unix epoch_seconds.
+        # Convert acetz epoch_seconds to Unix epoch_seconds.
+        # Convert Unix epoch seconds to AceTime epoch seconds.
         unix_seconds = epoch_seconds + SECONDS_SINCE_UNIX_EPOCH
+        acetime_seconds = (
+            unix_seconds
+            - self.seconds_to_acetime_epoch_from_unix_epoch
+        )
 
         # Get the transition time, then feed that into acetz to get the
         # total offset and DST shift
@@ -217,7 +230,7 @@ class TestDataGenerator:
         abbrev = dt.tzinfo.tzname(dt)
 
         return {
-            'epoch': epoch_seconds,
+            'epoch': acetime_seconds,
             'total_offset': total_offset,
             'dst_offset': dst_offset,
             'y': dt.year,

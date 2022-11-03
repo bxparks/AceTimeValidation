@@ -10,7 +10,7 @@ Generate the JSON validation test data on the STDOUT from the `acetz` package
 tzcompiler.py on the STDIN.
 
 Usage
-$ ./generate_data.py [--start_year start] [--until_year until]
+$ ./generate_data.py --start_year start --until_year until --epoch_year year
     [--sampling_interval hours]
     < zones.txt
     > validation_data.json
@@ -33,11 +33,13 @@ class Generator:
         invocation: str,
         start_year: int,
         until_year: int,
+        epoch_year: int,
         sampling_interval: int,
     ):
         self.invocation = invocation
         self.start_year = start_year
         self.until_year = until_year
+        self.epoch_year = epoch_year
         self.sampling_interval = sampling_interval
 
     def generate(self) -> None:
@@ -50,6 +52,7 @@ class Generator:
         test_generator = TestDataGenerator(
             start_year=self.start_year,
             until_year=self.until_year,
+            epoch_year=self.epoch_year,
             sampling_interval=self.sampling_interval,
         )
         test_generator.create_test_data(zones)
@@ -78,14 +81,19 @@ def main() -> None:
 
     parser.add_argument(
         '--start_year',
-        help='Start year of validation (default: start_year)',
+        help='Start year of validation (required)',
         type=int,
-        default=2000)
+        required=True)
     parser.add_argument(
         '--until_year',
-        help='Until year of validation (default: 2038)',
+        help='Until year of validation (required)',
         type=int,
-        default=2038)
+        required=True)
+    parser.add_argument(
+        '--epoch_year',
+        help='Epoch year of AceTime library (require)',
+        type=int,
+        required=True)
     parser.add_argument(
         '--sampling_interval',
         type=int,
@@ -104,6 +112,7 @@ def main() -> None:
         invocation=invocation,
         start_year=args.start_year,
         until_year=args.until_year,
+        epoch_year=args.epoch_year,
         sampling_interval=args.sampling_interval,
     )
     generator.generate()
