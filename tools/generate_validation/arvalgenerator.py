@@ -68,7 +68,6 @@ class ArduinoValidationGenerator:
         self.test_class = test_class
         self.test_class_include_dir = test_class_include_dir
 
-        self.test_data = validation_data['test_data']
         self.file_base = 'validation'
         self.include_header_namespace = 'VALIDATION'
 
@@ -99,8 +98,8 @@ class ArduinoValidationGenerator:
         logging.info("Created %s", full_filename)
 
     def _generate_validation_data_h(self) -> str:
-        validation_items = self._generate_validation_data_h_items(
-            self.test_data)
+        validation_items = self._generate_validation_data_h_items()
+        test_data = self.validation_data['test_data']
         source = self.validation_data['source']
         version = self.validation_data['version']
 
@@ -125,7 +124,7 @@ class ArduinoValidationGenerator:
 namespace ace_time {{
 namespace {self.db_namespace} {{
 
-// numZones: {len(self.test_data)}
+// numZones: {len(test_data)}
 {validation_items}
 
 }}
@@ -134,7 +133,8 @@ namespace {self.db_namespace} {{
 #endif
 """
 
-    def _generate_validation_data_h_items(self, test_data: TestData) -> str:
+    def _generate_validation_data_h_items(self) -> str:
+        test_data = self.validation_data['test_data']
         validation_items = ''
         for zone_name, test_items in sorted(test_data.items()):
             normalized_name = normalize_name(zone_name)
@@ -145,8 +145,7 @@ extern const testing::ValidationData kValidationData{normalized_name};
         return validation_items
 
     def _generate_validation_data_cpp(self) -> str:
-        validation_items = self._generate_validation_data_cpp_items(
-            self.test_data)
+        validation_items = self._generate_validation_data_cpp_items()
         source = self.validation_data['source']
         version = self.validation_data['version']
 
@@ -175,7 +174,11 @@ namespace {self.db_namespace} {{
 }}
 """
 
-    def _generate_validation_data_cpp_items(self, test_data: TestData) -> str:
+    def _generate_validation_data_cpp_items(self) -> str:
+        test_data = self.validation_data['test_data']
+        start_year = self.validation_data['start_year']
+        until_year = self.validation_data['until_year']
+        epoch_year = self.validation_data['epoch_year']
         validation_items = ''
         for zone_name, test_items in sorted(test_data.items()):
             test_items_string = self._generate_validation_data_cpp_test_items(
@@ -193,6 +196,9 @@ static const testing::ValidationItem kValidationItems{normalized_name}[] = {{
 }};
 
 const testing::ValidationData kValidationData{normalized_name} = {{
+  {start_year} /*startYear*/,
+  {until_year} /*untilYear*/,
+  {epoch_year} /*epochYear*/,
   {len(test_items)} /*numItems*/,
   kValidationItems{normalized_name} /*items*/,
 }};
@@ -232,7 +238,8 @@ const testing::ValidationData kValidationData{normalized_name} = {{
         return s
 
     def _generate_tests_cpp(self) -> str:
-        test_cases = self._generate_test_cases(self.test_data)
+        test_cases = self._generate_test_cases()
+        test_data = self.validation_data['test_data']
         source = self.validation_data['source']
         version = self.validation_data['version']
 
@@ -258,11 +265,12 @@ const testing::ValidationData kValidationData{normalized_name} = {{
 using namespace ace_time::testing;
 using namespace ace_time::{self.db_namespace};
 
-// numZones: {len(self.test_data)}
+// numZones: {len(test_data)}
 {test_cases}
 """
 
-    def _generate_test_cases(self, test_data: TestData) -> str:
+    def _generate_test_cases(self) -> str:
+        test_data = self.validation_data['test_data']
         has_valid_abbrev = self.validation_data['has_valid_abbrev']
         has_valid_dst = self.validation_data['has_valid_dst']
         test_cases = ''
