@@ -16,7 +16,7 @@ from acetimetools.transformer.transformer import (
     div_to_zero, normalize_name, hash_name
 )
 from acetimetools.data_types.validation_types import (
-    TestItem, TestData, ValidationData
+    TestItem, ValidationData
 )
 
 
