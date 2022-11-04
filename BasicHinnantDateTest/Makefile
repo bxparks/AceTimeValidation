@@ -28,8 +28,11 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 # Define the scope of the test data.
 SCOPE := basic
 TZ_VERSION := 2022f
-START_YEAR := 2000
-UNTIL_YEAR := 2050
+ACE_TIME_EPOCH_YEAR := 2050
+DB_START_YEAR := 2000
+DB_UNTIL_YEAR := 10000
+VAL_START_YEAR := 2000
+VAL_UNTIL_YEAR := 2100
 
 # Location of various tools.
 VALIDATION_TOOLS := $(abspath ../tools)
@@ -53,8 +56,9 @@ validation_data.json: $(DB_NAMESPACE)/zones.txt \
 $(VALIDATION_TOOLS)/compare_cpp/generate_data.out
 	$(VALIDATION_TOOLS)/compare_cpp/generate_data.out \
 		--tz_version $(TZ_VERSION) \
-		--start_year $(START_YEAR) \
-		--until_year $(UNTIL_YEAR) \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
@@ -86,8 +90,9 @@ $(DB_NAMESPACE)/zone_infos.h: tzfiles
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
-		--start_year $(START_YEAR) \
-		--until_year $(UNTIL_YEAR)
+		--generate_int16_year \
+		--start_year $(DB_START_YEAR) \
+		--until_year $(DB_UNTIL_YEAR)
 
 # Extract and copy the tzfiles into a local directory to allow parallel
 # execution of validation/*Test makefiles.

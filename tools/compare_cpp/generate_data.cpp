@@ -8,8 +8,9 @@
  * $ ./generate_data.out
  *    [--install_dir {dir}]
  *    [--tz_version {version}]
- *    [--start_year start]
- *    [--until_year until]
+ *    --start_year start
+ *    --until_year until
+ *    --epoch_year year
  *    < zones.txt
  *    > validation_data.json
  */
@@ -56,12 +57,15 @@ struct TestItem {
   char type; //'A', 'B', 'S', 'T' or 'Y'
 };
 
-/** Difference between Unix epoch (1970-01-1) and AceTime Epoch (2000-01-01). */
-const long SECONDS_SINCE_UNIX_EPOCH = 946684800;
+/**
+ * Difference between Unix epoch (1970-01-01) and AceTime epoch (2000-01-01).
+ */
+long secondsToAceTimeEpochFromUnixEpoch = 946684800;
 
 // Command line arguments
 int startYear = 2000;
-int untilYear = 2050;
+int untilYear = 2100;
+int epochYear = 2050;
 
 /**
  * Convert a zoned_time<> (which is an aggregation of time_zone and sys_time<>,
@@ -108,8 +112,10 @@ TestItem toTestItem(const time_zone& tz, sys_seconds st, char type) {
   zoned_time<seconds> zdt = make_zoned(&tz, st);
   local_time<seconds> lt = zdt.get_local_time();
   DateTime dateTime = toDateTime(lt);
+  long epochSeconds = (long) unixSeconds.count()
+      - secondsToAceTimeEpochFromUnixEpoch;
   return TestItem{
-      unixSeconds.count() - SECONDS_SINCE_UNIX_EPOCH,
+      epochSeconds,
       (int)info.offset.count(),
       (int)info.save.count() * 60,
       info.abbrev,
@@ -297,6 +303,7 @@ void printJson(const TestData& testData) {
   string indent0 = indentUnit;
   printf("%s\"start_year\": %d,\n", indent0.c_str(), startYear);
   printf("%s\"until_year\": %d,\n", indent0.c_str(), untilYear);
+  printf("%s\"epoch_year\": %d,\n", indent0.c_str(), epochYear);
   printf("%s\"source\": \"Hinnant Date\",\n", indent0.c_str());
   printf("%s\"version\": \"%s\",\n", indent0.c_str(), version.c_str());
   printf("%s\"tz_version\": \"%s\",\n", indent0.c_str(), tzVersion.c_str());
@@ -350,7 +357,7 @@ void printJson(const TestData& testData) {
 void usageAndExit() {
   fprintf(stderr,
     "Usage: generate_data [--install_dir {dir}] [--tz_version {version}]\n"
-    "   [--start_year start] [--until_year until]\n"
+    "   --start_year start --until_year until --epoch_year year\n"
     "   < zones.txt\n");
   exit(1);
 }
@@ -366,8 +373,9 @@ bool argEquals(const char* s, const char* t) {
 
 int main(int argc, const char* const* argv) {
   // Parse command line flags.
-  string start = "2000";
-  string until = "2050";
+  string startYearStr = "";
+  string untilYearStr = "";
+  string epochYearStr = "";
   string tzVersion = "";
   string installDir = "";
 
@@ -376,11 +384,15 @@ int main(int argc, const char* const* argv) {
     if (argEquals(argv[0], "--start_year")) {
       shift(argc, argv);
       if (argc == 0) usageAndExit();
-      start = argv[0];
+      startYearStr = argv[0];
     } else if (argEquals(argv[0], "--until_year")) {
       shift(argc, argv);
       if (argc == 0) usageAndExit();
-      until = argv[0];
+      untilYearStr = argv[0];
+    } else if (argEquals(argv[0], "--epoch_year")) {
+      shift(argc, argv);
+      if (argc == 0) usageAndExit();
+      epochYearStr = argv[0];
     } else if (argEquals(argv[0], "--tz_version")) {
       shift(argc, argv);
       if (argc == 0) usageAndExit();
@@ -401,18 +413,32 @@ int main(int argc, const char* const* argv) {
     shift(argc, argv);
   }
 
-/*
-  if (tzVersion.empty()) {
-    fprintf(stderr, "Must give --tz_version flag for Hinnant Date'\n");
+  // Following commented out because tzVersion can be empty if using a tagless
+  // branch for the TZDB.
+  // if (tzVersion.empty()) {
+  //   fprintf(stderr, "Must give --tz_version flag for Hinnant Date'\n");
+  //   usageAndExit();
+  // }
+
+  if (startYearStr.empty()) {
+    fprintf(stderr, "Flag required: --start_year\n");
     usageAndExit();
   }
-*/
+  if (untilYearStr.empty()) {
+    fprintf(stderr, "Flag required: --until_year\n");
+    usageAndExit();
+  }
+  if (epochYearStr.empty()) {
+    fprintf(stderr, "Flag required: --epoch_year\n");
+    usageAndExit();
+  }
 
-  startYear = atoi(start.c_str());
-  untilYear = atoi(until.c_str());
+  startYear = atoi(startYearStr.c_str());
+  untilYear = atoi(untilYearStr.c_str());
+  epochYear = atoi(epochYearStr.c_str());
 
   // Set the install directory if specified. Otherwise the default is
-  // ~/Downloads/tzdata on a Linux/MacOS machine. See
+  // ~/Downloads/tzdata on a Linux or MacOS machine. See
   // https://howardhinnant.github.io/date/tz.html#Installation.
   if (! installDir.empty()) {
     set_install(installDir);
@@ -432,6 +458,15 @@ int main(int argc, const char* const* argv) {
       exit(1);
     }
   }
+
+  // Calculate the number of seconds from Unix epoch to the AceTime epoch.
+  // Why is this calculation so darned difficult in C++? See
+  // https://stackoverflow.com/questions/67829275
+  auto aceTimeEpoch = sys_days(year(epochYear)/1/1);
+  secondsToAceTimeEpochFromUnixEpoch =
+      86400 * (long) aceTimeEpoch.time_since_epoch().count();
+  fprintf(stderr, "secondsToAceTimeEpochFromUnixEpoch = %ld\n",
+    secondsToAceTimeEpochFromUnixEpoch);
 
   // Install the TZ database. Caution: If the source directory is pointed to
   // the raw https://github.com/eggert/tz/ repo, it is not in the form that is

@@ -4,7 +4,7 @@
 #include <acetimec.h>
 #include "sampling.h"
 
-static void create_test_item_from_epoch_seconds(
+static int8_t create_test_item_from_epoch_seconds(
     struct TestItem *ti,
     struct AtcZoneProcessing *processing,
     const struct AtcZoneInfo *zone_info,
@@ -12,17 +12,12 @@ static void create_test_item_from_epoch_seconds(
     char type)
 {
   struct AtcZonedDateTime zdt;
-  atc_zoned_date_time_from_epoch_seconds(
+  int8_t err = atc_zoned_date_time_from_epoch_seconds(
       processing,
       zone_info,
       epoch_seconds,
       &zdt);
-  struct AtcZonedExtra zet;
-  atc_zoned_extra_from_epoch_seconds(
-      processing,
-      zone_info,
-      epoch_seconds,
-      &zet);
+  if (err) return err;
 
   ti->epoch_seconds = epoch_seconds;
   ti->year = zdt.year;
@@ -33,13 +28,23 @@ static void create_test_item_from_epoch_seconds(
   ti->second = zdt.second;
   ti->type = type;
 
+  struct AtcZonedExtra zet;
+  err = atc_zoned_extra_from_epoch_seconds(
+      processing,
+      zone_info,
+      epoch_seconds,
+      &zet);
+  if (err) return err;
+
   strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
   ti->abbrev[kAtcAbbrevSize - 1] = '\0';
   ti->dst_offset = 60 * (zet.dst_offset_minutes);
   ti->utc_offset = 60 * (zet.std_offset_minutes + zet.dst_offset_minutes);
+
+  return kAtcErrOk;
 }
 
-static void add_test_item_from_epoch_seconds(
+static int8_t add_test_item_from_epoch_seconds(
     struct TestDataEntry *test_entry,
     const char *zone_name,
     struct AtcZoneProcessing *processing,
@@ -49,8 +54,14 @@ static void add_test_item_from_epoch_seconds(
 {
   (void) zone_name;
   struct TestItem *ti = test_data_entry_next_item(test_entry);
-  create_test_item_from_epoch_seconds(
+  int8_t err = create_test_item_from_epoch_seconds(
       ti, processing, zone_info, epoch_seconds, type);
+  if (err) {
+    test_data_entry_pushback_item(test_entry);
+    return err;
+  }
+
+  return kAtcErrOk;
 }
 
 void add_transitions(
@@ -76,36 +87,38 @@ void add_transitions(
       // happen because we generate transitions over a 14-month interval
       // spanning the current year.
       struct AtcDateTuple *start = &((*t)->start_dt);
-      if (start->year_tiny + kAtcEpochYear != year) continue;
+      if (start->year != year) continue;
 
       // Skip if the UTC year bleeds under or over the boundaries.
-      if ((*t)->transition_time_u.year_tiny + kAtcEpochYear < start_year) {
+      if ((*t)->transition_time_u.year < start_year) {
         continue;
       }
-      if ((*t)->transition_time_u.year_tiny + kAtcEpochYear >= until_year) {
+      if ((*t)->transition_time_u.year >= until_year) {
         continue;
       }
 
       atc_time_t epoch_seconds = (*t)->start_epoch_seconds;
 
       // Add a test data just before the transition
-      add_test_item_from_epoch_seconds(
+      int8_t err = add_test_item_from_epoch_seconds(
           test_entry,
           zone_name,
           processing,
           zone_info,
           epoch_seconds - 1,
           'A');
+      if (err) continue;
 
       // Add a test data at the transition itself (which will
       // normally be shifted forward or backwards).
-      add_test_item_from_epoch_seconds(
+      err = add_test_item_from_epoch_seconds(
           test_entry,
           zone_name,
           processing,
           zone_info,
           epoch_seconds,
           'B');
+      if (err) continue;
     }
   }
 }
