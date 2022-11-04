@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h> // realloarray()
 #include "test_data.h"
 
@@ -22,6 +23,10 @@ void test_data_entry_resize_items(struct TestDataEntry *entry, int newsize)
   struct TestItem *newitems = realloc(
       entry->items,
       sizeof(struct TestItem) * newsize);
+  if (newitems == NULL) {
+    fprintf(stderr, "test_data_entry_resize_items(): realloc failure\n");
+    exit(1);
+  }
   entry->items = newitems;
   entry->capacity = newsize;
 }
@@ -33,6 +38,13 @@ struct TestItem *test_data_entry_next_item(struct TestDataEntry *entry)
   }
   return &entry->items[entry->num_items++];
 }
+
+void test_data_entry_pushback_item(struct TestDataEntry *entry)
+{
+  entry->num_items--;
+}
+
+//-----------------------------------------------------------------------------
 
 void test_data_init(struct TestData *data)
 {
@@ -59,6 +71,10 @@ void test_data_resize_entries(struct TestData *data, int newsize)
   struct TestDataEntry *newentries = realloc(
       data->entries,
       sizeof(struct TestDataEntry) * newsize);
+  if (newentries == NULL) {
+    fprintf(stderr, "test_data_entry_resize_entries(): realloc failure\n");
+    exit(1);
+  }
   data->entries = newentries;
   data->capacity = newsize;
 }
@@ -71,4 +87,9 @@ struct TestDataEntry *test_data_next_entry(struct TestData *data)
   struct TestDataEntry *entry = &data->entries[data->num_entries++];
   test_data_entry_init(entry);
   return entry;
+}
+
+void test_data_pushback_entry(struct TestData *data)
+{
+  data->num_entries--;
 }

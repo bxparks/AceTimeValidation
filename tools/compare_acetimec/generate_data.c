@@ -5,8 +5,9 @@
  *
  * Usage:
  * $ ./generate_data.out
- *    [--start_year start]
- *    [--until_year until]
+ *    --start_year start
+ *    --until_year until
+ *    --epoch_year year
  *    < zones.txt
  *    > validation_data.json
  */
@@ -21,7 +22,8 @@
 
 // Command line arguments
 int16_t start_year = 2000;
-int16_t until_year = 2050;
+int16_t until_year = 2100;
+int16_t epoch_year = 2050;
 
 bool is_registry_sorted;
 
@@ -62,6 +64,7 @@ void print_json(const struct TestData *test_data) {
   printf("{\n");
   printf("%s\"start_year\": %d,\n", indent0, start_year);
   printf("%s\"until_year\": %d,\n", indent0, until_year);
+  printf("%s\"epoch_year\": %d,\n", indent0, epoch_year);
   printf("%s\"source\": \"AceTimeC\",\n", indent0);
   printf("%s\"version\": \"%s\",\n", indent0, ACE_TIME_C_VERSION_STRING);
   printf("%s\"tz_version\": \"%s\",\n", indent0, kAtcTzDatabaseVersion);
@@ -175,7 +178,7 @@ int8_t read_and_process_zone(
 void usage_and_exit() {
   fprintf(stderr,
     "Usage: generate_data [--install_dir {dir}]\n"
-    "   [--start_year start] [--until_year until]\n"
+    "   --start_year start --until_year until --epoch_year year\n"
     "   < zones.txt\n");
   exit(1);
 }
@@ -192,8 +195,9 @@ static bool argEquals(const char *s, const char *t) {
 
 int main(int argc, const char* const* argv) {
   // Parse command line flags.
-  const char *start = "2000";
-  const char *until = "2050";
+  const char *start = "";
+  const char *until = "";
+  const char *epoch = "";
 
   SHIFT(argc, argv);
   while (argc > 0) {
@@ -205,6 +209,10 @@ int main(int argc, const char* const* argv) {
       SHIFT(argc, argv);
       if (argc == 0) usage_and_exit();
       until = argv[0];
+    } else if (argEquals(argv[0], "--epoch_year")) {
+      SHIFT(argc, argv);
+      if (argc == 0) usage_and_exit();
+      epoch = argv[0];
     } else if (argEquals(argv[0], "--")) {
       SHIFT(argc, argv);
       break;
@@ -217,10 +225,27 @@ int main(int argc, const char* const* argv) {
     SHIFT(argc, argv);
   }
 
+  if (strlen(start) == 0) {
+    fprintf(stderr, "Required flag: --start_year\n");
+    usage_and_exit();
+  }
+  if (strlen(until) == 0) {
+    fprintf(stderr, "Required flag: --until_year\n");
+    usage_and_exit();
+  }
+  if (strlen(epoch) == 0) {
+    fprintf(stderr, "Required flag: --epoch_year\n");
+    usage_and_exit();
+  }
+
   start_year = atoi(start);
   until_year = atoi(until);
+  epoch_year = atoi(epoch);
 
-  // Set up registry
+  // Configure the current epoch year.
+  atc_set_current_epoch_year(epoch_year);
+
+  // Set up registry.
   is_registry_sorted = atc_registrar_is_registry_sorted(
       kAtcZoneAndLinkRegistry,
       kAtcZoneAndLinkRegistrySize);
@@ -229,14 +254,17 @@ int main(int argc, const char* const* argv) {
   struct AtcZoneProcessing processing;
   atc_processing_init(&processing);
 
-  // Process the zones on the STDIN
+  // Process the zones on the STDIN.
   struct TestData test_data;
   test_data_init(&test_data);
   int8_t err = read_and_process_zone(&processing, &test_data);
   if (err) exit(1);
 
+  // Sort test items by epoch seconds, and print the JSON.
   sort_test_data(&test_data);
   print_json(&test_data);
+
+  // Cleanup
   test_data_free(&test_data);
 
   return 0;

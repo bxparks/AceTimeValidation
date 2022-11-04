@@ -65,8 +65,14 @@ void test_data_entry_free(struct TestDataEntry *entry);
 /** Resize the array of items. */
 void test_data_entry_resize_items(struct TestDataEntry *entry, int newsize);
 
-/** Return the next test item if available. */
+/**
+ * Allocate and return the next test item, resizing the TestDataEntry as
+ * needed.
+ */
 struct TestItem *test_data_entry_next_item(struct TestDataEntry *entry);
+
+/** Push back the last unused TestItem. */
+void test_data_entry_pushback_item(struct TestDataEntry *entry);
 
 //-----------------------------------------------------------------------------
 
@@ -79,7 +85,12 @@ void test_data_free(struct TestData *data);
 /** Resize the array of entries. */
 void test_data_resize_entries(struct TestData *data, int newsize);
 
-/** Return the next test data entry. */
+/**
+ * Allocate and return the next test data entry, resizing TestData as needed.
+ */
 struct TestDataEntry *test_data_next_entry(struct TestData *data);
+
+/** Push back the last unused TestDataEntry. */
+void test_data_pushback_entry(struct TestData *data);
 
 #endif
