@@ -45,7 +45,7 @@ library). However, it turned out that the number of timezones supported by the
 `BasicZoneProcessor` so it became infeasible to test the non-overlapping
 timezones.
 
-**Version**: v1.1.3 (2022-10-06, TZDB 2022d)
+**Version**: v1.2.0 (2022-11-04, TZDB 2022f)
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
