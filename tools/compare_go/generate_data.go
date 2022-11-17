@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -24,22 +23,14 @@ const (
 // Generate the validation test data for AceTime using Go Lang.
 //
 // Usage:
+//
 // $ go run generate_data.go [--] [--help]
-//		[--start_year start]
-//  	[--until_year until]
-//		< zones.txt
-//		> validation_data.json
+// [--start_year start]
+// [--until_year until]
+// < zones.txt
+// > validation_data.json
 func main() {
-	_, err := parseArgs()
-	if err != nil {
-		fmt.Println("Error:", err)
-		usage()
-		return
-	}
-	if help {
-		usage()
-		return
-	}
+	parseArgs()
 
 	zones := readZones()
 	testData := processZones(zones)
@@ -52,71 +43,86 @@ func main() {
 // Default values of various flags.
 var (
 	startYear        = 2000
-	untilYear        = 2050
-	help             = false
+	untilYear        = 2100
 	samplingInterval = 22 // hours
 )
 
 func usage() {
-	fmt.Println("Usage: go run generate_data.go [--] [--help]")
-	fmt.Println("  [--start_year start] [--until_year until]")
-	fmt.Println("  [--sampling_interval hours]")
-	fmt.Println("  < zones.txt > validation_data.json")
+	fmt.Println(`Usage: go run generate_data.go [--] [--help]
+        [--sampling_interval hours] [--start_year start] [--until_year until]
+        < zones.txt > validation_data.json`)
 }
 
 // ParseArgs() is a function that parses the command line arguments in os.Args,
 // looking for optional long flags (beginning with two dashes), optional short
 // flags (beginning with one dash), and positional arguments at the end. Returns
-// a slice of the remaining positional arguments (which may be an empty slice)
-// and an err object.
-func parseArgs() ([]string, error) {
-	args := os.Args
-	argc := len(args)
+// a slice of the remaining positional arguments which maybe empty slice.
+//
+// There is probably std library module that already handles command line
+// argument parsing. I rolled my own to help me learn the Go lang.
+func parseArgs() []string {
+	// Shift out the name of the command in Args[0]
+	args := os.Args[1:]
+
+	var err error
 
 	// Loop through each command line argument, looking for optional flags,
 	// and terminating if a positional argument is found.
-	i := 1
-	var err error
-	for ; i < argc; i++ {
-		if args[i] == "--start_year" {
-			i++
-			if i >= argc {
-				return args[i:], errors.New("--start_year has no value")
+	for len(args) > 0 {
+		s := args[0]
+		if s == "--start_year" {
+			args = args[1:]
+			if len(args) == 0 {
+				fmt.Println("--start_year must have an argument")
+				os.Exit(1)
 			}
-			startYear, err = strconv.Atoi(args[i])
+			s = args[0]
+			startYear, err = strconv.Atoi(s)
 			if err != nil {
-				return args[i:], errors.New("--start_year have integer value")
+				fmt.Println("--start_year must have an integer value")
+				os.Exit(1)
 			}
-		} else if args[i] == "--until_year" {
-			i++
-			if i >= argc {
-				return args[i:], errors.New("--start_year has no value")
+		} else if s == "--until_year" {
+			args = args[1:]
+			if len(args) == 0 {
+				fmt.Println("--until_year must have an argument")
+				os.Exit(1)
 			}
-			untilYear, err = strconv.Atoi(args[i])
+			s = args[0]
+			untilYear, err = strconv.Atoi(s)
 			if err != nil {
-				return args[i:], errors.New("--until_year have integer value")
+				fmt.Println("--until_year must have an integer value")
+				os.Exit(1)
 			}
-		} else if args[i] == "--sampling_interval" {
-			i++
-			if i >= argc {
-				return args[i:], errors.New("--sampling_interval has no value")
+		} else if s == "--sampling_interval" {
+			args = args[1:]
+			if len(args) == 0 {
+				fmt.Println("--sampling_interval must have an argument")
+				os.Exit(1)
 			}
-			untilYear, err = strconv.Atoi(args[i])
+			s = args[0]
+			samplingInterval, err = strconv.Atoi(s)
 			if err != nil {
-				return args[i:], errors.New("--until_year have integer value")
+				fmt.Println("--sampling_interval must have an integer value")
+				os.Exit(1)
 			}
-		} else if args[i] == "--help" {
-			help = true
-			return args[i:], nil
-		} else if args[i] == "--" {
-			i++
+		} else if s == "--help" {
+			usage()
+			os.Exit(0)
+		} else if s == "--" {
+			args = args[1:]
 			break
-		} else if len(args[i]) > 0 && args[i][0] == '-' {
-			return args[i:], errors.New(fmt.Sprintf("Invalid flag '%s'", args[i]))
+		} else if len(s) > 0 && s[0] == '-' {
+			fmt.Printf("Invalid flag '%s'\n", s)
+			os.Exit(1)
+		} else {
+			break
 		}
+
+		args = args[1:]
 	}
 
-	return args[i:], nil
+	return args
 }
 
 //-----------------------------------------------------------------------------
