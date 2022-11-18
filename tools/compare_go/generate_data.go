@@ -12,12 +12,6 @@ import (
 	"time"
 )
 
-const (
-	// Number of seconds from Unix Epoch (1970-01-01 00:00:00) to AceTime Epoch
-	// (2000-01-01 00:00:00)
-	secondsSinceUnixEpoch = 946684800
-)
-
 //-----------------------------------------------------------------------------
 
 // Generate the validation test data for AceTime using Go Lang.
@@ -27,10 +21,13 @@ const (
 // $ go run generate_data.go [--] [--help]
 // [--start_year start]
 // [--until_year until]
+// [--epoch_year year]
 // < zones.txt
 // > validation_data.json
 func main() {
 	parseArgs()
+	dt := time.Date(epochYear, 1, 1, 0, 0, 0, 0, time.UTC)
+	secondsToAceTimeEpochFromUnixEpoch = dt.Unix()
 
 	zones := readZones()
 	testData := processZones(zones)
@@ -44,12 +41,18 @@ func main() {
 var (
 	startYear        = 2000
 	untilYear        = 2100
+	epochYear        = 2050
 	samplingInterval = 22 // hours
+
+	// Number of seconds from Unix Epoch (1970-01-01 00:00:00) to AceTime Epoch
+	// (2050-01-01 00:00:00), configurable using --epoch_year.
+	secondsToAceTimeEpochFromUnixEpoch int64
 )
 
 func usage() {
 	fmt.Println(`Usage: go run generate_data.go [--] [--help]
         [--sampling_interval hours] [--start_year start] [--until_year until]
+				[--epoch_year year]
         < zones.txt > validation_data.json`)
 }
 
@@ -94,6 +97,18 @@ func parseArgs() []string {
 				fmt.Println("--until_year must have an integer value")
 				os.Exit(1)
 			}
+		} else if s == "--epoch_year" {
+			args = args[1:]
+			if len(args) == 0 {
+				fmt.Println("--epoch_year must have an argument")
+				os.Exit(1)
+			}
+			s = args[0]
+			epochYear, err = strconv.Atoi(s)
+			if err != nil {
+				fmt.Println("--epoch_year must have an integer value")
+				os.Exit(1)
+			}
 		} else if s == "--sampling_interval" {
 			args = args[1:]
 			if len(args) == 0 {
@@ -131,6 +146,7 @@ func parseArgs() []string {
 type ValidationDataType struct {
 	StartYear      int          `json:"start_year"`
 	UntilYear      int          `json:"until_year"`
+	EpochYear      int          `json:"epoch_year"`
 	Source         string       `json:"source"`
 	Version        string       `json:"version"`
 	TzVersion      string       `json:"tz_version"`
@@ -261,7 +277,8 @@ func addSamples(
 
 func createTestItem(t time.Time, itemType string) TestItemType {
 	unixSeconds := t.Unix()
-	epochSeconds := int(unixSeconds - secondsSinceUnixEpoch)
+	epochSeconds := int(unixSeconds - secondsToAceTimeEpochFromUnixEpoch)
+
 	// seconds
 	totalOffset := UtcOffsetMinutes(t) * 60
 	// Go lang time package does not provide the DST offset.
@@ -388,6 +405,7 @@ func createValidationData(testData TestDataType) ValidationDataType {
 	return ValidationDataType{
 		StartYear:      startYear,
 		UntilYear:      untilYear,
+		EpochYear:      epochYear,
 		Source:         "go",
 		Version:        "",
 		TzVersion:      "",
