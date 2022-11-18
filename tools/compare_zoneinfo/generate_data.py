@@ -27,40 +27,31 @@ from typing import List
 from tdgenerator import TestDataGenerator  # noqa
 
 
-class Generator:
-    def __init__(
-        self,
-        invocation: str,
-        start_year: int,
-        until_year: int,
-        epoch_year: int,
-        sampling_interval: int,
-    ):
-        self.invocation = invocation
-        self.start_year = start_year
-        self.until_year = until_year
-        self.epoch_year = epoch_year
-        self.sampling_interval = sampling_interval
+def generate_data(
+    invocation: str,
+    start_year: int,
+    until_year: int,
+    epoch_year: int,
+    sampling_interval: int,
+) -> None:
+    """Generate the validation_data JSON."""
 
-    def generate(self) -> None:
-        """Generate the validation_data JSON."""
+    # Read the zones from the STDIN
+    zones = read_zones()
 
-        # Read the zones from the STDIN
-        zones = read_zones()
+    # Generate the test data set.
+    test_generator = TestDataGenerator(
+        start_year=start_year,
+        until_year=until_year,
+        epoch_year=epoch_year,
+        sampling_interval=sampling_interval,
+    )
+    test_generator.create_test_data(zones)
+    validation_data = test_generator.get_validation_data()
 
-        # Generate the test data set.
-        test_generator = TestDataGenerator(
-            start_year=self.start_year,
-            until_year=self.until_year,
-            epoch_year=self.epoch_year,
-            sampling_interval=self.sampling_interval,
-        )
-        test_generator.create_test_data(zones)
-        validation_data = test_generator.get_validation_data()
-
-        # Write the JSON object to STDOUT
-        json.dump(validation_data, sys.stdout, indent=2)
-        print()  # add terminating newline
+    # Write the JSON object to STDOUT
+    json.dump(validation_data, sys.stdout, indent=2)
+    print()  # add terminating newline
 
 
 def read_zones() -> List[str]:
@@ -108,14 +99,13 @@ def main() -> None:
 
     invocation = ' '.join(sys.argv)
 
-    generator = Generator(
+    generate_data(
         invocation=invocation,
         start_year=args.start_year,
         until_year=args.until_year,
         epoch_year=args.epoch_year,
         sampling_interval=args.sampling_interval,
     )
-    generator.generate()
 
 
 if __name__ == '__main__':
