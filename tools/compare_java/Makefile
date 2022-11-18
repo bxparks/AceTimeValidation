@@ -13,7 +13,8 @@ classes: $(CLASSES)
 validation_data.json: $(CLASSES) small.txt
 	java -cp . GenerateData \
 		--start_year 2000 \
-		--until_year 2038 \
+		--until_year 2100 \
+		--epoch_year 2050 \
 		< small.txt \
 		> validation_data.json
 

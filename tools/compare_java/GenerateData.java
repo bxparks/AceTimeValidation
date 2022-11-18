@@ -37,7 +37,8 @@ import java.util.TreeSet;
  * <pre>
  * {@code
  * $ javac GenerateData.java
- * $ java GenerateData [--start_year start] [--until_year until] [--validate_dst] [--print_zones]
+ * $ java GenerateData [--start_year start] [--until_year until] 
+ *      [--epoch_year year] [--validate_dst] [--print_zones]
  *      < zones.txt
  *      > validation_data.json
  * }
@@ -54,8 +55,8 @@ import java.util.TreeSet;
  */
 public class GenerateData {
   // Number of seconds from Unix epoch (1970-01-01T00:00:00Z) to AceTime epoch
-  // (2000-01-01T00:00:00Z).
-  private static final int SECONDS_SINCE_UNIX_EPOCH = 946684800;
+  // (usually 2050-01-01T00:00:00Z). Non-static, will be calculated in the constructor.
+  private static long secondsToAceTimeEpochFromUnixEpoch = 946684800;
 
   public static void main(String[] args) throws IOException {
     String invocation = "java GenerateData " + String.join(" ", args);
@@ -67,7 +68,8 @@ public class GenerateData {
       usageAndExit();
     }
     String start = "2000";
-    String until = "2050";
+    String until = "2100";
+    String epoch = "2050";
     boolean printZones = false;
     while (argc > 0) {
       String arg0 = args[argi];
@@ -77,6 +79,9 @@ public class GenerateData {
       } else if ("--until_year".equals(arg0)) {
         {argc--; argi++; arg0 = args[argi];} // shift-left
         until = arg0;
+      } else if ("--epoch_year".equals(arg0)) {
+        {argc--; argi++; arg0 = args[argi];} // shift-left
+        epoch = arg0;
       } else if ("--print_zones".equals(arg0)) {
         printZones = true;
       } else if ("--".equals(arg0)) {
@@ -97,10 +102,11 @@ public class GenerateData {
       // Should check for NumberFormatException but too much overhead for this simple tool.
       int startYear = Integer.parseInt(start);
       int untilYear = Integer.parseInt(until);
+      int epochYear = Integer.parseInt(epoch);
 
       List<String> zones = readZones();
       GenerateData generator = new GenerateData(
-          invocation, startYear, untilYear);
+          invocation, startYear, untilYear, epochYear);
       Map<String, List<TestItem>> testData = generator.createTestData(zones);
       generator.printJson(testData);
     }
@@ -159,10 +165,14 @@ public class GenerateData {
   }
 
   /** Constructor. */
-  private GenerateData(String invocation, int startYear, int untilYear) {
+  private GenerateData(String invocation, int startYear, int untilYear, int epochYear) {
     this.invocation = invocation;
     this.startYear = startYear;
     this.untilYear = untilYear;
+    this.epochYear = epochYear;
+
+    LocalDateTime ldt = LocalDateTime.of(epochYear, 1, 1, 0, 0, 0);
+    secondsToAceTimeEpochFromUnixEpoch = ldt.toEpochSecond(ZoneOffset.UTC);
   }
 
   /**
@@ -283,7 +293,7 @@ public class GenerateData {
     String abbrev = zoneId.getDisplayName(TextStyle.SHORT_STANDALONE, Locale.US);
 
     TestItem item = new TestItem();
-    item.epochSeconds = (int) (instant.getEpochSecond() - SECONDS_SINCE_UNIX_EPOCH);
+    item.epochSeconds = (int) (instant.getEpochSecond() - secondsToAceTimeEpochFromUnixEpoch);
     item.utcOffset = offset.getTotalSeconds();
     item.dstOffset = (int) dst.getSeconds();
     item.year = dateTime.getYear();
@@ -318,6 +328,7 @@ public class GenerateData {
       String indent0 = indentUnit;
       writer.printf("%s\"start_year\": %s,\n", indent0, startYear);
       writer.printf("%s\"until_year\": %s,\n", indent0, untilYear);
+      writer.printf("%s\"epoch_year\": %s,\n", indent0, epochYear);
       writer.printf("%s\"source\": \"Java11/java.time\",\n", indent0);
       writer.printf("%s\"version\": \"%s\",\n", indent0, version);
       writer.printf("%s\"tz_version\": \"%s\",\n", indent0, tzDbVersion);
@@ -377,6 +388,7 @@ public class GenerateData {
   private final String invocation;
   private final int startYear;
   private final int untilYear;
+  private final int epochYear;
 }
 
 class TestItem {
