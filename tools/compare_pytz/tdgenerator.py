@@ -12,7 +12,7 @@ module is truly dependent on only the 'pytz' module.
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import pytz
 from typing import Any, Tuple, List, Dict, Optional
 
@@ -20,20 +20,21 @@ from acetimetools.data_types.validation_types import (
     TestItem, TestData, ValidationData
 )
 
-# Number of seconds from Unix Epoch (1970-01-01 00:00:00) to AceTime Epoch
-# (2000-01-01 00:00:00)
-SECONDS_SINCE_UNIX_EPOCH = 946684800
-
 # The [start, until) time interval used to search for DST transitions,
 # and flag that is True if ONLY the DST changed.
 TransitionTimes = Tuple[datetime, datetime, bool]
 
 
 class TestDataGenerator():
+    # Number of seconds from Unix Epoch (1970-01-01 00:00:00) to AceTime Epoch
+    # (2050-01-01 00:00:00)
+    seconds_to_ace_time_epoch_from_unix_epoch = 946684800
+
     def __init__(
         self,
         start_year: int,
         until_year: int,
+        epoch_year: int,
         sampling_interval: int,
         detect_dst_transition: bool = True,
     ):
@@ -46,8 +47,13 @@ class TestDataGenerator():
         """
         self.start_year = start_year
         self.until_year = until_year
+        self.epoch_year = epoch_year
         self.sampling_interval = timedelta(hours=sampling_interval)
         self.detect_dst_transition = detect_dst_transition
+
+        dt = datetime(epoch_year, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+        TestDataGenerator.seconds_to_ace_time_epoch_from_unix_epoch = \
+            int(dt.timestamp())
 
     def create_test_data(self, zones: List[str]) -> None:
         test_data: TestData = {}
@@ -61,6 +67,7 @@ class TestDataGenerator():
         return {
             'start_year': self.start_year,
             'until_year': self.until_year,
+            'epoch_year': self.epoch_year,
             'source': 'pytz',
             'version': str(pytz.__version__),  # type: ignore
             'tz_version': 'unknown',
@@ -217,7 +224,10 @@ class TestDataGenerator():
     def _create_test_item(dt: datetime, tag: str) -> TestItem:
         """Create a TestItem from a datetime."""
         unix_seconds = int(dt.timestamp())
-        epoch_seconds = unix_seconds - SECONDS_SINCE_UNIX_EPOCH
+        epoch_seconds = (
+            unix_seconds
+            - TestDataGenerator.seconds_to_ace_time_epoch_from_unix_epoch
+        )
         total_offset = int(dt.utcoffset().total_seconds())  # type: ignore
         dst_offset = int(dt.dst().total_seconds())  # type: ignore
 
