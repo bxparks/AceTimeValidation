@@ -27,11 +27,6 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 
 # Define the scope of the test data.
 #
-# dateutil (2.8.1) intially ships with 2019c, but when the 'tzdata' on
-# Ubuntu 20.04 is updated to 2020a, it uses the new version instead of the
-# internal version. I wish there was a way to peg the tzdata version
-# used by dateutil to make unit testing more predictable.
-#
 # dateutil works until 2037, then fails the DST offsets in 2037 for the
 # following zones:
 #	Australia_Adelaide failed.
@@ -43,9 +38,12 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 #	Europe_Dublin failed.
 #	Pacific_Auckland failed.
 SCOPE := basic
-TZ_VERSION := 2022d
-START_YEAR := 2000
-UNTIL_YEAR := 2037
+TZ_VERSION := 2022f
+ACE_TIME_EPOCH_YEAR := 2050
+DB_START_YEAR := 2000
+DB_UNTIL_YEAR := 10000
+VAL_START_YEAR := 2000
+VAL_UNTIL_YEAR := 2037
 
 # Location of various tools.
 VALIDATION_TOOLS := $(abspath ../tools)
@@ -68,8 +66,9 @@ validation_data.h: validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt
 	$(VALIDATION_TOOLS)/compare_dateutil/generate_data.py \
-		--start_year $(START_YEAR) \
-		--until_year $(UNTIL_YEAR) \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
@@ -98,8 +97,9 @@ $(DB_NAMESPACE)/zone_infos.h: tzfiles
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
-		--start_year $(START_YEAR) \
-		--until_year $(UNTIL_YEAR)
+		--generate_int16_year \
+		--start_year $(DB_START_YEAR) \
+		--until_year $(DB_UNTIL_YEAR)
 
 # Extract and copy the tzfiles into a local directory to allow parallel
 # execution of validation/*Test makefiles.
