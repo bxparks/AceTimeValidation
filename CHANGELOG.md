@@ -1,6 +1,7 @@
 # Changelog
 
 * Unreleased
+* v1.3.0 (2022-12-04, TZDB 2022g)
     * Add support for AceTime v2 for additional 3rd party timezone libraries:
         * Add `--epoch_year` flags to:
             * `compare_dateutil`, `compare_go`, `compare_java`, `compare_pytz`,
@@ -8,7 +9,7 @@
         * Pass `--generate_int16_year` to `tzcompiler.py`:
             * `*DateUtilTest`, `*GoTest`, `*JavaTest`, `*PytzTest`,
               `*ZoneInfoTest`
-        * Upgrade to TZDB 2022f
+    * Upgrade to TZDB 2022g
 * v1.2.0 (2022-11-04, TZDB 2022f)
     * Support AceTime v2.0.0
         * Add `--epoch_year` flags
