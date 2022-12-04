@@ -465,8 +465,6 @@ int main(int argc, const char* const* argv) {
   auto aceTimeEpoch = sys_days(year(epochYear)/1/1);
   secondsToAceTimeEpochFromUnixEpoch =
       86400 * (long) aceTimeEpoch.time_since_epoch().count();
-  fprintf(stderr, "secondsToAceTimeEpochFromUnixEpoch = %ld\n",
-    secondsToAceTimeEpochFromUnixEpoch);
 
   // Install the TZ database. Caution: If the source directory is pointed to
   // the raw https://github.com/eggert/tz/ repo, it is not in the form that is
