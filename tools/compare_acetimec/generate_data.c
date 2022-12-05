@@ -25,7 +25,7 @@ int16_t start_year = 2000;
 int16_t until_year = 2100;
 int16_t epoch_year = 2050;
 
-bool is_registry_sorted;
+AtcZoneRegistrar registrar;
 
 //-----------------------------------------------------------------------------
 
@@ -113,10 +113,7 @@ int8_t process_zone(
     const char *zone_name)
 {
   const struct AtcZoneInfo *zone_info = atc_registrar_find_by_name(
-      kAtcZoneAndLinkRegistry,
-      kAtcZoneAndLinkRegistrySize,
-      zone_name,
-      is_registry_sorted);
+      &registrar, zone_name);
 
   if (zone_info == NULL) {
     fprintf(stderr, "ERROR: Zone %s: not found\n", zone_name);
@@ -246,7 +243,8 @@ int main(int argc, const char* const* argv) {
   atc_set_current_epoch_year(epoch_year);
 
   // Set up registry.
-  is_registry_sorted = atc_registrar_is_registry_sorted(
+  atc_registrar_init(
+      &registrar,
       kAtcZoneAndLinkRegistry,
       kAtcZoneAndLinkRegistrySize);
 
