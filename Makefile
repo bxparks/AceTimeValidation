@@ -48,7 +48,7 @@ runvalidations:
 	set -e; \
 	for i in *HinnantDateTest/Makefile *AcetzTest/Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
-		$$(dirname $$i)/$$(dirname $$i).out; \
+		$(MAKE) -C $$(dirname $$i) run; \
 	done
 
 # Build *all* validation tests in parallel for reduced waiting time. Sometimes,
@@ -77,7 +77,7 @@ runallvalidations:
 	set -e; \
 	for i in */Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
-		$$(dirname $$i)/$$(dirname $$i).out; \
+		$(MAKE) -C $$(dirname $$i) run; \
 	done
 
 # Clean all validation tests.
