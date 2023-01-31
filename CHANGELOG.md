@@ -1,6 +1,12 @@
 # Changelog
 
 * Unreleased
+    * `*Test/Makefile`
+        * Upgrade to new `tzcompiler.sh` which requires explicit `--tzrepo`
+          flag, and performs automatic clean up of temporary `tzfiles/`
+          directory.
+    * `compare_acetimec`
+        * Upgrade to AceTimeC v0.6.0 which adds the `AtcTimeZone` struct.
 * v1.3.0 (2022-12-04, TZDB 2022g)
     * Add support for AceTime v2 for additional 3rd party timezone libraries:
         * Add `--epoch_year` flags to:

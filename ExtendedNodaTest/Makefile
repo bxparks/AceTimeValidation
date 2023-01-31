@@ -33,7 +33,8 @@ TZ_VERSION := 2022d
 START_YEAR := 1974
 UNTIL_YEAR := 2050
 
-# Location of various compare_xxx tools.
+# Location of TZDB and various tools.
+TZ_REPO := $(abspath ../../tz)
 VALIDATION_TOOLS := $(abspath ../tools)
 ACE_TIME_TOOLS := $(abspath ../../AceTimeTools)
 
@@ -87,22 +88,17 @@ $(DB_NAMESPACE)/zone_registry.cpp: $(DB_NAMESPACE)/zone_infos.h
 $(DB_NAMESPACE)/zones.txt: $(DB_NAMESPACE)/zone_infos.h
 
 # Generate the zones.txt and zonedbx files under the $(DB_NAMESPACE) directory.
-$(DB_NAMESPACE)/zone_infos.h: tzfiles
+$(DB_NAMESPACE)/zone_infos.h:
 	mkdir -p $(DB_NAMESPACE); \
 	cd $(DB_NAMESPACE); \
-	$(ACE_TIME_TOOLS)/src/acetimetools/tzcompiler.py \
-		--input_dir ../tzfiles \
-		--tz_version $(TZ_VERSION) \
+	$(ACE_TIME_TOOLS)/tzcompiler.sh \
+		--tzrepo $(TZ_REPO) \
+		--tag $(TZ_VERSION) \
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
 		--start_year $(START_YEAR) \
 		--until_year $(UNTIL_YEAR)
 
-# Extract and copy the tzfiles into a local directory to allow parallel
-# execution of validation/*Test makefiles.
-tzfiles:
-	$(ACE_TIME_TOOLS)/copytz.sh --tag $(TZ_VERSION) ../../tz tzfiles
-
 more_clean:
-	rm -rf $(DB_NAMESPACE) tzfiles
+	rm -rf $(DB_NAMESPACE)
