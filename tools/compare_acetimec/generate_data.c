@@ -108,31 +108,29 @@ void print_json(const struct TestData *test_data) {
 
 /** Insert TestItems for the given 'zone_name' into test_data. */
 int8_t process_zone(
-    struct AtcZoneProcessing *processing,
+    struct AtcZoneProcessor *processor,
     struct TestData *test_data,
     const char *zone_name)
 {
   const struct AtcZoneInfo *zone_info = atc_registrar_find_by_name(
       &registrar, zone_name);
-
   if (zone_info == NULL) {
     fprintf(stderr, "ERROR: Zone %s: not found\n", zone_name);
     return kAtcErrGeneric;
   }
 
+  AtcTimeZone tz = {zone_info, processor};
   struct TestDataEntry *entry = test_data_next_entry(test_data);
   add_transitions(
       entry,
       zone_name,
-      processing,
-      zone_info,
+      &tz,
       start_year,
       until_year);
   add_monthly_samples(
       entry,
       zone_name,
-      processing,
-      zone_info,
+      &tz,
       start_year,
       until_year);
   return kAtcErrOk;
@@ -143,7 +141,7 @@ int8_t process_zone(
  * and comments (starting with '#'), and process each zone, one per line.
  */
 int8_t read_and_process_zone(
-    struct AtcZoneProcessing *processing,
+    struct AtcZoneProcessor *processor,
     struct TestData *test_data)
 {
   char line[MAX_LINE_LENGTH];
@@ -160,9 +158,9 @@ int8_t read_and_process_zone(
     if (strcmp(word, "") == 0) continue;
     if (word[0] == '#') continue;
 
-    int8_t err = process_zone(processing, test_data, word);
+    int8_t err = process_zone(processor, test_data, word);
     if (err) {
-      fprintf(stderr, "Error processing zone '%s'\n", word);
+      fprintf(stderr, "Error processor zone '%s'\n", word);
       return err;
     }
   }
@@ -248,14 +246,14 @@ int main(int argc, const char* const* argv) {
       kAtcZoneAndLinkRegistry,
       kAtcZoneAndLinkRegistrySize);
 
-  // Initialize an AtcZoneProcessing instance.
-  struct AtcZoneProcessing processing;
-  atc_processing_init(&processing);
+  // Initialize an AtcZoneProcessor instance.
+  struct AtcZoneProcessor processor;
+  atc_processor_init(&processor);
 
   // Process the zones on the STDIN.
   struct TestData test_data;
   test_data_init(&test_data);
-  int8_t err = read_and_process_zone(&processing, &test_data);
+  int8_t err = read_and_process_zone(&processor, &test_data);
   if (err) exit(1);
 
   // Sort test items by epoch seconds, and print the JSON.

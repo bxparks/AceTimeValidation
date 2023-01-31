@@ -6,17 +6,12 @@
 
 static int8_t create_test_item_from_epoch_seconds(
     struct TestItem *ti,
-    struct AtcZoneProcessing *processing,
-    const struct AtcZoneInfo *zone_info,
+    const AtcTimeZone *tz,
     atc_time_t epoch_seconds,
     char type)
 {
   struct AtcZonedDateTime zdt;
-  int8_t err = atc_zoned_date_time_from_epoch_seconds(
-      processing,
-      zone_info,
-      epoch_seconds,
-      &zdt);
+  int8_t err = atc_zoned_date_time_from_epoch_seconds(&zdt, epoch_seconds, tz);
   if (err) return err;
 
   ti->epoch_seconds = epoch_seconds;
@@ -29,11 +24,7 @@ static int8_t create_test_item_from_epoch_seconds(
   ti->type = type;
 
   struct AtcZonedExtra zet;
-  err = atc_zoned_extra_from_epoch_seconds(
-      processing,
-      zone_info,
-      epoch_seconds,
-      &zet);
+  err = atc_zoned_extra_from_epoch_seconds(&zet, epoch_seconds, tz);
   if (err) return err;
 
   strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
@@ -47,15 +38,14 @@ static int8_t create_test_item_from_epoch_seconds(
 static int8_t add_test_item_from_epoch_seconds(
     struct TestDataEntry *test_entry,
     const char *zone_name,
-    struct AtcZoneProcessing *processing,
-    const struct AtcZoneInfo *zone_info,
+    const AtcTimeZone *tz,
     atc_time_t epoch_seconds,
     char type)
 {
   (void) zone_name;
   struct TestItem *ti = test_data_entry_next_item(test_entry);
   int8_t err = create_test_item_from_epoch_seconds(
-      ti, processing, zone_info, epoch_seconds, type);
+      ti, tz, epoch_seconds, type);
   if (err) {
     test_data_entry_pushback_item(test_entry);
     return err;
@@ -67,17 +57,19 @@ static int8_t add_test_item_from_epoch_seconds(
 void add_transitions(
     struct TestDataEntry *test_entry,
     const char *zone_name,
-    struct AtcZoneProcessing *processing,
-    const struct AtcZoneInfo *zone_info,
+    const AtcTimeZone *tz,
     int16_t start_year,
     int16_t until_year)
 {
   strncpy(test_entry->zone_name, zone_name, ZONE_NAME_SIZE);
   test_entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
 
+  // Use the internal the AtcZoneProcessor and AtcTransitionStorage objects to
+  // obtain the DST transitions. These objects are not intended for normal
+  // public consumption, but they are useful in this situation.
   for (int16_t year = start_year; year < until_year; ++year) {
-    atc_processing_init_for_year(processing, zone_info, year);
-    struct AtcTransitionStorage *ts = &processing->transition_storage;
+    atc_processor_init_for_year(tz->zone_processor, tz->zone_info, year);
+    struct AtcTransitionStorage *ts = &tz->zone_processor->transition_storage;
     struct AtcTransition **begin =
         atc_transition_storage_get_active_pool_begin(ts);
     struct AtcTransition **end =
@@ -101,23 +93,13 @@ void add_transitions(
 
       // Add a test data just before the transition
       int8_t err = add_test_item_from_epoch_seconds(
-          test_entry,
-          zone_name,
-          processing,
-          zone_info,
-          epoch_seconds - 1,
-          'A');
+          test_entry, zone_name, tz, epoch_seconds - 1, 'A');
       if (err) continue;
 
       // Add a test data at the transition itself (which will
       // normally be shifted forward or backwards).
       err = add_test_item_from_epoch_seconds(
-          test_entry,
-          zone_name,
-          processing,
-          zone_info,
-          epoch_seconds,
-          'B');
+          test_entry, zone_name, tz, epoch_seconds, 'B');
       if (err) continue;
     }
   }
@@ -126,8 +108,7 @@ void add_transitions(
 void add_monthly_samples(
     struct TestDataEntry *test_entry,
     const char *zone_name,
-    struct AtcZoneProcessing *processing,
-    const struct AtcZoneInfo *zone_info,
+    const AtcTimeZone *tz,
     int16_t start_year,
     int16_t until_year)
 {
@@ -147,47 +128,28 @@ void add_monthly_samples(
       // use a loop to try subsequent days of month to find a day that works.
       for (int d = 2; d <= 28; d++) {
         struct AtcZonedDateTime zdt;
-        struct AtcLocalDateTime ldt = { y, m, d, 0, 0, 0 };
-        int8_t err = atc_zoned_date_time_from_local_date_time(
-            processing,
-            zone_info,
-            &ldt,
-            0 /*fold*/,
-            &zdt);
+        struct AtcLocalDateTime ldt = {y, m, d, 0, 0, 0, 0 /*fold*/};
+        int8_t err = atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
         if (err) continue;
 
         atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
         if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
         add_test_item_from_epoch_seconds(
-            test_entry,
-            zone_name,
-            processing,
-            zone_info,
-            epoch_seconds,
-            'S');
+            test_entry, zone_name, tz, epoch_seconds, 'S');
         break;
       }
     }
 
     // Add the last day of the year...
     struct AtcZonedDateTime zdt;
-    struct AtcLocalDateTime ldt = { y, 12, 31, 0, 0, 0 };
+    struct AtcLocalDateTime ldt = {y, 12, 31, 0, 0, 0, 0 /*fold*/ };
     int8_t err = atc_zoned_date_time_from_local_date_time(
-        processing,
-        zone_info,
-        &ldt,
-        0 /*fold*/,
-        &zdt);
+        &zdt, &ldt, tz);
     if (err) continue;
 
     atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
     if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
     add_test_item_from_epoch_seconds(
-        test_entry,
-        zone_name,
-        processing,
-        zone_info,
-        epoch_seconds,
-        'Y');
+        test_entry, zone_name, tz, epoch_seconds, 'Y');
   }
 }
