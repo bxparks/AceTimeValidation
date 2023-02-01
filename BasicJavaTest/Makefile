@@ -29,8 +29,9 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 #	* openjdk 11.0.6 2020-01-14 uses 2019c
 #	* openjdk 11.0.8 2020-07-14 uses 2020a
 #	* openjdk 11.0.10 2020-07-14 uses 2020d
+#	* openjdk 11.0.17 2022-10-18 uses 2022c
 SCOPE := basic
-TZ_VERSION := 2022d
+TZ_VERSION := 2022c
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 10000

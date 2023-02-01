@@ -17,7 +17,7 @@ sampling.o: sampling.c sampling.h
 validation_data.json: generate_data.out small.txt
 	./generate_data.out \
 		--start_year 2000 \
-		--until_year 2050 \
+		--until_year 2100 \
 		< small.txt \
 		> $@
 

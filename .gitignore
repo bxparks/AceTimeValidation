@@ -70,12 +70,12 @@ MANIFEST
 # Generated files and directories under various *Test/ directories
 #-------------------------------------------------------------------------
 
-*Test/validation_*.h
-*Test/validation_*.cpp
-*Test/validation_*.json
-*Test/zonedb*
-*Test/tzfiles
-*Test/*.nzd
+validation_*.h
+validation_*.cpp
+validation_*.json
+zonedb*
+tzfiles
+*.nzd
 
 #-------------------------------------------------------------------------
 # C# and .Net 5.0

@@ -2,7 +2,20 @@
 # Python, mypy, and flake8 checks.
 #------------------------------------------------------------------------------
 
-all: mypy flake8 tests
+# Add the following if the NodaTime compiler breaks too often
+#
+# if [ $$i = 'compare_noda/Makefile' ]; then \
+# #	continue ; \
+# fi; \
+#
+all:
+	set -e; \
+	for i in */Makefile; do \
+		$(MAKE) -C $$(dirname $$i); \
+	done
+
+# Python type checking, style checking, and unit tests.
+python: mypy flake8 tests
 
 # Mypy complains if I run 'mypy --strict' on compare_xxx directories. It cannot
 # find definitions for AceTimePython and AceTimeTools. If I explicitly add the

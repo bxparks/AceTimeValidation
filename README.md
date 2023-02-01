@@ -174,7 +174,7 @@ libraries.
 <a name="Dependencies"></a>
 ## Dependencies
 
-* Ubuntu 18.04, 20.04, or MacOS 11.6.8 (Big Sur)
+* Ubuntu 22.04 or MacOS 11.6.8 (Big Sur)
 * Python 3.7 or higher
 * [AceTime](https://github.com/bxparks/AceTime)
     * As sibling project to AceTimeValidation
@@ -211,7 +211,7 @@ libraries.
     * `$ sudo apt install libcurl4-openssl-dev`
     * Required by the Hinnant date library
 * [Noda Time](https://nodatime.org) C# library
-    * Requires the .Net 5.0 framework
+    * Requires the .Net 6.0 framework
         * https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu
 * [Go Lang 1.17 or higher](https://go.dev/doc/install)
 * [AceTimeC](https://github.com/bxparks/AceTimeC)
@@ -246,12 +246,12 @@ those directories to build the Java and C++ binaries as necessary. Here is a
 1. Install the Python `pytz` and `dateutil` libraries:
     * `$ pip3 install --user pytz python-dateutil`
 1. Install the Java 11 JDK:
-    * `$ sudo apt install openjdk-11-jdk` (Ubuntu 18.04 or 20.04)
+    * `$ sudo apt install openjdk-11-jdk` (Ubuntu 22.04)
 1. Clone the Hinnant date library as a sibling to the `AceTime` directory, and
    install the `libcurl4` library that it requires to download the tzfiles:
     * `$ git clone https://github.com/HowardHinnant/date`
     * `$ sudo apt install libcurl4-openssl-dev`
-1. Install Microsoft .NET 5.0 on Linux:
+1. Install Microsoft .NET 6.0 on Linux:
     * See https://docs.microsoft.com/en-us/dotnet/core/install/linux
     * The `compare_noda.csproj` file already contains the NuGet dependency
       to Noda Time and will be automatically retrieved by the `dotnet build`
@@ -260,8 +260,19 @@ those directories to build the Java and C++ binaries as necessary. Here is a
 <a name="RunningCIValidations"></a>
 ### Running CI Validations
 
-These run just the 2 integration tests which run in the GitHub Actions workflow.
-They are known to be stable when the IANA TZDB is upgraded.
+The `make validations` target runs only a subset of the integration tests which
+validate against libraries that are known to work when a new TZDB version is
+released:
+
+* BasicAcetzTest
+* ExtendedAcetzTest
+* BasicHinnantDateTest
+* ExtendedHinnantDateTest
+
+That's because these libraries allow the IANA TZDB version to be explicitly
+specified. The other libraries instead rely on the TZDB version that is
+installed on the underlying OS, but when a new TZDB version is released, these
+libraries usually break because the OS version becomes outdated.
 
 ```
 $ make clean
@@ -272,7 +283,8 @@ $ make runvalidations
 <a name="RunningAllValidations"></a>
 ### Running All Validations
 
-You can run all tests in this project by running the following commands:
+You can run all validation tests in this project by running the following
+commands:
 
 ```
 $ make clean
@@ -280,8 +292,10 @@ $ make allvalidations
 $ make runallvalidations
 ```
 
-Some of them will often fail because of bugs in the 3rd party library or the
-library has not upgraded its version of the IANA TZ database.
+Some of them will often fail because of bugs in the 3rd party library, or
+because the library has not upgraded its version of the IANA TZ database, or
+because the library relies on the outdated version of the TZDB installed on the
+host OS.
 
 <a name="ValidationTests"></a>
 ## Validation Tests

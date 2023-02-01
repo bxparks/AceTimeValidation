@@ -23,17 +23,17 @@ ARDUINO_LIBS := AUnit AceCommon AceTime AceSorting
 MORE_CLEAN := more_clean
 include ../../EpoxyDuino/EpoxyDuino.mk
 
-# Location of TZDB and various tools.
-TZ_REPO := $(abspath ../../tz)
+# Define the scope of the test data.
 SCOPE := basic
-TZ_VERSION := 2022f
+TZ_VERSION := 2022g
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 10000
 VAL_START_YEAR := 2000
 VAL_UNTIL_YEAR := 2100
 
-# Location of various tools.
+# Location of TZDB and various tools.
+TZ_REPO := $(abspath ../../tz)
 VALIDATION_TOOLS := $(abspath ../tools)
 ACE_TIME_TOOLS := $(abspath ../../AceTimeTools)
 
