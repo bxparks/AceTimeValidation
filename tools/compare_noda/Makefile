@@ -1,14 +1,15 @@
-TZ_VERSION := 2021a
+TZ_VERSION := 2022g
 START_YEAR := 2000
-UNTIL_YEAR := 2050
+UNTIL_YEAR := 2100
 
 # Location of the https://github.com/nodatime/nodatime repo, assuming to be
 # a sibling to this project.
-NODA_TIME_DIR := $(abspath ../../nodatime)
+NODA_TIME_DIR := $(abspath ../../../nodatime)
+NODA_COMPILER_DIR := $(NODA_TIME_DIR)/src/NodaTime.TzdbCompiler
 
 validation_data.json: Program.cs small.txt tzdata$(TZ_VERSION).nzd
 	dotnet run \
-		--framework net5.0 \
+		--framework net6.0 \
 		-- \
 		--start_year $(START_YEAR) \
 		--until_year $(UNTIL_YEAR) \
@@ -17,14 +18,18 @@ validation_data.json: Program.cs small.txt tzdata$(TZ_VERSION).nzd
 		> validation_data.json
 
 # Generate the custom tzdata{xxx}.nzd file, depending on TZ_VERSION.
-tzdata$(TZ_VERSION).nzd:
-	dotnet run \
-		--framework net5.0 \
-		-p $(NODA_TIME_DIR)/src/NodaTime.TzdbCompiler/NodaTime.TzdbCompiler.csproj \
-		-- \
+tzdata$(TZ_VERSION).nzd: $(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler
+	$(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler \
 		-s https://data.iana.org/time-zones/releases/tzdata$(TZ_VERSION).tar.gz \
-		-w $(NODA_TIME_DIR)/data/cldr/windowsZones-38-1.xml \
+		-w $(NODA_TIME_DIR)/data/cldr/windowsZones-42.xml \
 		-o $@
 
+# Build the TzdbCompiler inside its own directory and explicitly invoke the
+# binary. It does not seem to run properly if 'dotnet run --project xxx' is
+# used.
+$(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler:
+	cd $(NODA_COMPILER_DIR); \
+	dotnet build
+
 clean:
-	rm -f validation_data.json tzdata$(TZ_VERSION).nzd
+	rm -rf validation_data.json tzdata$(TZ_VERSION).nzd bin obj
