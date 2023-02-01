@@ -8,11 +8,8 @@ Time](https://nodatime.org/).
 
 ## Requirements
 
-* Install both .NET 5.0 and .NET 3.1
+* Install both .NET 6.0
     * https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu
-    * .NET 3.1 is required because the `TzdbCompiler` does not run using .NET
-      5.0.
-    * (It might be possible to install just .NET 5.0. I have not verified this.)
 * Clone the Noda Time repo as sibling to `AceTime`
     * `$ git clone https://github.com/nodatime/nodatime`
     * Update the `NODA_TIME_DIR` parameter in the `Makefile`

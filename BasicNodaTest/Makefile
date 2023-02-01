@@ -24,19 +24,24 @@ ARDUINO_LIBS := AUnit AceCommon AceTime AceSorting
 MORE_CLEAN := more_clean
 include ../../EpoxyDuino/EpoxyDuino.mk
 
-# Location of the https://github.com/nodatime/nodatime repo.
-NODA_TIME_DIR := $(HOME)/dev/nodatime
-
 # Define the scope of the test data.
 SCOPE := basic
-TZ_VERSION := 2022d
-START_YEAR := 2000
-UNTIL_YEAR := 2050
+TZ_VERSION := 2022g
+ACE_TIME_EPOCH_YEAR := 2050
+DB_START_YEAR := 2000
+DB_UNTIL_YEAR := 10000
+VAL_START_YEAR := 2000
+VAL_UNTIL_YEAR := 2100
 
 # Location of TZDB and various tools.
 TZ_REPO := $(abspath ../../tz)
 VALIDATION_TOOLS := $(abspath ../tools)
 ACE_TIME_TOOLS := $(abspath ../../AceTimeTools)
+
+# Location of the https://github.com/nodatime/nodatime repo. Assumed to be
+# sibling to the AceTimeValiation project.
+NODA_TIME_DIR := $(abspath ../../nodatime)
+NODA_COMPILER_DIR := $(NODA_TIME_DIR)/src/NodaTime.TzdbCompiler
 
 runtests:
 	./$(APP_NAME).out
@@ -55,22 +60,29 @@ validation_data.h: validation_data.json
 validation_data.json: $(DB_NAMESPACE)/zones.txt \
 		$(VALIDATION_TOOLS)/compare_noda/Program.cs \
 		tzdata$(TZ_VERSION).nzd
-	dotnet run -p $(VALIDATION_TOOLS)/compare_noda/compare_noda.csproj \
-		--start_year $(START_YEAR) \
-		--until_year $(UNTIL_YEAR) \
+	dotnet run \
+		--project $(VALIDATION_TOOLS)/compare_noda/compare_noda.csproj \
+		-- \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		--nzd_file tzdata$(TZ_VERSION).nzd \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
 # Generate the custom tzdata{xxx}.nzd file, depending on TZ_VERSION.
-tzdata$(TZ_VERSION).nzd:
-	dotnet run \
-		-p $(NODA_TIME_DIR)/src/NodaTime.TzdbCompiler/NodaTime.TzdbCompiler.csproj \
-		-f net5.0 \
-		-- \
+tzdata$(TZ_VERSION).nzd: $(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler
+	$(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler \
 		-s https://data.iana.org/time-zones/releases/tzdata$(TZ_VERSION).tar.gz \
-		-w $(NODA_TIME_DIR)/data/cldr/windowsZones-38-1.xml \
+		-w $(NODA_TIME_DIR)/data/cldr/windowsZones-42.xml \
 		-o $@
+
+# Build the TzdbCompiler inside its own directory and explicitly invoke the
+# binary. If I use 'dotnet run --project xxx', it complains about not finding a
+# bunch of files.
+$(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler:
+	cd $(NODA_COMPILER_DIR); \
+	dotnet build
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
@@ -97,8 +109,9 @@ $(DB_NAMESPACE)/zone_infos.h:
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
-		--start_year $(START_YEAR) \
-		--until_year $(UNTIL_YEAR)
+		--generate_int16_year \
+		--start_year $(DB_START_YEAR) \
+		--until_year $(DB_UNTIL_YEAR)
 
 more_clean:
-	rm -rf $(DB_NAMESPACE)
+	rm -rf $(DB_NAMESPACE) tzdata$(TZ_VERSION).nzd

@@ -1,6 +1,7 @@
 TZ_VERSION := 2022g
 START_YEAR := 2000
 UNTIL_YEAR := 2100
+ACE_TIME_EPOCH_YEAR := 2050
 
 # Location of the https://github.com/nodatime/nodatime repo, assuming to be
 # a sibling to this project.
@@ -13,6 +14,7 @@ validation_data.json: Program.cs small.txt tzdata$(TZ_VERSION).nzd
 		-- \
 		--start_year $(START_YEAR) \
 		--until_year $(UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		--nzd_file tzdata$(TZ_VERSION).nzd \
 		< small.txt \
 		> validation_data.json
@@ -25,8 +27,8 @@ tzdata$(TZ_VERSION).nzd: $(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbComp
 		-o $@
 
 # Build the TzdbCompiler inside its own directory and explicitly invoke the
-# binary. It does not seem to run properly if 'dotnet run --project xxx' is
-# used.
+# binary. If I use 'dotnet run --project xxx', it complains about not finding a
+# bunch of files.
 $(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler:
 	cd $(NODA_COMPILER_DIR); \
 	dotnet build

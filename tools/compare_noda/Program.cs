@@ -17,7 +17,10 @@ namespace compare_noda
     class Program
     {
         // Usage:
-        // $ dotnet run -- [--help] [--start_year start] [--until_year until]
+        // $ dotnet run -- [--help]
+        //      --start_year start
+        //      --until_year until
+        //      --epoch_year epoch
         //      [--nzd_file {file}]
         //      < zones.txt
         //      > validation_data.json
@@ -34,8 +37,9 @@ namespace compare_noda
                 UsageAndExit(1);
             }
             */
-            string start = "2000";
-            string until = "2050";
+            string start = "";
+            string until = "";
+            string epoch = "";
             string nzdFilePath = "";
             while (argc > 0)
             {
@@ -49,6 +53,11 @@ namespace compare_noda
                 {
                     {argc--; argi++; arg0 = args[argi];} // shift-left
                     until = arg0;
+                }
+                else if ("--epoch_year".Equals(arg0))
+                {
+                    {argc--; argi++; arg0 = args[argi];} // shift-left
+                    epoch = arg0;
                 }
                 else if ("--nzd_file".Equals(arg0))
                 {
@@ -75,9 +84,19 @@ namespace compare_noda
                 }
                 {argc--; argi++;} // shift-left
             }
+            if (string.IsNullOrEmpty(start)) {
+                UsageAndExit(1);
+            }
+            if (string.IsNullOrEmpty(until)) {
+                UsageAndExit(1);
+            }
+            if (string.IsNullOrEmpty(epoch)) {
+                UsageAndExit(1);
+            }
 
             int startYear = int.Parse(start);
             int untilYear = int.Parse(until);
+            int epochYear = int.Parse(epoch);
 
             // https://nodatime.org/3.0.x/userguide/tzdb
             IDateTimeZoneProvider provider;
@@ -95,15 +114,16 @@ namespace compare_noda
             }
 
             List<string> zones = ReadZones();
-            GenerateData generator = new GenerateData(startYear, untilYear, provider);
+            GenerateData generator = new GenerateData(startYear, untilYear, epochYear, provider);
             IDictionary<string, List<TestItem>> testData = generator.CreateTestData(zones);
             generator.PrintJson(testData);
         }
 
         private static void UsageAndExit(int exitCode)
         {
-            string usage = "Usage: compare_noda [--start_year {year}] "
-                + "[--until_year {year}] < zones.txt";
+            string usage = "Usage: compare_noda --start_year {year} "
+                + "--until_year {year} --epoch_year {year} [--nzd_file file] "
+                + "< zones.txt";
             if (exitCode == 0)
             {
                 Console.WriteLine(usage);
@@ -130,14 +150,22 @@ namespace compare_noda
 
     class GenerateData
     {
-        private const int SECONDS_SINCE_UNIX_EPOCH = 946684800;
+        // Number of seconds from Unix epoch (1970-01-01T00:00:00Z) to AceTime epoch (usually
+        // 2050-01-01T00:00:00Z). Non-static, will be calculated in the constructor.
+        private static int secondsToAceTimeEpochFromUnixEpoch = 946684800;
+
         private const string indentUnit = "  ";
 
-        public GenerateData(int startYear, int untilYear, IDateTimeZoneProvider provider)
+        public GenerateData(int startYear, int untilYear, int epochYear, IDateTimeZoneProvider provider)
         {
             this.startYear = startYear;
             this.untilYear = untilYear;
+            this.epochYear = epochYear;
             this.dateTimeZoneProvider = provider;
+
+            var epochInstant = new LocalDateTime(epochYear, 1, 1, 0, 0)
+                .InUtc().ToInstant();
+            secondsToAceTimeEpochFromUnixEpoch = (int) epochInstant.ToUnixTimeSeconds();
         }
 
         public IDictionary<string, List<TestItem>> CreateTestData(List<string> zones)
@@ -276,8 +304,9 @@ namespace compare_noda
             string indent0 = indentUnit;
             Console.WriteLine($"{indent0}\"start_year\": {startYear},");
             Console.WriteLine($"{indent0}\"until_year\": {untilYear},");
+            Console.WriteLine($"{indent0}\"epoch_year\": {epochYear},");
             Console.WriteLine($"{indent0}\"source\": \"NodaTime\",");
-            Console.WriteLine($"{indent0}\"version\": \"3.0\",");
+            Console.WriteLine($"{indent0}\"version\": \"3.1\",");
             Console.WriteLine($"{indent0}\"tz_version\": \"{tzVersion}\",");
             Console.WriteLine($"{indent0}\"has_valid_abbrev\": true,");
             Console.WriteLine($"{indent0}\"has_valid_dst\": true,");
@@ -334,11 +363,12 @@ namespace compare_noda
 
         private static int ToAceTimeEpochSeconds(long unixEpochSeconds)
         {
-            return (int) (unixEpochSeconds - SECONDS_SINCE_UNIX_EPOCH);
+            return (int) (unixEpochSeconds - secondsToAceTimeEpochFromUnixEpoch);
         }
 
         private readonly int startYear;
         private readonly int untilYear;
+        private readonly int epochYear;
         private readonly IDateTimeZoneProvider dateTimeZoneProvider;
     }
 
