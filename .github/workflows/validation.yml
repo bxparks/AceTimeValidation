@@ -59,7 +59,7 @@ jobs:
 
     - name: Validate Python Compare tools
       run: |
-        make -C tools all
+        make -C tools python
 
     - name: Build compare_cpp
       run: |
