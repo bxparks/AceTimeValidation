@@ -1,6 +1,7 @@
 # Changelog
 
 * Unreleased
+* v1.4.0 (2023-02-02, TZDB 2022g)
     * `*Test/Makefile`
         * Upgrade to new `tzcompiler.sh` which requires explicit `--tzrepo`
           flag, and performs automatic clean up of temporary `tzfiles/`
