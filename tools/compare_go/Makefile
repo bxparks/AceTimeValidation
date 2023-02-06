@@ -1,5 +1,5 @@
-generate_data.out: generate_data.go
-	go build -o $@ $<
+generate_data.out: generate_data.go transitions.go
+	go build -o $@
 
 validation_data.json: small.txt generate_data.out
 	./generate_data.out < small.txt > $@
