@@ -27,61 +27,6 @@ int16_t epoch_year = 2050;
 
 AtcZoneRegistrar registrar;
 
-/**
- * Generate the JSON output on STDOUT which will be redirect into
- * 'validation_data.json' file. Adopted from GenerateData.java.
- */
-void print_json(const struct TestData *test_data) {
-  const char indent0[] = "  ";
-  const char indent1[] = "    ";
-  const char indent2[] = "      ";
-  const char indent3[] = "        ";
-
-  printf("{\n");
-  printf("%s\"start_year\": %d,\n", indent0, start_year);
-  printf("%s\"until_year\": %d,\n", indent0, until_year);
-  printf("%s\"epoch_year\": %d,\n", indent0, epoch_year);
-  printf("%s\"source\": \"AceTimeC\",\n", indent0);
-  printf("%s\"version\": \"%s\",\n", indent0, ACE_TIME_C_VERSION_STRING);
-  printf("%s\"tz_version\": \"%s\",\n", indent0, kAtcTzDatabaseVersion);
-  printf("%s\"has_valid_abbrev\": true,\n", indent0);
-  printf("%s\"has_valid_dst\": true,\n", indent0);
-  printf("%s\"test_data\": {\n", indent0);
-
-  // Print each zone
-  int num_zones = test_data->num_entries;
-  for (int z = 0; z < num_zones; z++) {
-    const struct TestDataEntry *entry = &test_data->entries[z];
-    const char *zone_name = entry->zone_name;
-    printf("%s\"%s\": [\n", indent1, zone_name);
-
-    // Print each testItem
-    for (int i = 0; i < entry->num_items; i++) {
-      const struct TestItem *item = &entry->items[i];
-      printf("%s{\n", indent2);
-      {
-        printf("%s\"epoch\": %ld,\n", indent3, item->epoch_seconds);
-        printf("%s\"total_offset\": %d,\n", indent3, item->utc_offset);
-        printf("%s\"dst_offset\": %d,\n", indent3, item->dst_offset);
-        printf("%s\"y\": %d,\n", indent3, item->year);
-        printf("%s\"M\": %d,\n", indent3, item->month);
-        printf("%s\"d\": %d,\n", indent3, item->day);
-        printf("%s\"h\": %d,\n", indent3, item->hour);
-        printf("%s\"m\": %d,\n", indent3, item->minute);
-        printf("%s\"s\": %d,\n", indent3, item->second);
-        printf("%s\"abbrev\": \"%s\",\n", indent3, item->abbrev);
-        printf("%s\"type\": \"%c\"\n", indent3, item->type);
-      }
-      printf("%s}%s\n", indent2, (i < entry->num_items - 1) ? "," : "");
-    }
-
-    printf("%s]%s\n", indent1, (z < test_data->num_entries - 1) ? "," : "");
-  }
-
-  printf("%s}\n", indent0);
-  printf("}\n");
-}
-
 /** Insert TestItems for the given 'zone_name' into test_data. */
 int8_t process_zone(
     struct AtcZoneProcessor *processor,
@@ -234,7 +179,8 @@ int main(int argc, const char* const* argv) {
 
   // Sort test items by epoch seconds, and print the JSON.
   sort_test_data(&test_data);
-  print_json(&test_data);
+  print_json(&test_data, start_year, until_year, epoch_year,
+    ACE_TIME_C_VERSION_STRING, kAtcTzDatabaseVersion);
 
   // Cleanup
   test_data_free(&test_data);

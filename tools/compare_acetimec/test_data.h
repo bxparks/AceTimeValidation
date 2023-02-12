@@ -98,4 +98,16 @@ void test_data_pushback_entry(struct TestData *data);
 /** Sort the TestItems of each TestDataEntry according to epochSeconds. */
 void sort_test_data(struct TestData *test_data);
 
+/**
+ * Generate the JSON output on STDOUT which will be redirect into
+ * 'validation_data.json' file. Adopted from GenerateData.java.
+ */
+void print_json(
+  const struct TestData *test_data,
+  int start_year,
+  int until_year,
+  int epoch_year,
+  const char *version, // library version
+  const char *tz_version); // TZDB version
+
 #endif
