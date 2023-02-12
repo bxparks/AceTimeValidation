@@ -93,4 +93,9 @@ struct TestDataEntry *test_data_next_entry(struct TestData *data);
 /** Push back the last unused TestDataEntry. */
 void test_data_pushback_entry(struct TestData *data);
 
+//-----------------------------------------------------------------------------
+
+/** Sort the TestItems of each TestDataEntry according to epochSeconds. */
+void sort_test_data(struct TestData *test_data);
+
 #endif

@@ -27,30 +27,6 @@ int16_t epoch_year = 2050;
 
 AtcZoneRegistrar registrar;
 
-//-----------------------------------------------------------------------------
-
-static int compare_test_item(const void *a, const void *b)
-{
-  const struct TestItem *ta = a;
-  const struct TestItem *tb = b;
-  if (ta->epoch_seconds < tb->epoch_seconds) return -1;
-  if (ta->epoch_seconds > tb->epoch_seconds) return 1;
-  return 0;
-}
-
-/** Sort the TestItems of each TestDataEntry according to epochSeconds. */
-void sort_test_data(struct TestData *test_data)
-{
-  for (int i = 0; i < test_data->num_entries; i++) {
-    struct TestDataEntry *entry = &test_data->entries[i];
-    qsort(
-        entry->items,
-        entry->num_items,
-        sizeof(struct TestItem),
-        compare_test_item);
-  }
-}
-
 /**
  * Generate the JSON output on STDOUT which will be redirect into
  * 'validation_data.json' file. Adopted from GenerateData.java.
