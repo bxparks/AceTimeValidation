@@ -39,7 +39,7 @@ struct TestItem *test_data_entry_next_item(struct TestDataEntry *entry)
   return &entry->items[entry->num_items++];
 }
 
-void test_data_entry_pushback_item(struct TestDataEntry *entry)
+void test_data_entry_free_item(struct TestDataEntry *entry)
 {
   entry->num_items--;
 }
@@ -89,7 +89,7 @@ struct TestDataEntry *test_data_next_entry(struct TestData *data)
   return entry;
 }
 
-void test_data_pushback_entry(struct TestData *data)
+void test_data_free_entry(struct TestData *data)
 {
   data->num_entries--;
 }

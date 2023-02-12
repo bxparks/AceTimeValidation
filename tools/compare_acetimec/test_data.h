@@ -72,7 +72,7 @@ void test_data_entry_resize_items(struct TestDataEntry *entry, int newsize);
 struct TestItem *test_data_entry_next_item(struct TestDataEntry *entry);
 
 /** Push back the last unused TestItem. */
-void test_data_entry_pushback_item(struct TestDataEntry *entry);
+void test_data_entry_free_item(struct TestDataEntry *entry);
 
 //-----------------------------------------------------------------------------
 
@@ -91,7 +91,7 @@ void test_data_resize_entries(struct TestData *data, int newsize);
 struct TestDataEntry *test_data_next_entry(struct TestData *data);
 
 /** Push back the last unused TestDataEntry. */
-void test_data_pushback_entry(struct TestData *data);
+void test_data_free_entry(struct TestData *data);
 
 //-----------------------------------------------------------------------------
 

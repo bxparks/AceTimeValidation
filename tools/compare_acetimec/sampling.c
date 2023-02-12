@@ -47,7 +47,7 @@ static int8_t add_test_item_from_epoch_seconds(
   int8_t err = create_test_item_from_epoch_seconds(
       ti, tz, epoch_seconds, type);
   if (err) {
-    test_data_entry_pushback_item(test_entry);
+    test_data_entry_free_item(test_entry);
     return err;
   }
 
