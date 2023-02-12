@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h> // realloarray()
+#include <stdlib.h> // realloc()
 #include "test_data.h"
 
 void test_data_entry_init(struct TestDataEntry *entry)
