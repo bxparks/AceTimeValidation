@@ -31,7 +31,6 @@ jobs:
         git clone --depth 1 https://github.com/bxparks/AceCommon
         git clone --depth 1 https://github.com/bxparks/AceSorting
         git clone --depth 1 https://github.com/bxparks/AceTime
-        git clone --depth 1 https://github.com/bxparks/AceTimeC
         git clone --depth 1 https://github.com/bxparks/AceTimeTools
         git clone --depth 1 https://github.com/bxparks/AceTimePython
         git clone --depth 1 https://github.com/HowardHinnant/date
@@ -71,7 +70,6 @@ jobs:
       run: |
         make -C tools/compare_cpp
         make -C tools/compare_c
-        make -C tools/compare_acetimec
         make -C tools/compare_go
 
     # Run the validation tests which will succeed when the TZDB version is
