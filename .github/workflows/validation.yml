@@ -52,6 +52,11 @@ jobs:
         pip install -e ../AceTimeTools
         pip install -e ../AceTimePython
 
+    - name: Install Go lang
+    - uses: actions/setup-go@v3
+      with:
+        go-version: 'stable'
+
     - name: Install libcurl4-openssl-dev
       run: |
         sudo apt update
@@ -61,9 +66,12 @@ jobs:
       run: |
         make -C tools python
 
-    - name: Build compare_cpp
+    - name: Build Other Compare tools
       run: |
         make -C tools/compare_cpp
+        make -C tools/compare_c
+        make -C tools/compare_acetimec
+        make -C tools/compare_go
 
     # Run the validation tests which will succeed when the TZDB version is
     # updated (BasicHinnantDateTest, ExtendedHinnantDateTest, BasicAcetzTest,
