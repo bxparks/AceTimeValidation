@@ -14,6 +14,7 @@ algorithms are compared to the following third party timezone libraries:
 * [Noda Time](https://nodatime.org) C# library
 * [Go Lang time](https://pkg.go.dev/time) package
 * [AceTimeC](https://github.com/bxparks/AceTimeC) library
+* [GNU libc](https://www.gnu.org/software/libc/manual/2.35/html_node/Calendar-Time.html) C library
 
 These integration tests require a desktop-class machine running Linux or MacOS.
 They are too big to run on any Arduino microcontroller that I know of. They use
@@ -45,7 +46,7 @@ library). However, it turned out that the number of timezones supported by the
 `BasicZoneProcessor` so it became infeasible to test the non-overlapping
 timezones.
 
-**Version**: v1.4.0 (2023-02-02, TZDB 2022g)
+**Version**: v1.5.0 (2023-02-12, TZDB 2022g)
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
@@ -77,6 +78,7 @@ These scripts live under the `AceTimeValidation/tools/` directory:
 
 * `compare_acetimec` - AceTimeC library
 * `compare_acetz` - AceTimePython library
+* `compare_c` - C GNU libc library
 * `compare_cpp` - C++ Hinnant Date library
 * `compare_dateutil` - Python `python-dateutil` library
 * `compare_go` - Go Lang time library
@@ -227,6 +229,7 @@ The required Python, Java and C++ tools and libraries are explained in:
 
 * [compare_acetimec](tools/compare_acetimec)
 * [compare_acetz](tools/compare_acetz)
+* [compare_cpp](tools/compare_c)
 * [compare_cpp](tools/compare_cpp)
 * [compare_dateutil](tools/compare_dateutil)
 * [compare_go](tools/compare_go)

@@ -1,6 +1,13 @@
 # Changelog
 
 * Unreleased
+* v1.5.0 (2023-02-12, TZDB 2022g)
+    * Add `tools/compare_c`
+        * Generate validation data using the GNU libc functions of the C
+          language.
+    * Rename overloaded `tools/compare_xxx/generate_data.out` to
+      `tools/compare_xxx/compare_xxx.out` for easier debugging of Makefiles and
+      scripts.
 * v1.4.0 (2023-02-02, TZDB 2022g)
     * `*Test/Makefile`
         * Upgrade to new `tzcompiler.sh` which requires explicit `--tzrepo`
