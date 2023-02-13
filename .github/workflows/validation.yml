@@ -53,7 +53,7 @@ jobs:
         pip install -e ../AceTimePython
 
     - name: Install Go lang
-    - uses: actions/setup-go@v3
+      uses: actions/setup-go@v3
       with:
         go-version: 'stable'
 
