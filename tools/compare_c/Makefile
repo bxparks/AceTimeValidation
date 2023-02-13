@@ -1,4 +1,4 @@
-CFLAGS := -Wall -Wextra -std=c11 \
+CFLAGS := -Wall -Wextra -Werror -std=c11 \
 	-D _GNU_SOURCE
 
 generate_data.out: generate_data.o sampling.o test_data.o
