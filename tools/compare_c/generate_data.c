@@ -209,7 +209,7 @@ uint8_t process_zones(struct TestData *test_data)
 
 int main(int argc, char **argv )
 {
-  int args = parse_flags(argc, argv);
+  parse_flags(argc, argv);
   set_ace_time_epoch_year(epoch_year);
 
   struct TestData test_data;

@@ -1,7 +1,14 @@
-CFLAGS := -Wall -Wextra -std=c11
+CFLAGS := -Wall -Wextra -std=c11 \
+	-D _GNU_SOURCE
 
-generate_data.out: generate_data.c sampling.c test_data.c
+generate_data.out: generate_data.o sampling.o test_data.o
 	$(CC) -o $@ $^
+
+generate_data.o: generate_data.c sampling.h test_data.h
+
+sampling.o: sampling.c sampling.h
+
+test_data.o: test_data.c test_data.h
 
 validation_data.json: generate_data.out small.txt
 	./generate_data.out \
@@ -12,4 +19,4 @@ validation_data.json: generate_data.out small.txt
 		> $@
 
 clean:
-	rm -f generate_data.out validation_data.json
+	rm -f *.o *.out validation_data.json
