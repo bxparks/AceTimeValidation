@@ -1,11 +1,8 @@
-generate_data.out: generate_data.go transitions.go
+compare_go.out: compare_go.go transitions.go
 	go build -o $@
 
-validation_data.json: small.txt generate_data.out
-	./generate_data.out < small.txt > $@
-
-fmt:
-	go fmt generate_data.go
+validation_data.json: small.txt compare_go.out
+	./compare_go.out < small.txt > $@
 
 clean:
-	rm -f generate_data.out validation_data.json
+	rm -f compare_go.out validation_data.json

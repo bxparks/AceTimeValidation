@@ -1,17 +1,17 @@
 CFLAGS := -Wall -Wextra -Werror -std=c11 \
 	-D _GNU_SOURCE
 
-generate_data.out: generate_data.o sampling.o test_data.o
+compare_c.out: compare_c.o sampling.o test_data.o
 	$(CC) -o $@ $^
 
-generate_data.o: generate_data.c sampling.h test_data.h
+compare_c.o: compare_c.c sampling.h test_data.h
 
 sampling.o: sampling.c sampling.h
 
 test_data.o: test_data.c test_data.h
 
-validation_data.json: generate_data.out small.txt
-	./generate_data.out \
+validation_data.json: compare_c.out small.txt
+	./compare_c.out \
 		--start_year 2000 \
 		--until_year 2100 \
 		--epoch_year 2050 \

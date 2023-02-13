@@ -20,7 +20,7 @@ from acetime.acetz import ZoneManager
 from acetime.zone_processor import ZoneProcessor
 from acetime.zone_processor import DateTuple
 from acetime.zonedb_types import ZoneInfoMap
-from acetime.zonedb.zone_registry import ZONE_REGISTRY
+from acetime.zonedb.zone_registry import ZONE_AND_LINK_REGISTRY
 from acetimetools.data_types.at_types import SECONDS_SINCE_UNIX_EPOCH
 from acetimetools.data_types.validation_types import (
     TestItem, TestData, ValidationData
@@ -39,7 +39,7 @@ class TestDataGenerator:
         until_year: int,
         epoch_year: int,
         sampling_interval: int,
-        zone_infos: ZoneInfoMap = cast(ZoneInfoMap, ZONE_REGISTRY),
+        zone_infos: ZoneInfoMap = cast(ZoneInfoMap, ZONE_AND_LINK_REGISTRY),
     ):
         self.start_year = start_year
         self.until_year = until_year

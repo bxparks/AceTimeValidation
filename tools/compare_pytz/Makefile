@@ -4,7 +4,7 @@ all:
 	@echo 'No compilation necessary'
 
 validation_data.json:
-	./generate_data.py < small.txt > $@
+	./compare_pytz.py < small.txt > $@
 
 clean:
 	rm -f $(GENERATED)

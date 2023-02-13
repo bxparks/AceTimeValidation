@@ -46,7 +46,7 @@ validation_tests.cpp: validation_data.h
 
 # --blacklist $(VALIDATION_TOOLS)/compare_go/blacklist.json
 validation_data.h: validation_data.json \
-$(VALIDATION_TOOLS)/compare_go/generate_data.out
+$(VALIDATION_TOOLS)/compare_go/compare_go.out
 	$(VALIDATION_TOOLS)/generate_validation/generate_validation.py \
 		--tz_version $(TZ_VERSION) \
 		--scope $(SCOPE) \
@@ -54,14 +54,14 @@ $(VALIDATION_TOOLS)/compare_go/generate_data.out
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt
-	$(VALIDATION_TOOLS)/compare_go/generate_data.out \
+	$(VALIDATION_TOOLS)/compare_go/compare_go.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
-$(VALIDATION_TOOLS)/compare_go/generate_data.out:
+$(VALIDATION_TOOLS)/compare_go/compare_go.out:
 	$(MAKE) -C $(VALIDATION_TOOLS)/compare_go/
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp

@@ -59,15 +59,15 @@ validation_data.h: validation_data.json
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt \
-$(VALIDATION_TOOLS)/compare_java/GenerateData.class
-	java -cp $(VALIDATION_TOOLS)/compare_java GenerateData \
+$(VALIDATION_TOOLS)/compare_java/CompareJava.class
+	java -cp $(VALIDATION_TOOLS)/compare_java CompareJava \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
-$(VALIDATION_TOOLS)/compare_java/GenerateData.class:
+$(VALIDATION_TOOLS)/compare_java/CompareJava.class:
 	$(MAKE) -C $(VALIDATION_TOOLS)/compare_java
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp

@@ -6,7 +6,7 @@
 
 """
 Generate the Arduino validation data (validation_data.h and validation_data.cpp)
-files for unit tests from the validation_data.json file on the STDIN.
+files for unit tests from the `validation_data.json` file on the STDIN.
 """
 
 import argparse

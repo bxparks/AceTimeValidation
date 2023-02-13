@@ -5,12 +5,12 @@
 # MIT License
 
 """
-Generate the JSON validation test data on the STDOUT from the dateutil package
-(using .tdgenerator.TestDataGenerator) given the 'zones.txt' file from the
+Generate the JSON validation test data on the STDOUT from the pytz (using
+.tdgenerator.TestDataGenerator) given the 'zones.txt' file from the
 tzcompiler.py on the STDIN.
 
 Usage
-$ ./generate_data.py [--start_year start] [--until_year until]
+$ ./compare_pytz.py [--start_year start] [--until_year until]
     [--epoch_year year] [--sampling_interval hours]
     < zones.txt
     > validation_data.json
@@ -49,7 +49,7 @@ def generate_data(
     test_generator.create_test_data(zones)
     validation_data = test_generator.get_validation_data()
 
-    # Write the JSON object to STDOUT
+    # Write out the validation_data.json file.
     json.dump(validation_data, sys.stdout, indent=2)
     print()  # add terminating newline
 

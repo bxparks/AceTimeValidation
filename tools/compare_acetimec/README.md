@@ -22,12 +22,12 @@ I have tested this Ubuntu 20.04. Install the following:
 * [AceTimeC](https://github.com/bxparks/AceTimeC) as a sibling to
   AceTimeValidation
 
-Then use GNU Make to generate `generate_data.out`:
+Then use GNU Make to generate `compare_acetimec.out`:
 
 ```
 $ cd src/AceTimeC
 $ make
 $ cd src/AceTimeValidation/tools/compare_acetimec
 $ make
-$ ./generate_data < zones.txt > validation_data.json
+$ ./compare_acetimec < zones.txt > validation_data.json
 ```

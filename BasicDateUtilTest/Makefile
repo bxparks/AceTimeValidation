@@ -66,7 +66,7 @@ validation_data.h: validation_data.json
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt
-	$(VALIDATION_TOOLS)/compare_dateutil/generate_data.py \
+	$(VALIDATION_TOOLS)/compare_dateutil/compare_dateutil.py \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \

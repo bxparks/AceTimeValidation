@@ -1,4 +1,4 @@
-SRCS := GenerateData.java
+SRCS := CompareJava.java
 CLASSES := $(SRCS:.java=.class)
 
 .SUFFIXES:.java .class
@@ -11,7 +11,7 @@ all: classes
 classes: $(CLASSES)
 
 validation_data.json: $(CLASSES) small.txt
-	java -cp . GenerateData \
+	java -cp . CompareJava \
 		--start_year 2000 \
 		--until_year 2100 \
 		--epoch_year 2050 \

@@ -36,8 +36,8 @@ import java.util.TreeSet;
  *
  * <pre>
  * {@code
- * $ javac GenerateData.java
- * $ java GenerateData [--start_year start] [--until_year until] 
+ * $ javac CompareJava.java
+ * $ java CompareJava [--start_year start] [--until_year until]
  *      [--epoch_year year] [--validate_dst] [--print_zones]
  *      < zones.txt
  *      > validation_data.json
@@ -53,13 +53,13 @@ import java.util.TreeSet;
  * }
  * </pre>
  */
-public class GenerateData {
+public class CompareJava {
   // Number of seconds from Unix epoch (1970-01-01T00:00:00Z) to AceTime epoch
   // (usually 2050-01-01T00:00:00Z). Non-static, will be calculated in the constructor.
   private static long secondsToAceTimeEpochFromUnixEpoch = 946684800;
 
   public static void main(String[] args) throws IOException {
-    String invocation = "java GenerateData " + String.join(" ", args);
+    String invocation = "java CompareJava " + String.join(" ", args);
 
     // Parse command line flags
     int argc = args.length;
@@ -105,7 +105,7 @@ public class GenerateData {
       int epochYear = Integer.parseInt(epoch);
 
       List<String> zones = readZones();
-      GenerateData generator = new GenerateData(
+      CompareJava generator = new CompareJava(
           invocation, startYear, untilYear, epochYear);
       Map<String, List<TestItem>> testData = generator.createTestData(zones);
       generator.printJson(testData);
@@ -113,7 +113,7 @@ public class GenerateData {
   }
 
   private static void usageAndExit() {
-    System.err.println("Usage: java GenerateData [--start_year {start}]");
+    System.err.println("Usage: java CompareJava [--start_year {start}]");
     System.err.println("    [--until_year {until}] [--validate_dst]");
     System.err.println("    < zones.txt");
     System.err.println("    > validation_data.json");
@@ -165,7 +165,7 @@ public class GenerateData {
   }
 
   /** Constructor. */
-  private GenerateData(String invocation, int startYear, int untilYear, int epochYear) {
+  private CompareJava(String invocation, int startYear, int untilYear, int epochYear) {
     this.invocation = invocation;
     this.startYear = startYear;
     this.untilYear = untilYear;

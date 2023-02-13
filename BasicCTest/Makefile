@@ -52,14 +52,14 @@ validation_data.h: validation_data.json
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt
-	$(VALIDATION_TOOLS)/compare_c/generate_data.out \
+	$(VALIDATION_TOOLS)/compare_c/compare_c.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
-$(VALIDATION_TOOLS)/compare_c/generate_data.out:
+$(VALIDATION_TOOLS)/compare_c/compare_c.out:
 	$(MAKE) -C $(VALIDATION_TOOLS)/compare_c/
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp

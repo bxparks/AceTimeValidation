@@ -4,7 +4,7 @@
  * (https://github.com/bxparks/AceTimeC).
  *
  * Usage:
- * $ ./generate_data.out
+ * $ ./compare_acetimec.out
  *    --start_year start
  *    --until_year until
  *    --epoch_year year
@@ -93,7 +93,7 @@ int8_t read_and_process_zone(
 
 void usage_and_exit() {
   fprintf(stderr,
-    "Usage: generate_data [--install_dir {dir}]\n"
+    "Usage: compare_acetimec.out [--install_dir {dir}]\n"
     "   --start_year start --until_year until --epoch_year year\n"
     "   < zones.txt\n");
   exit(1);

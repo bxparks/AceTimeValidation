@@ -10,7 +10,7 @@ zoneinfo package (using tdgenerator.TestDataGenerator) given the 'zones.txt'
 file from the tzcompiler.py on the STDIN.
 
 Usage
-$ ./generate_data.py [--start_year start] [--until_year until]
+$ ./compare_dateutil.py [--start_year start] [--until_year until]
     [--epoch_year year] [--sampling_interval hours]
     < zones.txt
     > validation_data.json

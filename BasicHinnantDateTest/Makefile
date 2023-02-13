@@ -54,8 +54,8 @@ validation_data.h: validation_data.json
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt \
-$(VALIDATION_TOOLS)/compare_cpp/generate_data.out
-	$(VALIDATION_TOOLS)/compare_cpp/generate_data.out \
+$(VALIDATION_TOOLS)/compare_cpp/compare_cpp.out
+	$(VALIDATION_TOOLS)/compare_cpp/compare_cpp.out \
 		--tz_version $(TZ_VERSION) \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
@@ -63,7 +63,7 @@ $(VALIDATION_TOOLS)/compare_cpp/generate_data.out
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
-$(VALIDATION_TOOLS)/compare_cpp/generate_data.out:
+$(VALIDATION_TOOLS)/compare_cpp/compare_cpp.out:
 	$(MAKE) -C $(VALIDATION_TOOLS)/compare_cpp/
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp

@@ -18,7 +18,7 @@ import (
 //
 // Usage:
 //
-// $ go run generate_data.go [--] [--help]
+// $ go run compare_go.go [--] [--help]
 // [--start_year start]
 // [--until_year until]
 // [--epoch_year year]
@@ -50,7 +50,7 @@ var (
 )
 
 func usage() {
-	fmt.Println(`Usage: go run generate_data.go [--] [--help]
+	fmt.Println(`Usage: go run compare_go.go [--] [--help]
         [--sampling_interval hours] [--start_year start] [--until_year until]
 				[--epoch_year year]
         < zones.txt > validation_data.json`)

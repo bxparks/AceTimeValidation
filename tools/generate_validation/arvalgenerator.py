@@ -6,6 +6,9 @@
 Generate the Arduino validation data files (validation_data.h and
 validation_data.cpp) files and the AUnit unit test file (validation_tests.cpp)
 from the 'validation_data.json' file on the STDIN.
+
+Usage:
+    $ ./generate_validation.py < validation_data.json
 """
 
 import logging
