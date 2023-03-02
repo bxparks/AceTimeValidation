@@ -15,7 +15,7 @@ Assuming that you have `g++` and `make` installed, just type:
 $ make clean
 $ make
 
-$ make runtests
+$ make run
 TestRunner started on 270 test(s).
 Test BasicTransitionTest_Africa_Abidjan passed.
 ...

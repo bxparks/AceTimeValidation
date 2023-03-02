@@ -39,9 +39,6 @@ VAL_UNTIL_YEAR := 2100
 VALIDATION_TOOLS := $(abspath ../tools)
 ACE_TIME_TOOLS := $(abspath ../../AceTimeTools)
 
-runtests:
-	./$(APP_NAME).out
-
 validation_data.cpp: validation_data.h
 
 validation_tests.cpp: validation_data.h

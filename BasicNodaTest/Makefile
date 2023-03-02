@@ -43,9 +43,6 @@ ACE_TIME_TOOLS := $(abspath ../../AceTimeTools)
 NODA_TIME_DIR := $(abspath ../../nodatime)
 NODA_COMPILER_DIR := $(NODA_TIME_DIR)/src/NodaTime.TzdbCompiler
 
-runtests:
-	./$(APP_NAME).out
-
 validation_data.cpp: validation_data.h
 
 validation_tests.cpp: validation_data.h
