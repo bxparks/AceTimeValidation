@@ -1,6 +1,20 @@
 # Changelog
 
 * Unreleased
+* v1.5.1 (2023-03-24, TZDB 2023b)
+    * Upgrade TZDB from 2022g to 2023b
+        * 2023a skipped because it came out only a day earlier.
+        * 2023a: https://mm.icann.org/pipermail/tz-announce/2023-March/000077.html
+            * Egypt now uses DST again, from April through October.
+            * This year Morocco springs forward April 23, not April 30.
+            * Palestine delays the start of DST this year.
+            * Much of Greenland still uses DST from 2024 on.
+            * America/Yellowknife now links to America/Edmonton.
+            * tzselect can now use current time to help infer timezone.
+            * The code now defaults to C99 or later.
+            * Fix use of C23 attributes.
+        * 2023b: https://mm.icann.org/pipermail/tz-announce/2023-March/000078.html
+            * Lebanon delays the start of DST this year.
 * v1.5.0 (2023-02-12, TZDB 2022g)
     * Add `tools/compare_c`
         * Generate validation data using the GNU libc functions of the C
