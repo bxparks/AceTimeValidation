@@ -28,7 +28,7 @@ include ../../EpoxyDuino/EpoxyDuino.mk
 # Location of TZDB and various tools.
 TZ_REPO := $(abspath ../../tz)
 SCOPE := basic
-TZ_VERSION := 2022g
+TZ_VERSION := 2023b
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 10000
