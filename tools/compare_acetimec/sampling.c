@@ -29,8 +29,8 @@ static int8_t create_test_item_from_epoch_seconds(
 
   strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
   ti->abbrev[kAtcAbbrevSize - 1] = '\0';
-  ti->dst_offset = 60 * (zet.dst_offset_minutes);
-  ti->utc_offset = 60 * (zet.std_offset_minutes + zet.dst_offset_minutes);
+  ti->dst_offset = zet.dst_offset_seconds;
+  ti->utc_offset = zet.std_offset_seconds + zet.dst_offset_seconds;
 
   return kAtcErrOk;
 }
@@ -64,11 +64,17 @@ void add_transitions(
   strncpy(test_entry->zone_name, zone_name, ZONE_NAME_SIZE);
   test_entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
 
-  // Use the internal the AtcZoneProcessor and AtcTransitionStorage objects to
+  // Use the internal AtcZoneProcessor and AtcTransitionStorage objects to
   // obtain the DST transitions. These objects are not intended for normal
   // public consumption, but they are useful in this situation.
+
+  // Explicitly initialize the zone_processor because we are by-passing the
+  // normal atc_time_zone_xxx() functions which perform this initialization.
+  atc_processor_init_for_zone_info(tz->zone_processor, tz->zone_info);
+
+  // Scan the years, initializing the zone_procssor for each year.
   for (int16_t year = start_year; year < until_year; ++year) {
-    atc_processor_init_for_year(tz->zone_processor, tz->zone_info, year);
+    atc_processor_init_for_year(tz->zone_processor, year);
     struct AtcTransitionStorage *ts = &tz->zone_processor->transition_storage;
     struct AtcTransition **begin =
         atc_transition_storage_get_active_pool_begin(ts);

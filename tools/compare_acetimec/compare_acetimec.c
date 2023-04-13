@@ -180,7 +180,7 @@ int main(int argc, const char* const* argv) {
   // Sort test items by epoch seconds, and print the JSON.
   sort_test_data(&test_data);
   print_json(&test_data, start_year, until_year, epoch_year,
-    ACE_TIME_C_VERSION_STRING, kAtcTzDatabaseVersion);
+    ACE_TIME_C_VERSION_STRING, kAtcZoneContext.tz_version);
 
   // Cleanup
   test_data_free(&test_data);
