@@ -68,9 +68,14 @@ jobs:
 
     - name: Build Other Compare tools
       run: |
+        make -C tools/compare_acetimec
         make -C tools/compare_cpp
         make -C tools/compare_c
         make -C tools/compare_go
+
+    - name: Validations
+      run: |
+        make validations
 
     # Run the validation tests which will succeed when the TZDB version is
     # updated (BasicHinnantDateTest, ExtendedHinnantDateTest, BasicAcetzTest,
@@ -78,8 +83,6 @@ jobs:
     # version comes out, the Python pytz, dateutil, and Java validation tests
     # will always fail because they depend on the obsolete TZ database on the
     # host Operating System.
-
-    - name: Validations
+    - name: RunValidations
       run: |
-        make validations
         make runvalidations
