@@ -19,7 +19,9 @@
 #include <time.h> // tzset()
 
 //gnu_get_libc_version(), https://stackoverflow.com/questions/9705660
+#if defined(__GNUC__) && defined(__linux__)
 #include <gnu/libc-version.h>
+#endif
 
 #include "test_data.h"
 #include "sampling.h"
@@ -223,7 +225,11 @@ int main(int argc, char **argv )
   print_json(
     &test_data, start_year, until_year, epoch_year,
     "libc" /*source*/,
+  #if defined(__GNUC__) && defined(__linux__)
     gnu_get_libc_version() /*version*/,
+  #else
+    "unknown" /*version*/,
+  #endif
     "2022g?" /*tz_version*/);
 
   test_data_free(&test_data);
