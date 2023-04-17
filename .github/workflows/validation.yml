@@ -69,6 +69,7 @@ jobs:
 
     - name: Build Other Compare tools
       run: |
+        make -C ../AceTimeC/src
         make -C tools/compare_acetimec
         make -C tools/compare_cpp
         make -C tools/compare_c
