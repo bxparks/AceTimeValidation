@@ -31,8 +31,10 @@ AtcZoneRegistrar registrar;
 int8_t process_zone(
     struct AtcZoneProcessor *processor,
     struct TestData *test_data,
+    int i,
     const char *zone_name)
 {
+  fprintf(stderr, "[%d] Zone %s\n", i, zone_name);
   const struct AtcZoneInfo *zone_info = atc_registrar_find_by_name(
       &registrar, zone_name);
   if (zone_info == NULL) {
@@ -41,15 +43,21 @@ int8_t process_zone(
   }
 
   AtcTimeZone tz = {zone_info, processor};
-  struct TestDataEntry *entry = test_data_next_entry(test_data);
+
+  // Create entry for a single zone
+  struct TestEntry *entry = test_data_new_entry(test_data);
+  strncpy(entry->zone_name, zone_name, ZONE_NAME_SIZE - 1);
+  entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
+
   add_transitions(
-      entry,
+      &entry->transitions,
       zone_name,
       &tz,
       start_year,
       until_year);
+
   add_monthly_samples(
-      entry,
+      &entry->samples,
       zone_name,
       &tz,
       start_year,
@@ -61,29 +69,38 @@ int8_t process_zone(
  * Read the list of zones from the 'zones.txt' in the stdin. Ignore blank lines
  * and comments (starting with '#'), and process each zone, one per line.
  */
-int8_t read_and_process_zone(
+int8_t process_zones(
     struct AtcZoneProcessor *processor,
     struct TestData *test_data)
 {
-  char line[MAX_LINE_LENGTH];
+  char line[MAX_LINE_SIZE];
+  int i = 0;
   while (1) {
-    char *p = fgets(line, MAX_LINE_LENGTH, stdin);
-    if (! p) break;
-    const char *delim = " ";
-    char *word = strtok(line, delim);
-    // Strip trailing \n
-    size_t len = strlen(word);
-    if (len && word[len-1] == '\n') {
-      word[len-1] = '\0';
-    }
-    if (strcmp(word, "") == 0) continue;
-    if (word[0] == '#') continue;
+    // fgets() always NUL-terminates
+    char *s = fgets(line, MAX_LINE_SIZE, stdin);
+    if (s == NULL) break;
 
-    int8_t err = process_zone(processor, test_data, word);
+    size_t len = strlen(s);
+    if (len == 0) break;
+
+    // Trim trailing newline if any.
+    if (line[len - 1] == '\n') {
+      line[len - 1] = '\0';
+      len--;
+    }
+
+    // Skip over blank lines
+    if (line[0] == '\0') continue;
+
+    // Skip over comments
+    if (line[0] == '#') continue;
+
+    int8_t err = process_zone(processor, test_data, i, line);
     if (err) {
-      fprintf(stderr, "Error processor zone '%s'\n", word);
+      fprintf(stderr, "Error processor zone '%s'\n", line);
       return err;
     }
+    i++;
   }
 
   return kAtcErrOk;
@@ -174,16 +191,14 @@ int main(int argc, const char* const* argv) {
   // Process the zones on the STDIN.
   struct TestData test_data;
   test_data_init(&test_data);
-  int8_t err = read_and_process_zone(&processor, &test_data);
+  int8_t err = process_zones(&processor, &test_data);
   if (err) exit(1);
 
-  // Sort test items by epoch seconds, and print the JSON.
-  sort_test_data(&test_data);
   print_json(&test_data, start_year, until_year, epoch_year,
     ACE_TIME_C_VERSION_STRING, kAtcZoneContext.tz_version);
 
   // Cleanup
-  test_data_free(&test_data);
+  test_data_clear(&test_data);
 
   return 0;
 }
