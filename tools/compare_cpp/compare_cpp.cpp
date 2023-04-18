@@ -57,6 +57,17 @@ struct TestItem {
   char type; //'A', 'B', 'S', 'T' or 'Y'
 };
 
+/** Collection of test items. */
+typedef vector<TestItem> TestCollection;
+
+/** Test data for a single zone. */
+struct TestEntry {
+  TestCollection transitions;
+  TestCollection samples;
+};
+
+typedef map<string, TestEntry> TestData;
+
 /**
  * Difference between Unix epoch (1970-01-01) and AceTime epoch (2000-01-01).
  */
@@ -129,27 +140,16 @@ TestItem toTestItem(const time_zone& tz, sys_seconds st, char type) {
   };
 }
 
-typedef map<string, vector<TestItem>> TestData;
-
-void addTestItem(TestData& testData, const string& zoneName,
+void addTestItem(TestCollection& testData, const string& zoneName,
     const TestItem& item) {
-  auto it = testData.find(zoneName);
-  if (it == testData.end()) {
-    testData[zoneName] = vector<TestItem>();
-  }
-  // Argh: There's probably a way to reuse the 'it' iterator and avoid
-  // a second lookup but I don't have the time and patience to figure out the
-  // C++ map<> API, and this is good enough for this program.
-  auto &v = testData[zoneName];
-  v.push_back(item);
 }
 
 /**
  * Add a TestItem for one second before a DST transition, and right at the
  * the DST transition.
  */
-void addTransitions(TestData& testData, const time_zone& tz,
-    const string& zoneName, int startYear, int untilYear) {
+void addTransitions(TestCollection& collection, const time_zone& tz,
+    int startYear, int untilYear) {
   sys_seconds begin = sys_days{January/1/startYear} + seconds(0);
   sys_seconds end = sys_days{January/1/untilYear} + seconds(0);
 
@@ -157,11 +157,11 @@ void addTransitions(TestData& testData, const time_zone& tz,
     // One second before the DST transition.
     sys_seconds before = begin - seconds(1);
     auto item = toTestItem(tz, before, 'A');
-    addTestItem(testData, zoneName, item);
+    collection.push_back(item);
 
     // At the DST transition.
     item = toTestItem(tz, begin, 'B');
-    addTestItem(testData, zoneName, item);
+    collection.push_back(item);
 
     sys_info info = tz.get_info(begin);
     begin = info.end;
@@ -176,8 +176,8 @@ void addTransitions(TestData& testData, const time_zone& tz,
  * to get code for converting date/time components to a time_point<> (aka
  * sys_time<>).
  */
-void addMonthlySamples(TestData& testData, const time_zone& tz,
-    const string& zoneName, int startYear, int untilYear) {
+void addMonthlySamples(TestCollection& collection, const time_zone& tz,
+    int startYear, int untilYear) {
 
   for (int y = startYear; y < untilYear; y++) {
     for (int m = 1; m <= 12; m++) {
@@ -206,7 +206,7 @@ void addMonthlySamples(TestData& testData, const time_zone& tz,
 
           sys_seconds ss = zdt.get_sys_time();
           TestItem item = toTestItem(tz, ss, type);
-          addTestItem(testData, zoneName, item);
+          collection.push_back(item);
           // One day sample is enough, so break as soon as we get one.
           break;
         } catch (...) {
@@ -223,7 +223,7 @@ void addMonthlySamples(TestData& testData, const time_zone& tz,
       zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
       sys_seconds ss = zdt.get_sys_time();
       TestItem item = toTestItem(tz, ss, 'Y');
-      addTestItem(testData, zoneName, item);
+      collection.push_back(item);
     } catch (...) {
       // ...unless it's an ambiguous date, in which case just skip it.
     }
@@ -239,8 +239,16 @@ void processZone(TestData& testData, const string& zoneName,
     return;
   }
 
-  addTransitions(testData, *tzp, zoneName, startYear, untilYear);
-  addMonthlySamples(testData, *tzp, zoneName, startYear, untilYear);
+  TestEntry& entry = testData[zoneName];
+  addTransitions(entry.transitions, *tzp, startYear, untilYear);
+  addMonthlySamples(entry.samples, *tzp, startYear, untilYear);
+}
+
+/** Process each zoneName in zones and insert into testData map. */
+void processZones(TestData &testData, const vector<string>& zones) {
+  for (string zoneName : zones) {
+    processZone(testData, zoneName, startYear, untilYear);
+  }
 }
 
 /**
@@ -250,15 +258,6 @@ inline void ltrim(string &s) {
 	s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
 			return !isspace(ch);
 	}));
-}
-
-/** Process each zoneName in zones and insert into testData map. */
-map<string, vector<TestItem>> processZones(const vector<string>& zones) {
-  TestData testData;
-  for (string zoneName : zones) {
-    processZone(testData, zoneName, startYear, untilYear);
-  }
-  return testData;
 }
 
 /** Read the 'zones.txt' from the stdin, and process each zone. */
@@ -276,6 +275,7 @@ vector<string> readZones() {
 }
 
 /** Sort the TestItems according to epochSeconds. */
+/*
 void sortTestData(TestData& testData) {
   for (auto& p : testData) {
     sort(p.second.begin(), p.second.end(),
@@ -284,6 +284,21 @@ void sortTestData(TestData& testData) {
       }
     );
   }
+}
+*/
+
+void printTestItem(const char* indent, const TestItem& item) {
+  printf("%s\"epoch\": %ld,\n", indent, item.epochSeconds);
+  printf("%s\"total_offset\": %d,\n", indent, item.utcOffset);
+  printf("%s\"dst_offset\": %d,\n", indent, item.dstOffset);
+  printf("%s\"y\": %d,\n", indent, item.year);
+  printf("%s\"M\": %d,\n", indent, item.month);
+  printf("%s\"d\": %d,\n", indent, item.day);
+  printf("%s\"h\": %d,\n", indent, item.hour);
+  printf("%s\"m\": %d,\n", indent, item.minute);
+  printf("%s\"s\": %d,\n", indent, item.second);
+  printf("%s\"abbrev\": \"%s\",\n", indent, item.abbrev.c_str());
+  printf("%s\"type\": \"%c\"\n", indent, item.type);
 }
 
 /**
@@ -299,58 +314,61 @@ void printJson(const TestData& testData) {
   // TZDB version
   string tzVersion = date::get_tzdb().version.c_str();
 
+  const char indent0[] = "  ";
+  const char indent1[] = "    ";
+  const char indent2[] = "      ";
+  const char indent3[] = "        ";
+  const char indent4[] = "          ";
+
   printf("{\n");
-  string indent0 = indentUnit;
-  printf("%s\"start_year\": %d,\n", indent0.c_str(), startYear);
-  printf("%s\"until_year\": %d,\n", indent0.c_str(), untilYear);
-  printf("%s\"epoch_year\": %d,\n", indent0.c_str(), epochYear);
-  printf("%s\"source\": \"Hinnant Date\",\n", indent0.c_str());
-  printf("%s\"version\": \"%s\",\n", indent0.c_str(), version.c_str());
-  printf("%s\"tz_version\": \"%s\",\n", indent0.c_str(), tzVersion.c_str());
-  printf("%s\"has_valid_abbrev\": true,\n", indent0.c_str());
-  printf("%s\"has_valid_dst\": true,\n", indent0.c_str());
-  printf("%s\"test_data\": {\n", indent0.c_str());
+  printf("%s\"start_year\": %d,\n", indent0, startYear);
+  printf("%s\"until_year\": %d,\n", indent0, untilYear);
+  printf("%s\"epoch_year\": %d,\n", indent0, epochYear);
+  printf("%s\"source\": \"Hinnant Date\",\n", indent0);
+  printf("%s\"version\": \"%s\",\n", indent0, version.c_str());
+  printf("%s\"tz_version\": \"%s\",\n", indent0, tzVersion.c_str());
+  printf("%s\"has_valid_abbrev\": true,\n", indent0);
+  printf("%s\"has_valid_dst\": true,\n", indent0);
+  printf("%s\"test_data\": {\n", indent0);
 
   // Print each zone
   int zoneCount = 1;
   int numZones = testData.size();
   for (const auto& zoneEntry : testData) {
-    string indent1 = indent0 + indentUnit;
     string zoneName = zoneEntry.first;
-    printf("%s\"%s\": [\n", indent1.c_str(), zoneName.c_str());
+    const TestEntry& entry = zoneEntry.second;
+    printf("%s\"%s\": {\n", indent1, zoneName.c_str());
 
-    // Print each testItem
+    // Print transitions
     int itemCount = 1;
-    const vector<TestItem>& items = zoneEntry.second;
-    for (const TestItem& item : items) {
-      string indent2 = indent1 + indentUnit;
-      printf("%s{\n", indent2.c_str());
-      {
-        string indent3 = indent2 + indentUnit;
-        printf("%s\"epoch\": %ld,\n", indent3.c_str(), item.epochSeconds);
-        printf("%s\"total_offset\": %d,\n",
-            indent3.c_str(), item.utcOffset);
-        printf("%s\"dst_offset\": %d,\n", indent3.c_str(), item.dstOffset);
-        printf("%s\"y\": %d,\n", indent3.c_str(), item.year);
-        printf("%s\"M\": %d,\n", indent3.c_str(), item.month);
-        printf("%s\"d\": %d,\n", indent3.c_str(), item.day);
-        printf("%s\"h\": %d,\n", indent3.c_str(), item.hour);
-        printf("%s\"m\": %d,\n", indent3.c_str(), item.minute);
-        printf("%s\"s\": %d,\n", indent3.c_str(), item.second);
-        printf("%s\"abbrev\": \"%s\",\n",
-            indent3.c_str(), item.abbrev.c_str());
-        printf("%s\"type\": \"%c\"\n", indent3.c_str(), item.type);
-      }
-      printf("%s}%s\n", indent2.c_str(),
-          (itemCount < (int)items.size()) ? "," : "");
+    const TestCollection& transitions = entry.transitions;
+    printf("%s\"%s\": [\n", indent2, "transitions");
+    for (const TestItem& item : transitions) {
+      printf("%s{\n", indent3);
+      printTestItem(indent4, item);
+      printf("%s}%s\n", indent3,
+          (itemCount < (int)transitions.size()) ? "," : "");
       itemCount++;
     }
+    printf("%s],\n", indent2);
 
-    printf("%s]%s\n", indent1.c_str(), (zoneCount < numZones) ? "," : "");
+    // Print samples
+    itemCount = 1;
+    const TestCollection& samples = entry.samples;
+    printf("%s\"%s\": [\n", indent2, "samples");
+    for (const TestItem& item : samples) {
+      printf("%s{\n", indent3);
+      printTestItem(indent4, item);
+      printf("%s}%s\n", indent3, (itemCount < (int)samples.size()) ? "," : "");
+      itemCount++;
+    }
+    printf("%s]\n", indent2);
+
+    printf("%s}%s\n", indent1, (zoneCount < numZones) ? "," : "");
     zoneCount++;
   }
 
-  printf("%s}\n", indent0.c_str());
+  printf("%s}\n", indent0);
   printf("}\n");
 }
 
@@ -482,8 +500,9 @@ int main(int argc, const char* const* argv) {
   vector<string> zones = readZones();
 
   fprintf(stderr, "Generating validation data\n");
-  TestData testData = processZones(zones);
-  sortTestData(testData);
+  TestData testData;
+  processZones(testData, zones);
+  //sortTestData(testData);
 
   fprintf(stderr, "Writing validation data\n");
   printJson(testData);
