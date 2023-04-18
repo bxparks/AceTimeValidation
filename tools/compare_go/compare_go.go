@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -143,24 +142,30 @@ func parseArgs() []string {
 //-----------------------------------------------------------------------------
 
 // The collection of all zones and their test items.
-type ValidationDataType struct {
-	StartYear      int          `json:"start_year"`
-	UntilYear      int          `json:"until_year"`
-	EpochYear      int          `json:"epoch_year"`
-	Source         string       `json:"source"`
-	Version        string       `json:"version"`
-	TzVersion      string       `json:"tz_version"`
-	HasValidAbbrev bool         `json:"has_valid_abbrev"`
-	HasValidDst    bool         `json:"has_valid_dst"`
-	TestData       TestDataType `json:"test_data"`
+type ValidationData struct {
+	StartYear      int      `json:"start_year"`
+	UntilYear      int      `json:"until_year"`
+	EpochYear      int      `json:"epoch_year"`
+	Source         string   `json:"source"`
+	Version        string   `json:"version"`
+	TzVersion      string   `json:"tz_version"`
+	HasValidAbbrev bool     `json:"has_valid_abbrev"`
+	HasValidDst    bool     `json:"has_valid_dst"`
+	TData          TestData `json:"test_data"`
 }
 
 // A map of zoneName to an array of TestItems.
-type TestDataType map[string][]TestItemType
+type TestData map[string]TestEntry
+
+// A pair of transitions and samples.
+type TestEntry struct {
+	Transitions []TestItem `json:"transitions"`
+	Samples     []TestItem `json:"samples"`
+}
 
 // A test item struct contains the epochSeconds with its local date time
 // components.
-type TestItemType struct {
+type TestItem struct {
 	EpochSeconds int    `json:"epoch"`
 	TotalOffset  int    `json:"total_offset"`
 	DstOffset    int    `json:"dst_offset"`
@@ -206,8 +211,8 @@ func readZones() []string {
 //-----------------------------------------------------------------------------
 
 // ProcessZones() iterates over the list of zones and calls processZone().
-func processZones(zones []string) TestDataType {
-	testData := make(TestDataType)
+func processZones(zones []string) TestData {
+	testData := make(TestData)
 	for _, zoneName := range zones {
 		testItems, err := processZone(zoneName)
 		if err != nil {
@@ -222,32 +227,31 @@ func processZones(zones []string) TestDataType {
 }
 
 // ProcessZone() adds the DST transitions and sample data for each month.
-func processZone(zoneName string) ([]TestItemType, error) {
+func processZone(zoneName string) (TestEntry, error) {
 	tz, err := time.LoadLocation(zoneName)
 	if err != nil {
-		return nil, err
+		return TestEntry{}, err
 	}
 
-	testItems := make([]TestItemType, 0, 500)
-	testItems = addTransitions(testItems, tz)
-	testItems = addSamples(testItems, tz)
-	sortSamples(testItems)
-	return testItems, nil
+	transitions := createTransitions(tz)
+	samples := createSamples(tz)
+	//sortSamples(testItems)
+	entry := TestEntry{transitions, samples}
+	return entry, nil
 }
 
-func sortSamples(testItems []TestItemType) {
+/*
+func sortSamples(testItems []TestItem) {
 	sort.Slice(testItems, func(i, j int) bool {
 		return testItems[i].EpochSeconds < testItems[j].EpochSeconds
 	})
 }
+*/
 
-// AddTransition() finds the DST transitions of the timezone, and creates
+// createTransition() finds the DST transitions of the timezone, and creates
 // a testItem for the 'before' time, and a testItem for the 'after' time.
-func addTransitions(
-	testItems []TestItemType,
-	tz *time.Location,
-) []TestItemType {
-
+func createTransitions(tz *time.Location) []TestItem {
+	testItems := make([]TestItem, 0, 500)
 	transitions := findTransitions(startYear, untilYear, samplingInterval, tz)
 	for _, transition := range transitions {
 		beforeTestItem := createTestItem(transition.before, "A")
@@ -259,11 +263,9 @@ func addTransitions(
 	return testItems
 }
 
-// AddSamples() add a testItem for each month for the given zone.
-func addSamples(
-	testItems []TestItemType,
-	tz *time.Location,
-) []TestItemType {
+// createSamples() add a testItem for each month for the given zone.
+func createSamples(tz *time.Location) []TestItem {
+	testItems := make([]TestItem, 0, 2000)
 	for year := startYear; year < untilYear; year++ {
 		for month := 1; month <= 12; month++ {
 			dtSample := time.Date(year, time.Month(month), 2, 0, 0, 0, 0, tz)
@@ -275,7 +277,7 @@ func addSamples(
 	return testItems
 }
 
-func createTestItem(t time.Time, itemType string) TestItemType {
+func createTestItem(t time.Time, itemType string) TestItem {
 	unixSeconds := t.Unix()
 	epochSeconds := int(unixSeconds - secondsToAceTimeEpochFromUnixEpoch)
 
@@ -285,7 +287,7 @@ func createTestItem(t time.Time, itemType string) TestItemType {
 	dstOffset := 0
 	abbrev := abbreviation(t)
 
-	return TestItemType{
+	return TestItem{
 		epochSeconds,
 		totalOffset,
 		dstOffset,
@@ -307,8 +309,8 @@ func abbreviation(t time.Time) string {
 
 //-----------------------------------------------------------------------------
 
-func createValidationData(testData TestDataType) ValidationDataType {
-	return ValidationDataType{
+func createValidationData(testData TestData) ValidationData {
+	return ValidationData{
 		StartYear:      startYear,
 		UntilYear:      untilYear,
 		EpochYear:      epochYear,
@@ -317,13 +319,13 @@ func createValidationData(testData TestDataType) ValidationDataType {
 		TzVersion:      "",
 		HasValidAbbrev: true,
 		HasValidDst:    false,
-		TestData:       testData,
+		TData:          testData,
 	}
 }
 
 //-----------------------------------------------------------------------------
 
-func printJson(validationData ValidationDataType) {
+func printJson(validationData ValidationData) {
 	jsonData, err := json.MarshalIndent(validationData, "", "  ")
 	if err != nil {
 		log.Println(err)
