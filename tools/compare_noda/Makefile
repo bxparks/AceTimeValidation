@@ -8,6 +8,9 @@ ACE_TIME_EPOCH_YEAR := 2050
 NODA_TIME_DIR := $(abspath ../../../nodatime)
 NODA_COMPILER_DIR := $(NODA_TIME_DIR)/src/NodaTime.TzdbCompiler
 
+build: Program.cs
+	dotnet build --framework net6.0
+
 validation_data.json: Program.cs small.txt tzdata$(TZ_VERSION).nzd
 	dotnet run \
 		--framework net6.0 \
