@@ -107,7 +107,7 @@ public class CompareJava {
       List<String> zones = readZones();
       CompareJava generator = new CompareJava(
           invocation, startYear, untilYear, epochYear);
-      Map<String, List<TestItem>> testData = generator.createTestData(zones);
+      Map<String, TestEntry> testData = generator.createTestData(zones);
       generator.printJson(testData);
     }
   }
@@ -180,39 +180,38 @@ public class CompareJava {
    * create an entry with a null value to indicate that the zone is missing. E.g "Asia/Qostanay"
    * exists in 2019a but is missing from (openjdk version "11.0.3" 2019-04-16).
    */
-  private Map<String, List<TestItem>> createTestData(List<String> zones) {
-    Map<String, List<TestItem>> testData = new TreeMap<>();
+  private Map<String, TestEntry> createTestData(List<String> zones) {
+    Map<String, TestEntry> testData = new TreeMap<>();
     for (String zoneName : zones) {
-      List<TestItem> testItems;
+      ZoneId zoneId;
       try {
-        ZoneId zoneId = ZoneId.of(zoneName);
-        testItems = createValidationData(zoneId);
+        zoneId = ZoneId.of(zoneName);
       } catch (ZoneRulesException e) {
         System.err.printf("Zone '%s' not found%n", zoneName);
-        testItems = null;
+        continue;
       }
-      testData.put(zoneName, testItems);
+      TestEntry entry = createTestEntry(zoneId);
+      testData.put(zoneName, entry);
     }
     return testData;
   }
 
   /** Return a list of TestItems for zoneId sorted by increasing epochSeconds. */
-  private List<TestItem> createValidationData(ZoneId zoneId) {
+  private TestEntry createTestEntry(ZoneId zoneId) {
     Instant startInstant = ZonedDateTime.of(startYear, 1, 1, 0, 0, 0, 0, zoneId).toInstant();
     Instant untilInstant = ZonedDateTime.of(untilYear, 1, 1, 0, 0, 0, 0, zoneId).toInstant();
 
-    // Map of (testItem.epochSeconds -> TestItem).
-    Map<Integer, TestItem> testItems = new TreeMap<>();
+    TestEntry entry = new TestEntry();
+    entry.transitions = createTransitions(zoneId, startInstant, untilInstant);
+    entry.samples = createSamples(zoneId, startInstant, untilInstant);
 
-    addTestItemsFromTransitions(testItems, zoneId, startInstant, untilInstant);
-    addTestItemsFromSampling(testItems, zoneId, startInstant, untilInstant);
-
-    List<TestItem> sortedItems = new ArrayList<>(testItems.values());
-    return sortedItems;
+    return entry;
   }
 
-  private static void addTestItemsFromTransitions(Map<Integer, TestItem> testItems, ZoneId zoneId,
-      Instant startInstant, Instant untilInstant) {
+  private static List<TestItem> createTransitions(
+      ZoneId zoneId, Instant startInstant, Instant untilInstant) {
+
+    List<TestItem> items = new ArrayList<>();
     ZonedDateTime untilDateTime = ZonedDateTime.ofInstant(untilInstant, zoneId);
     ZoneRules rules = zoneId.getRules();
     Instant prevInstant = startInstant;
@@ -233,19 +232,22 @@ public class CompareJava {
       Instant currentInstant = transition.getInstant();
 
       // One second before the transition, and at the transition
-      addTestItem(testItems, currentInstant.minusSeconds(1), zoneId, 'A');
-      addTestItem(testItems, currentInstant, zoneId, 'B');
+      items.add(createTestItem(currentInstant.minusSeconds(1), zoneId, 'A'));
+      items.add(createTestItem(currentInstant, zoneId, 'B'));
 
       prevInstant = currentInstant;
     }
+    return items;
   }
 
   /** Add intervening sample test items from startInstant to untilInstant for zoneId. */
-  private static void addTestItemsFromSampling(Map<Integer, TestItem> testItems, ZoneId zoneId,
-      Instant startInstant, Instant untilInstant) {
+  private static List<TestItem> createSamples(
+      ZoneId zoneId, Instant startInstant, Instant untilInstant) {
+
     ZonedDateTime startDateTime = ZonedDateTime.ofInstant(startInstant, zoneId);
     ZonedDateTime untilDateTime = ZonedDateTime.ofInstant(untilInstant, zoneId);
 
+    List<TestItem> items = new ArrayList<>();
     for (int year = startDateTime.getYear(); year < untilDateTime.getYear(); year++) {
       // Add a sample test point on the *second* of each month instead of the first of the month.
       // This prevents Jan 1, 2000 from being converted to a negative epoch seconds for certain
@@ -257,23 +259,14 @@ public class CompareJava {
       for (int month = 1; month <= 12; month++) {
         LocalDateTime localDateTime = LocalDateTime.of(year, month, 2, 0, 0, 0);
         ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, zoneId);
-        addTestItem(testItems, zonedDateTime.toInstant(), zoneId, 'S');
+        items.add(createTestItem(zonedDateTime.toInstant(), zoneId, 'S'));
       }
       // Add last day and hour of the year ({year}-12-31-23:00:00)
       LocalDateTime localDateTime = LocalDateTime.of(year, 12, 31, 23, 0, 0);
       ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, zoneId);
-      addTestItem(testItems, zonedDateTime.toInstant(), zoneId, 'Y');
+      items.add(createTestItem(zonedDateTime.toInstant(), zoneId, 'Y'));
     }
-  }
-
-  /**
-   * Add the TestItem at instant, with the epoch_seconds, UTC offset, and DST shift.
-   */
-  private static void addTestItem(Map<Integer, TestItem> testItems, Instant instant,
-      ZoneId zoneId, char type) {
-    TestItem testItem = createTestItem(instant, zoneId, type);
-    if (testItems.containsKey(testItem.epochSeconds)) return;
-    testItems.put(testItem.epochSeconds, testItem);
+    return items;
   }
 
   /** Create a test item using the instant to determine the offsets. */
@@ -313,10 +306,14 @@ public class CompareJava {
    * redirected to a file named 'validation_data.json'. We serialize JSON manually to avoid pulling
    * in any external dependencies, The TestData format is pretty simple.
    */
-  private void printJson(Map<String, List<TestItem>> testData) throws IOException {
-    try (PrintWriter writer = new PrintWriter(System.out)) {
-      String indentUnit = "  ";
+  private void printJson(Map<String, TestEntry> testData) throws IOException {
+    String indent0 = "  ";
+    String indent1 = "    ";
+    String indent2 = "      ";
+    String indent3 = "        ";
+    String indent4 = "          ";
 
+    try (PrintWriter writer = new PrintWriter(System.out)) {
       // JDK version
       String version = System.getProperty("java.version");
 
@@ -325,7 +322,6 @@ public class CompareJava {
       String tzDbVersion = ZoneRulesProvider.getVersions("UTC").lastEntry().getKey();
 
       writer.println("{");
-      String indent0 = indentUnit;
       writer.printf("%s\"start_year\": %s,\n", indent0, startYear);
       writer.printf("%s\"until_year\": %s,\n", indent0, untilYear);
       writer.printf("%s\"epoch_year\": %s,\n", indent0, epochYear);
@@ -341,41 +337,36 @@ public class CompareJava {
       // Print each zone
       int zoneCount = 1;
       int numZones = testData.size();
-      for (Map.Entry<String, List<TestItem>> entry : testData.entrySet()) {
-        List<TestItem> items = entry.getValue();
-        if (items == null) {
-          zoneCount++;
-          continue;
-        }
-
+      for (Map.Entry<String, TestEntry> entry : testData.entrySet()) {
         // Print the zone name
-        String indent1 = indent0 + indentUnit;
-        writer.printf("%s\"%s\": [\n", indent1, entry.getKey());
+        writer.printf("%s\"%s\": {\n", indent1, entry.getKey());
+        TestEntry testEntry = entry.getValue();
 
-        // Print the testItems of the zone
+        // Print the transitions
+        writer.printf("%s\"%s\": [\n", indent2, "transitions");
         int itemCount = 1;
+        List<TestItem> items = testEntry.transitions;
         for (TestItem item : items) {
-          String indent2 = indent1 + indentUnit;
-          writer.printf("%s{\n", indent2);
-          {
-            String indent3 = indent2 + indentUnit;
-            writer.printf("%s\"epoch\": %d,\n", indent3, item.epochSeconds);
-            writer.printf("%s\"total_offset\": %d,\n", indent3, item.utcOffset);
-            writer.printf("%s\"dst_offset\": %d,\n", indent3, item.dstOffset);
-            writer.printf("%s\"y\": %d,\n", indent3, item.year);
-            writer.printf("%s\"M\": %d,\n", indent3, item.month);
-            writer.printf("%s\"d\": %d,\n", indent3, item.day);
-            writer.printf("%s\"h\": %d,\n", indent3, item.hour);
-            writer.printf("%s\"m\": %d,\n", indent3, item.minute);
-            writer.printf("%s\"s\": %d,\n", indent3, item.second);
-            writer.printf("%s\"abbrev\": \"%s\",\n", indent3, item.abbrev);
-            writer.printf("%s\"type\": \"%s\"\n", indent3, item.type);
-          }
-          writer.printf("%s}%s\n", indent2, (itemCount < items.size()) ? "," : "");
+          writer.printf("%s{\n", indent3);
+          printTestItem(writer, indent4, item);
+          writer.printf("%s}%s\n", indent3, (itemCount < items.size()) ? "," : "");
           itemCount++;
         }
+        writer.printf("%s],\n", indent2);
 
-        writer.printf("%s]%s\n", indent1, (zoneCount < numZones) ? "," : "");
+        // Print the samples
+        writer.printf("%s\"%s\": [\n", indent2, "samples");
+        items = testEntry.samples;
+        itemCount = 1;
+        for (TestItem item : items) {
+          writer.printf("%s{\n", indent3);
+          printTestItem(writer, indent4, item);
+          writer.printf("%s}%s\n", indent3, (itemCount < items.size()) ? "," : "");
+          itemCount++;
+        }
+        writer.printf("%s]\n", indent2);
+
+        writer.printf("%s}%s\n", indent1, (zoneCount < numZones) ? "," : "");
         zoneCount++;
       }
       writer.printf("%s}\n", indent0);
@@ -384,11 +375,30 @@ public class CompareJava {
     }
   }
 
+  private void printTestItem(PrintWriter writer, String indent, TestItem item) throws IOException {
+    writer.printf("%s\"epoch\": %d,\n", indent, item.epochSeconds);
+    writer.printf("%s\"total_offset\": %d,\n", indent, item.utcOffset);
+    writer.printf("%s\"dst_offset\": %d,\n", indent, item.dstOffset);
+    writer.printf("%s\"y\": %d,\n", indent, item.year);
+    writer.printf("%s\"M\": %d,\n", indent, item.month);
+    writer.printf("%s\"d\": %d,\n", indent, item.day);
+    writer.printf("%s\"h\": %d,\n", indent, item.hour);
+    writer.printf("%s\"m\": %d,\n", indent, item.minute);
+    writer.printf("%s\"s\": %d,\n", indent, item.second);
+    writer.printf("%s\"abbrev\": \"%s\",\n", indent, item.abbrev);
+    writer.printf("%s\"type\": \"%s\"\n", indent, item.type);
+  }
+
   // constructor parameters
   private final String invocation;
   private final int startYear;
   private final int untilYear;
   private final int epochYear;
+}
+
+class TestEntry {
+  List<TestItem> transitions;
+  List<TestItem> samples;
 }
 
 class TestItem {
