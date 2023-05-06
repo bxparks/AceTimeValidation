@@ -115,7 +115,7 @@ namespace compare_noda
 
             List<string> zones = ReadZones();
             GenerateData generator = new GenerateData(startYear, untilYear, epochYear, provider);
-            IDictionary<string, List<TestItem>> testData = generator.CreateTestData(zones);
+            IDictionary<string, TestEntry> testData = generator.CreateTestData(zones);
             generator.PrintJson(testData);
         }
 
@@ -154,7 +154,11 @@ namespace compare_noda
         // 2050-01-01T00:00:00Z). Non-static, will be calculated in the constructor.
         private static int secondsToAceTimeEpochFromUnixEpoch = 946684800;
 
-        private const string indentUnit = "  ";
+        private const string indent0 = "  ";
+        private const string indent1 = "    ";
+        private const string indent2 = "      ";
+        private const string indent3 = "        ";
+        private const string indent4 = "          ";
 
         public GenerateData(int startYear, int untilYear, int epochYear, IDateTimeZoneProvider provider)
         {
@@ -168,78 +172,46 @@ namespace compare_noda
             secondsToAceTimeEpochFromUnixEpoch = (int) epochInstant.ToUnixTimeSeconds();
         }
 
-        public IDictionary<string, List<TestItem>> CreateTestData(List<string> zones)
+        public IDictionary<string, TestEntry> CreateTestData(List<string> zones)
         {
-            var testData = new SortedDictionary<string, List<TestItem>>();
+            var testData = new SortedDictionary<string, TestEntry>();
             foreach (string zone in zones)
             {
-                List<TestItem> testItems = CreateValidationData(zone);
-                testData.Add(zone, testItems);
+                DateTimeZone tz = dateTimeZoneProvider[zone];
+                var startInstant = new LocalDateTime(startYear, 1, 1, 0, 0)
+                    .InZoneLeniently(tz).ToInstant();
+                var untilInstant = new LocalDateTime(untilYear, 1, 1, 0, 0)
+                    .InZoneLeniently(tz).ToInstant();
+
+                var testEntry = new TestEntry();
+                testEntry.transitions = CreateTransitions(tz, startInstant, untilInstant);
+                testEntry.samples = CreateSamples(tz, startInstant, untilInstant);
+                testData.Add(zone, testEntry);
             }
             return testData;
         }
 
-        private List<TestItem> CreateValidationData(string zone)
-        {
-            DateTimeZone tz = dateTimeZoneProvider[zone];
-            var startInstant = new LocalDateTime(startYear, 1, 1, 0, 0)
-                .InZoneLeniently(tz).ToInstant();
-            var untilInstant = new LocalDateTime(untilYear, 1, 1, 0, 0)
-                .InZoneLeniently(tz).ToInstant();
-
-            var testItems = new SortedDictionary<int, TestItem>();
-            AddTestItemsFromZoneIntervals(testItems, tz, startInstant, untilInstant);
-            AddTestItemsFromSampling(testItems, tz, startInstant, untilInstant);
-
+        private List<TestItem> CreateTransitions(DateTimeZone tz, Instant startInstant, Instant untilInstant) {
             var items = new List<TestItem>();
-            items.AddRange(testItems.Values);
-            return items;
-        }
-
-        private void AddTestItemsFromZoneIntervals(
-            IDictionary<int, TestItem> testItems,
-            DateTimeZone tz,
-            Instant startInstant,
-            Instant untilInstant)
-        {
             var intervals = tz.GetZoneIntervals(startInstant, untilInstant);
             foreach (ZoneInterval zi in intervals)
             {
-                AddZoneInterval(testItems, tz, zi);
-            }
-        }
-
-        private void AddZoneInterval(
-            IDictionary<int, TestItem> testItems,
-            DateTimeZone tz,
-            ZoneInterval zi)
-        {
-            if (zi.HasStart)
-            {
-                var isoStart = zi.IsoLocalStart;
-                if (isoStart.Year > startYear)
+                if (zi.HasStart)
                 {
-                    // A: One minute before the transition
-                    // B: Right after the DST transition.
-                    Instant after = zi.Start;
-                    Duration oneMinute = Duration.FromMinutes(1);
-                    Instant before = after - oneMinute;
-
-                    AddTestItem(testItems, tz, before, 'A');
-                    AddTestItem(testItems, tz, after, 'B');
+                    var isoStart = zi.IsoLocalStart;
+                    if (isoStart.Year > startYear)
+                    {
+                        // A: One minute before the transition
+                        // B: Right after the DST transition.
+                        Instant after = zi.Start;
+                        Duration oneMinute = Duration.FromMinutes(1);
+                        Instant before = after - oneMinute;
+                        items.Add(CreateTestItem(tz, before, 'A'));
+                        items.Add(CreateTestItem(tz, after, 'B'));
+                    }
                 }
             }
-        }
-
-        private static void AddTestItem(
-            IDictionary<int, TestItem> testItems,
-            DateTimeZone tz,
-            Instant instant,
-            char type)
-        {
-            TestItem testItem = CreateTestItem(tz, instant, type);
-            if (testItems.ContainsKey(testItem.epochSeconds)) return;
-            testItems.Add(testItem.epochSeconds, testItem);
+            return items;
         }
 
         private static TestItem CreateTestItem(DateTimeZone tz, Instant instant, char type)
@@ -262,12 +234,10 @@ namespace compare_noda
             return testItem;
         }
 
-        private void AddTestItemsFromSampling(
-            IDictionary<int, TestItem> testItems,
-            DateTimeZone tz,
-            Instant startInstant,
-            Instant untilInstant)
-        {
+        private List<TestItem> CreateSamples(
+                DateTimeZone tz, Instant startInstant, Instant untilInstant) {
+
+            var items = new List<TestItem>();
             ZonedDateTime startDt = startInstant.InZone(tz);
             ZonedDateTime untilDt = untilInstant.InZone(tz);
 
@@ -284,24 +254,24 @@ namespace compare_noda
                 for (int month = 1; month <= 12; month++)
                 {
                     ZonedDateTime zdt = new LocalDateTime(year, month, 2, 0, 0).InZoneLeniently(tz);
-                    AddTestItem(testItems, tz, zdt.ToInstant(), 'S');
+                    items.Add(CreateTestItem(tz, zdt.ToInstant(), 'S'));
                 }
 
                 // Add the last day and hour of the year
                 ZonedDateTime lastdt = new LocalDateTime(year, 12, 31, 23, 0).InZoneLeniently(tz);
-                AddTestItem(testItems, tz, lastdt.ToInstant(), 'Y');
+                items.Add(CreateTestItem(tz, lastdt.ToInstant(), 'Y'));
             }
+            return items;
         }
 
         // Serialize to JSON manually, for 2 reasons:
         // a) to reduce external dependencies,
         // b) to follow the Java code.
-        public void PrintJson(IDictionary<string, List<TestItem>> testData)
+        public void PrintJson(IDictionary<string, TestEntry> testData)
         {
             string tzVersion = dateTimeZoneProvider.VersionId;
 
             Console.WriteLine("{");
-            string indent0 = indentUnit;
             Console.WriteLine($"{indent0}\"start_year\": {startYear},");
             Console.WriteLine($"{indent0}\"until_year\": {untilYear},");
             Console.WriteLine($"{indent0}\"epoch_year\": {epochYear},");
@@ -314,51 +284,62 @@ namespace compare_noda
 
             int zoneCount = 1;
             int numZones = testData.Count;
-            foreach (KeyValuePair<string, List<TestItem>> entry in testData)
+            foreach (KeyValuePair<string, TestEntry> entry in testData)
             {
-                var items = entry.Value;
-                if (items == null)
-                {
-                    zoneCount++;
-                    continue;
-                }
-
                 // Print the zone name
-                string indent1 = indent0 + indentUnit;
-                Console.WriteLine($"{indent1}\"{entry.Key}\": [");
+                Console.WriteLine($"{indent1}\"{entry.Key}\": {{");
+                var testEntry = entry.Value;
 
-                // Prin the testItems
+                // Print transitions
+                Console.WriteLine($"{indent2}\"transitions\": [");
                 int itemCount = 1;
+                List<TestItem> items = testEntry.transitions;
                 foreach (TestItem item in items)
                 {
-                    string indent2 = indent1 + indentUnit;
-                    Console.WriteLine($"{indent2}{{");
-                    {
-                        string indent3 = indent2 + indentUnit;
-                        Console.WriteLine($"{indent3}\"epoch\": {item.epochSeconds},");
-                        Console.WriteLine($"{indent3}\"total_offset\": {item.utcOffset},");
-                        Console.WriteLine($"{indent3}\"dst_offset\": {item.dstOffset},");
-                        Console.WriteLine($"{indent3}\"y\": {item.year},");
-                        Console.WriteLine($"{indent3}\"M\": {item.month},");
-                        Console.WriteLine($"{indent3}\"d\": {item.day},");
-                        Console.WriteLine($"{indent3}\"h\": {item.hour},");
-                        Console.WriteLine($"{indent3}\"m\": {item.minute},");
-                        Console.WriteLine($"{indent3}\"s\": {item.second},");
-                        Console.WriteLine($"{indent3}\"abbrev\": \"{item.abbrev}\",");
-                        Console.WriteLine($"{indent3}\"type\": \"{item.type}\"");
-                    }
+                    Console.WriteLine($"{indent3}{{");
+                    PrintItem(indent4, item);
                     string innerComma = itemCount < items.Count ? "," : "";
-                    Console.WriteLine($"{indent2}}}{innerComma}");
+                    Console.WriteLine($"{indent3}}}{innerComma}");
                     itemCount++;
                 }
+                Console.WriteLine($"{indent2}],");
+
+                // Print samples
+                Console.WriteLine($"{indent2}\"samples\": [");
+                itemCount = 1;
+                items = testEntry.samples;
+                foreach (TestItem item in items)
+                {
+                    Console.WriteLine($"{indent3}{{");
+                    PrintItem(indent4, item);
+                    string innerComma = itemCount < items.Count ? "," : "";
+                    Console.WriteLine($"{indent3}}}{innerComma}");
+                    itemCount++;
+                }
+                Console.WriteLine($"{indent2}]");
 
                 string outerComma = zoneCount < numZones ? "," : "";
-                Console.WriteLine($"{indent1}]{outerComma}");
+                Console.WriteLine($"{indent1}}}{outerComma}");
                 zoneCount++;
             }
 
             Console.WriteLine($"{indent0}}}");
             Console.WriteLine("}");
+        }
+
+        private void PrintItem(string indent, TestItem item)
+        {
+            Console.WriteLine($"{indent}\"epoch\": {item.epochSeconds},");
+            Console.WriteLine($"{indent}\"total_offset\": {item.utcOffset},");
+            Console.WriteLine($"{indent}\"dst_offset\": {item.dstOffset},");
+            Console.WriteLine($"{indent}\"y\": {item.year},");
+            Console.WriteLine($"{indent}\"M\": {item.month},");
+            Console.WriteLine($"{indent}\"d\": {item.day},");
+            Console.WriteLine($"{indent}\"h\": {item.hour},");
+            Console.WriteLine($"{indent}\"m\": {item.minute},");
+            Console.WriteLine($"{indent}\"s\": {item.second},");
+            Console.WriteLine($"{indent}\"abbrev\": \"{item.abbrev}\",");
+            Console.WriteLine($"{indent}\"type\": \"{item.type}\"");
         }
 
         private static int ToAceTimeEpochSeconds(long unixEpochSeconds)
@@ -370,6 +351,12 @@ namespace compare_noda
         private readonly int untilYear;
         private readonly int epochYear;
         private readonly IDateTimeZoneProvider dateTimeZoneProvider;
+    }
+
+    struct TestEntry
+    {
+        internal List<TestItem> transitions;
+        internal List<TestItem> samples;
     }
 
     struct TestItem

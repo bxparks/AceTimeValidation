@@ -28,7 +28,8 @@ mypy:
 		-m compare_acetz \
 		-m compare_pytz \
 		-m compare_dateutil \
-		-m compare_zoneinfo
+		-m compare_zoneinfo \
+		-m generate_validation
 
 tests:
 	python3 -m unittest

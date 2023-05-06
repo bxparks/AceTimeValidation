@@ -109,16 +109,16 @@ static int8_t create_test_item_from_epoch_seconds(
 }
 
 static int8_t add_test_item_from_epoch_seconds(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     long epoch_seconds,
     char type)
 {
   (void) zone_name;
-  struct TestItem *ti = test_data_entry_next_item(test_entry);
+  struct TestItem *ti = test_collection_new_item(collection);
   int8_t err = create_test_item_from_epoch_seconds(ti, epoch_seconds, type);
   if (err) {
-    test_data_entry_free_item(test_entry);
+    test_collection_delete_item(collection);
     return err;
   }
 
@@ -126,7 +126,7 @@ static int8_t add_test_item_from_epoch_seconds(
 }
 
 void add_monthly_samples(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     int16_t start_year,
     int16_t until_year)
@@ -150,7 +150,7 @@ void add_monthly_samples(
         time_t unix_seconds = to_unix_seconds(y, m, d, 0, 0, 0);
         long epoch_seconds = convert_unix_time_to_ace_time(unix_seconds);
         add_test_item_from_epoch_seconds(
-            test_entry, zone_name, epoch_seconds, 'S');
+            collection, zone_name, epoch_seconds, 'S');
         break;
       }
     }
@@ -192,7 +192,7 @@ static void binary_search_transition(
 }
 
 void add_transitions(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     int16_t start_year,
     int16_t until_year,
@@ -214,9 +214,9 @@ void add_transitions(
       long left_epoch_seconds = convert_unix_time_to_ace_time(left);
       long right_epoch_seconds = convert_unix_time_to_ace_time(right);
       add_test_item_from_epoch_seconds(
-          test_entry, zone_name, left_epoch_seconds, 'A');
+          collection, zone_name, left_epoch_seconds, 'A');
       add_test_item_from_epoch_seconds(
-          test_entry, zone_name, right_epoch_seconds, 'B');
+          collection, zone_name, right_epoch_seconds, 'B');
     }
 
     t = t_next;

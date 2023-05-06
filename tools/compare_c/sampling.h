@@ -14,7 +14,7 @@ void set_ace_time_epoch_year(int epoch_year);
  * structure. Similar to `compare_acetz/zptdgenerator.py`.
  */
 void add_transitions(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     int16_t start_year,
     int16_t until_year,
@@ -26,7 +26,7 @@ void add_transitions(
  * no DST transitions.
  */
 void add_monthly_samples(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     int16_t start_year,
     int16_t until_year);

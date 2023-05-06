@@ -36,18 +36,18 @@ static int8_t create_test_item_from_epoch_seconds(
 }
 
 static int8_t add_test_item_from_epoch_seconds(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     const AtcTimeZone *tz,
     atc_time_t epoch_seconds,
     char type)
 {
   (void) zone_name;
-  struct TestItem *ti = test_data_entry_next_item(test_entry);
+  struct TestItem *ti = test_collection_new_item(collection);
   int8_t err = create_test_item_from_epoch_seconds(
       ti, tz, epoch_seconds, type);
   if (err) {
-    test_data_entry_free_item(test_entry);
+    test_collection_delete_item(collection);
     return err;
   }
 
@@ -55,15 +55,12 @@ static int8_t add_test_item_from_epoch_seconds(
 }
 
 void add_transitions(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
     int16_t until_year)
 {
-  strncpy(test_entry->zone_name, zone_name, ZONE_NAME_SIZE);
-  test_entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
-
   // Use the internal AtcZoneProcessor and AtcTransitionStorage objects to
   // obtain the DST transitions. These objects are not intended for normal
   // public consumption, but they are useful in this situation.
@@ -99,20 +96,20 @@ void add_transitions(
 
       // Add a test data just before the transition
       int8_t err = add_test_item_from_epoch_seconds(
-          test_entry, zone_name, tz, epoch_seconds - 1, 'A');
+          collection, zone_name, tz, epoch_seconds - 1, 'A');
       if (err) continue;
 
       // Add a test data at the transition itself (which will
       // normally be shifted forward or backwards).
       err = add_test_item_from_epoch_seconds(
-          test_entry, zone_name, tz, epoch_seconds, 'B');
+          collection, zone_name, tz, epoch_seconds, 'B');
       if (err) continue;
     }
   }
 }
 
 void add_monthly_samples(
-    struct TestDataEntry *test_entry,
+    struct TestCollection *collection,
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
@@ -141,7 +138,7 @@ void add_monthly_samples(
         atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
         if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
         add_test_item_from_epoch_seconds(
-            test_entry, zone_name, tz, epoch_seconds, 'S');
+            collection, zone_name, tz, epoch_seconds, 'S');
         break;
       }
     }
@@ -156,6 +153,6 @@ void add_monthly_samples(
     atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
     if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
     add_test_item_from_epoch_seconds(
-        test_entry, zone_name, tz, epoch_seconds, 'Y');
+        collection, zone_name, tz, epoch_seconds, 'Y');
   }
 }

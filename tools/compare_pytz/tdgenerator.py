@@ -14,7 +14,7 @@ module is truly dependent on only the 'pytz' module.
 import logging
 from datetime import datetime, timedelta, timezone
 import pytz
-from typing import Any, Tuple, List, Dict, Optional
+from typing import Any, Tuple, List
 
 from acetimetools.data_types.validation_types import (
     TestItem, TestData, ValidationData
@@ -55,15 +55,8 @@ class TestDataGenerator():
         TestDataGenerator.seconds_to_ace_time_epoch_from_unix_epoch = \
             int(dt.timestamp())
 
-    def create_test_data(self, zones: List[str]) -> None:
-        test_data: TestData = {}
-        for zone_name in zones:
-            test_items = self._create_test_items_for_zone(zone_name)
-            if test_items:
-                test_data[zone_name] = test_items
-        self.test_data = test_data
-
-    def get_validation_data(self) -> ValidationData:
+    def get_validation_data(self, zones: List[str]) -> ValidationData:
+        test_data = self._create_test_data(zones)
         return {
             'start_year': self.start_year,
             'until_year': self.until_year,
@@ -73,34 +66,33 @@ class TestDataGenerator():
             'tz_version': 'unknown',
             'has_valid_abbrev': True,
             'has_valid_dst': True,
-            'test_data': self.test_data,
+            'test_data': test_data,
         }
 
-    def _create_test_items_for_zone(
-        self,
-        zone_name: str,
-    ) -> Optional[List[TestItem]]:
-        logging.info(f"_create_test_items(): {zone_name}")
-        try:
-            tz = pytz.timezone(zone_name)
-        except pytz.UnknownTimeZoneError:
-            logging.error(f"Zone '{zone_name}' not found in pytz package")
-            return None
+    def _create_test_data(self, zones: List[str]) -> TestData:
+        """Create both transitions and samples test data.
+        For [2000, 2038], this generates about 100,000 data points.
+        """
+        test_data: TestData = {}
+        for zone_name in zones:
+            try:
+                tz = pytz.timezone(zone_name)
+            except pytz.UnknownTimeZoneError:
+                logging.error(f"Zone '{zone_name}' not found in pytz")
+                continue
 
-        items_map: Dict[int, TestItem] = {}
-        self._add_test_items_for_transitions(items_map, tz)
-        self._add_test_items_for_samples(items_map, tz)
+            transitions = self._create_transitions_for_zone(tz)
+            samples = self._create_samples_for_zone(tz)
+            if transitions or samples:
+                test_data[zone_name] = {
+                    "transitions": transitions,
+                    "samples": samples,
+                }
+        return test_data
 
-        # Return the TestItems ordered by epoch
-        return [items_map[x] for x in sorted(items_map)]
-
-    def _add_test_items_for_samples(
-        self,
-        items_map: Dict[int, TestItem],
-        tz: Any,
-    ) -> None:
+    def _create_samples_for_zone(self, tz: Any) -> List[TestItem]:
         """Add a TestItem for each month from start_year to until_year."""
-
+        items: List[TestItem] = []
         for year in range(self.start_year, self.until_year):
             for month in range(1, 13):
                 # Add a sample test point on the *second* of each month instead
@@ -118,31 +110,29 @@ class TestDataGenerator():
                 dt_local = tz.localize(dt_wall)
                 dt_local = tz.normalize(dt_local)
                 item = self._create_test_item(dt_local, 'S')
-                self._add_test_item(items_map, item)
+                items.append(item)
 
             # Add a sample test point at the end of the year.
             dt_wall = datetime(year, 12, 31, 23, 59, 0)
             dt_local = tz.localize(dt_wall)
             dt_local = tz.normalize(dt_local)
             item = self._create_test_item(dt_local, 'Y')
-            self._add_test_item(items_map, item)
+            items.append(item)
+        return items
 
-    def _add_test_items_for_transitions(
-        self,
-        items_map: Dict[int, TestItem],
-        tz: Any,
-    ) -> None:
+    def _create_transitions_for_zone(self, tz: Any) -> List[TestItem]:
         """Add DST transitions, using 'A' and 'B' designators"""
-
+        items: List[TestItem] = []
         transitions = self._find_transitions(tz)
         for (left, right, only_dst) in transitions:
             left_item = self._create_test_item(
                 left, 'a' if only_dst else 'A')
-            self._add_test_item(items_map, left_item)
+            items.append(left_item)
 
             right_item = self._create_test_item(
                 right, 'b' if only_dst else 'B')
-            self._add_test_item(items_map, right_item)
+            items.append(right_item)
+        return items
 
     def _find_transitions(self, tz: Any) -> List[TransitionTimes]:
         """Find the DST transition using pytz by sampling the time period from
@@ -250,21 +240,3 @@ class TestDataGenerator():
             'abbrev': abbrev,
             'type': tag,
         }
-
-    @staticmethod
-    def _add_test_item(items_map: Dict[int, TestItem], item: TestItem) -> None:
-        current = items_map.get(item['epoch'])
-        if current:
-            # If a duplicate TestItem exists for epoch, then check that the
-            # data is exactly the same.
-            if (current['total_offset'] != item['total_offset']
-                    or current['dst_offset'] != item['dst_offset']
-                    or current['y'] != item['y'] or current['M'] != item['M']
-                    or current['d'] != item['d'] or current['h'] != item['h']
-                    or current['m'] != item['m'] or current['s'] != item['s']):
-                raise Exception(f'Item {current} does not match item {item}')
-            # 'A' and 'B' takes precedence over 'S' or 'Y'
-            if item['type'] in ['A', 'B']:
-                items_map[item['epoch']] = item
-        else:
-            items_map[item['epoch']] = item

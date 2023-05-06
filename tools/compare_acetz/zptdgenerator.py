@@ -8,9 +8,7 @@ acetz, which uses Python ZoneProcessor class. Pulling in ZoneProcessor also
 means that it pulls in the data structures defined by zonedb.
 """
 
-from typing import Dict
 from typing import List
-from typing import Optional
 from typing import cast
 import logging
 from datetime import tzinfo, datetime, timezone, timedelta
@@ -52,15 +50,8 @@ class TestDataGenerator:
             datetime(epoch_year, 1, 1, tzinfo=timezone.utc).timestamp()
         )
 
-    def create_test_data(self, zones: List[str]) -> None:
-        test_data: TestData = {}
-        for zone_name in zones:
-            test_items = self._create_test_data_for_zone(zone_name)
-            if test_items:
-                test_data[zone_name] = test_items
-        self.test_data = test_data
-
-    def get_validation_data(self) -> ValidationData:
+    def get_validation_data(self, zones: List[str]) -> ValidationData:
+        test_data = self._create_test_data(zones)
         return {
             'start_year': self.start_year,
             'until_year': self.until_year,
@@ -70,56 +61,52 @@ class TestDataGenerator:
             'tz_version': 'unknown',
             'has_valid_abbrev': True,
             'has_valid_dst': True,
-            'test_data': self.test_data,
+            'test_data': test_data,
         }
 
-    def _create_test_data_for_zone(
-        self,
-        zone_name: str,
-    ) -> Optional[List[TestItem]]:
-        """Create the TestItems for a specific zone.
+    def _create_test_data(self, zones: List[str]) -> TestData:
+        """Create both transitions and samples test data.
+        For [2000, 2038], this generates about 100,000 data points.
         """
-        logging.info(f"_create_test_items(): {zone_name}")
-        zone_info = self.zone_infos.get(zone_name)
-        if not zone_info:
-            logging.error(f"Zone '{zone_name}' not found in acetz package")
-            return None
+        test_data: TestData = {}
+        for zone_name in zones:
+            logging.info(f"_create_test_data(): {zone_name}")
+            zone_info = self.zone_infos.get(zone_name)
+            if not zone_info:
+                logging.error(f"Zone '{zone_name}' not found in acetz package")
+                continue
 
-        tz = self.zone_manager.gettz(zone_name)
-        zone_processor = ZoneProcessor(zone_info)
-        return self._create_transition_test_items(
-            zone_name, tz, zone_processor)
+            tz = self.zone_manager.gettz(zone_name)
+            zone_processor = ZoneProcessor(zone_info)
 
-    def _create_transition_test_items(
+            transitions = self._create_transitions_for_zone(tz, zone_processor)
+            samples = self._create_samples_for_zone(tz)
+            if transitions or samples:
+                test_data[zone_name] = {
+                    "transitions": transitions,
+                    "samples": samples,
+                }
+
+        return test_data
+
+    def _create_transitions_for_zone(
         self,
-        zone_name: str,
         tz: tzinfo,
         zone_processor: ZoneProcessor
     ) -> List[TestItem]:
-        """Create a TestItem for the tz for each zone, for each year from
-        start_year to until_year, exclusive. The 'zone_processor' object is used
-        as a shortcut to generate the list of transitions, so it needs to be a
-        different object than the zone processor embedded inside the 'tz'
-        object.
+        """Create a TestItem for the given tz, for the years [start_year,
+        until_year). The 'zone_processor' object is used as a shortcut to
+        generate the list of transitions, so it needs to be a different object
+        than the zone processor embedded inside the 'tz' object.
 
         The following test samples are created:
-
-        * One test point for each month, on the first of the month.
-        * One test point for Dec 31, 23:00 for each year.
-        * A test point at the transition from DST to Standard, or vise versa.
-        * A test point one second before the transition.
-
-        Each TestData is annotated as:
-        * 'A', 'a': pre-transition
-        * 'B', 'b': post-transition
-        * 'S': a monthly test sample
-        * 'Y': end of year test sample
-
-        For [2000, 2038], this generates about 100,000 data points.
+        * TestItem one second before the transition.
+            * Annotated by 'A'
+        * TestItem just after the transition (at exactly the transition).
+            * Annotated by 'B'
         """
-        items_map: Dict[int, TestItem] = {}
+        items: List[TestItem] = []
         for year in range(self.start_year, self.until_year):
-
             # Add samples just before and just after the DST transition.
             zone_processor.init_for_year(year)
             for transition in zone_processor.transitions:
@@ -140,16 +127,27 @@ class TestDataGenerator:
                 epoch_seconds = transition.start_epoch_second
 
                 # Add a test data just before the transition
-                test_item = self._create_test_item_from_epoch_seconds(
+                item = self._create_test_item_from_epoch_seconds(
                     tz, epoch_seconds - 1, 'A')
-                self._add_test_item(items_map, test_item)
+                items.append(item)
 
                 # Add a test data at the transition itself (which will
                 # normally be shifted forward or backwards).
-                test_item = self._create_test_item_from_epoch_seconds(
+                item = self._create_test_item_from_epoch_seconds(
                     tz, epoch_seconds, 'B')
-                self._add_test_item(items_map, test_item)
+                items.append(item)
+        return items
 
+    def _create_samples_for_zone(self, tz: tzinfo) -> List[TestItem]:
+        """Create samples for the tz in the years [start_year, until_year).
+
+        * One test point for each month, on the first of the month.
+            * Annotated by type='S'
+        * One test point for Dec 31, 23:00 for each year.
+            * Annotated by type='Y'
+        """
+        items: List[TestItem] = []
+        for year in range(self.start_year, self.until_year):
             # Add a sample test point on the *second* of each month instead of
             # the first of the month. This prevents Jan 1, 2000 from being
             # converted to a negative epoch seconds for certain timezones, which
@@ -162,18 +160,14 @@ class TestDataGenerator:
             # fail on the buffer size check.
             for month in range(1, 13):
                 tt = DateTuple(y=year, M=month, d=2, ss=0, f='w')
-                test_item = self._create_test_item_from_datetime(
-                    tz, tt, type='S')
-                self._add_test_item(items_map, test_item)
+                item = self._create_test_item_from_datetime(tz, tt, type='S')
+                items.append(item)
 
             # Add a sample test point at the end of the year.
             tt = DateTuple(y=year, M=12, d=31, ss=23 * 3600, f='w')
-            test_item = self._create_test_item_from_datetime(
-                tz, tt, type='Y')
-            self._add_test_item(items_map, test_item)
-
-        # Return the TestItems ordered by epoch
-        return [items_map[x] for x in sorted(items_map)]
+            item = self._create_test_item_from_datetime(tz, tt, type='Y')
+            items.append(item)
+        return items
 
     def _create_test_item_from_datetime(
         self,
@@ -185,7 +179,7 @@ class TestDataGenerator:
         """
         # TODO(bpark): It is not clear that this produces the desired
         # datetime for the given tzinfo if tz is an acetz. But I hope it
-        # gives a datetime that's roughtly around that time, which is good
+        # gives a datetime that's roughly around that time, which is good
         # enough for unit testing.
         dt = datetime(tt.y, tt.M, tt.d, tt.ss // 3600, tzinfo=tz)
         unix_seconds = int(dt.timestamp())
@@ -209,7 +203,7 @@ class TestDataGenerator:
         * total_offset: the expected total UTC offset at epoch_seconds
         * dst_offset: the expected DST offset at epoch_seconds
         * y, M, d, h, m, s: expected date&time components at epoch_seconds
-        * type: 'a', 'b', 'A', 'B', 'S', 'Y'
+        * type: 'A', 'B', 'S', 'Y'
         """
 
         # Convert acetz epoch_seconds to Unix epoch_seconds.
@@ -242,23 +236,3 @@ class TestDataGenerator:
             'abbrev': abbrev,
             'type': type,
         }
-
-    @staticmethod
-    def _add_test_item(items_map: Dict[int, TestItem], item: TestItem) -> None:
-        current = items_map.get(item['epoch'])
-        if current:
-            # If a duplicate TestItem exists for epoch, then check that the
-            # data is exactly the same.
-            if (
-                current['total_offset'] != item['total_offset']
-                or current['dst_offset'] != item['dst_offset']
-                or current['y'] != item['y'] or current['M'] != item['M']
-                or current['d'] != item['d'] or current['h'] != item['h']
-                or current['m'] != item['m'] or current['s'] != item['s']
-            ):
-                raise Exception(f'Item {current} does not match item {item}')
-            # 'A' and 'B' takes precedence over 'S' or 'Y'
-            if item['type'] in ['A', 'B']:
-                items_map[item['epoch']] = item
-        else:
-            items_map[item['epoch']] = item

@@ -46,8 +46,7 @@ def generate_data(
         epoch_year=epoch_year,
         sampling_interval=sampling_interval,
     )
-    test_generator.create_test_data(zones)
-    validation_data = test_generator.get_validation_data()
+    validation_data = test_generator.get_validation_data(zones)
 
     # Write the JSON object to STDOUT
     json.dump(validation_data, sys.stdout, indent=2)

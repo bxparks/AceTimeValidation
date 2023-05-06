@@ -162,15 +162,16 @@ uint8_t process_zone(struct TestData *test_data, int i, const char *zone_name)
     return err;
   }
 
-  struct TestDataEntry *entry = test_data_next_entry(test_data);
-  test_data_entry_init(entry);
+  // Create entry for a single zone
+  struct TestEntry *entry = test_data_new_entry(test_data);
   strncpy(entry->zone_name, zone_name, ZONE_NAME_SIZE - 1);
   entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
 
-  add_transitions(entry, zone_name, start_year, until_year,
+  add_transitions(&entry->transitions, zone_name, start_year, until_year,
     SAMPLING_INTERVAL_HOURS);
-  add_monthly_samples(entry, zone_name, start_year, until_year);
-  test_data_entry_sort_items(entry);
+  add_monthly_samples(&entry->samples, zone_name, start_year, until_year);
+
+  //test_collection_sort_items(entry);
 
   return 0;
 }
@@ -216,6 +217,7 @@ int main(int argc, char **argv )
 
   struct TestData test_data;
   test_data_init(&test_data);
+
   int8_t err = process_zones(&test_data);
   if (err) {
     fprintf(stderr, "ERROR: code %d\n", err);
@@ -223,7 +225,10 @@ int main(int argc, char **argv )
   }
 
   print_json(
-    &test_data, start_year, until_year, epoch_year,
+    &test_data,
+    start_year,
+    until_year,
+    epoch_year,
     "libc" /*source*/,
   #if defined(__GNUC__) && defined(__linux__)
     gnu_get_libc_version() /*version*/,
@@ -232,7 +237,7 @@ int main(int argc, char **argv )
   #endif
     "2022g?" /*tz_version*/);
 
-  test_data_free(&test_data);
+  test_data_clear(&test_data);
 
   return 0;
 }

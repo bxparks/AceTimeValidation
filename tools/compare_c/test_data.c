@@ -2,46 +2,46 @@
 #include <stdlib.h> // realloc(), qsort()
 #include "test_data.h"
 
-void test_data_entry_init(struct TestDataEntry *entry)
+void test_collection_init(struct TestCollection *collection)
 {
-  entry->num_items = 0;
-  entry->capacity = 0;
-  entry->items = NULL;
-  test_data_entry_resize_items(entry, 10);
+  collection->num_items = 0;
+  collection->capacity = 0;
+  collection->items = NULL;
+  test_collection_resize(collection, 10);
 }
 
-void test_data_entry_free(struct TestDataEntry *entry)
+void test_collection_clear(struct TestCollection *collection)
 {
-  free(entry->items);
-  entry->num_items = 0;
-  entry->capacity = 0;
-  entry->items = NULL;
+  free(collection->items);
+  collection->num_items = 0;
+  collection->capacity = 0;
+  collection->items = NULL;
 }
 
-void test_data_entry_resize_items(struct TestDataEntry *entry, int newsize)
+void test_collection_resize(struct TestCollection *collection, int newsize)
 {
   struct TestItem *newitems = realloc(
-      entry->items,
+      collection->items,
       sizeof(struct TestItem) * newsize);
   if (newitems == NULL) {
-    fprintf(stderr, "test_data_entry_resize_items(): realloc failure\n");
+    fprintf(stderr, "test_collection_resize(): realloc failure\n");
     exit(1);
   }
-  entry->items = newitems;
-  entry->capacity = newsize;
+  collection->items = newitems;
+  collection->capacity = newsize;
 }
 
-struct TestItem *test_data_entry_next_item(struct TestDataEntry *entry)
+struct TestItem *test_collection_new_item(struct TestCollection *collection)
 {
-  if (entry->num_items >= entry->capacity) {
-    test_data_entry_resize_items(entry, entry->capacity * 2);
+  if (collection->num_items >= collection->capacity) {
+    test_collection_resize(collection, collection->capacity * 2);
   }
-  return &entry->items[entry->num_items++];
+  return &collection->items[collection->num_items++];
 }
 
-void test_data_entry_free_item(struct TestDataEntry *entry)
+void test_collection_delete_item(struct TestCollection *collection)
 {
-  entry->num_items--;
+  collection->num_items--;
 }
 
 static int compare_test_item(const void *a, const void *b)
@@ -53,13 +53,27 @@ static int compare_test_item(const void *a, const void *b)
   return 0;
 }
 
-void test_data_entry_sort_items(struct TestDataEntry *entry)
+void test_collection_sort_items(struct TestCollection *collection)
 {
   qsort(
-    entry->items,
-    entry->num_items,
+    collection->items,
+    collection->num_items,
     sizeof(struct TestItem),
     compare_test_item);
+}
+
+//-----------------------------------------------------------------------------
+
+void test_entry_init(struct TestEntry *entry)
+{
+  test_collection_init(&entry->transitions);
+  test_collection_init(&entry->samples);
+}
+
+void test_entry_clear(struct TestEntry *entry)
+{
+  test_collection_clear(&entry->samples);
+  test_collection_clear(&entry->transitions);
 }
 
 //-----------------------------------------------------------------------------
@@ -69,13 +83,13 @@ void test_data_init(struct TestData *data)
   data->num_entries = 0;
   data->capacity = 0;
   data->entries = NULL;
-  test_data_resize_entries(data, 10);
+  test_data_resize(data, 10);
 }
 
-void test_data_free(struct TestData *data)
+void test_data_clear(struct TestData *data)
 {
   for (int i = data->num_entries - 1; i >= 0; i--) {
-    test_data_entry_free(&data->entries[i]);
+    test_entry_clear(&data->entries[i]);
   }
   free(data->entries);
 
@@ -84,35 +98,52 @@ void test_data_free(struct TestData *data)
   data->entries = NULL;
 }
 
-void test_data_resize_entries(struct TestData *data, int newsize)
+void test_data_resize(struct TestData *data, int newsize)
 {
-  struct TestDataEntry *newentries = realloc(
+  struct TestEntry *newentries = realloc(
       data->entries,
-      sizeof(struct TestDataEntry) * newsize);
+      sizeof(struct TestEntry) * newsize);
   if (newentries == NULL) {
-    fprintf(stderr, "test_data_entry_resize_entries(): realloc failure\n");
+    fprintf(stderr, "test_entry_resize(): realloc failure\n");
     exit(1);
   }
   data->entries = newentries;
   data->capacity = newsize;
 }
 
-struct TestDataEntry *test_data_next_entry(struct TestData *data)
+struct TestEntry *test_data_new_entry(struct TestData *data)
 {
   if (data->num_entries >= data->capacity) {
-    test_data_resize_entries(data, data->capacity * 2);
+    test_data_resize(data, data->capacity * 2);
   }
-  struct TestDataEntry *entry = &data->entries[data->num_entries++];
-  test_data_entry_init(entry);
+  struct TestEntry *entry = &data->entries[data->num_entries++];
+  test_entry_init(entry);
   return entry;
 }
 
-void test_data_free_entry(struct TestData *data)
+void test_data_delete_entry(struct TestData *data)
 {
   data->num_entries--;
+  struct TestEntry *entry = &data->entries[data->num_entries];
+  test_entry_clear(entry);
 }
 
 //-----------------------------------------------------------------------------
+
+static void print_item(const char *indent, const struct TestItem *item)
+{
+  printf("%s\"epoch\": %ld,\n", indent, item->epoch_seconds);
+  printf("%s\"total_offset\": %d,\n", indent, item->utc_offset);
+  printf("%s\"dst_offset\": %d,\n", indent, item->dst_offset);
+  printf("%s\"y\": %d,\n", indent, item->year);
+  printf("%s\"M\": %d,\n", indent, item->month);
+  printf("%s\"d\": %d,\n", indent, item->day);
+  printf("%s\"h\": %d,\n", indent, item->hour);
+  printf("%s\"m\": %d,\n", indent, item->minute);
+  printf("%s\"s\": %d,\n", indent, item->second);
+  printf("%s\"abbrev\": \"%s\",\n", indent, item->abbrev);
+  printf("%s\"type\": \"%c\"\n", indent, item->type);
+}
 
 void print_json(
   const struct TestData *test_data,
@@ -128,6 +159,7 @@ void print_json(
   const char indent1[] = "    ";
   const char indent2[] = "      ";
   const char indent3[] = "        ";
+  const char indent4[] = "          ";
 
   printf("{\n");
   printf("%s\"start_year\": %d,\n", indent0, start_year);
@@ -143,31 +175,33 @@ void print_json(
   // Print each zone
   int num_zones = test_data->num_entries;
   for (int z = 0; z < num_zones; z++) {
-    const struct TestDataEntry *entry = &test_data->entries[z];
+    const struct TestEntry *entry = &test_data->entries[z];
     const char *zone_name = entry->zone_name;
-    printf("%s\"%s\": [\n", indent1, zone_name);
+    printf("%s\"%s\": {\n", indent1, zone_name);
 
-    // Print each testItem
-    for (int i = 0; i < entry->num_items; i++) {
-      const struct TestItem *item = &entry->items[i];
-      printf("%s{\n", indent2);
-      {
-        printf("%s\"epoch\": %ld,\n", indent3, item->epoch_seconds);
-        printf("%s\"total_offset\": %d,\n", indent3, item->utc_offset);
-        printf("%s\"dst_offset\": %d,\n", indent3, item->dst_offset);
-        printf("%s\"y\": %d,\n", indent3, item->year);
-        printf("%s\"M\": %d,\n", indent3, item->month);
-        printf("%s\"d\": %d,\n", indent3, item->day);
-        printf("%s\"h\": %d,\n", indent3, item->hour);
-        printf("%s\"m\": %d,\n", indent3, item->minute);
-        printf("%s\"s\": %d,\n", indent3, item->second);
-        printf("%s\"abbrev\": \"%s\",\n", indent3, item->abbrev);
-        printf("%s\"type\": \"%c\"\n", indent3, item->type);
-      }
-      printf("%s}%s\n", indent2, (i < entry->num_items - 1) ? "," : "");
+    // Print transitions
+    printf("%s\"%s\": [\n", indent2, "transitions");
+    const struct TestCollection *collection = &entry->transitions;
+    for (int i = 0; i < collection->num_items; i++) {
+      const struct TestItem *item = &collection->items[i];
+      printf("%s{\n", indent3);
+      print_item(indent4, item);
+      printf("%s}%s\n", indent3, (i < collection->num_items - 1) ? "," : "");
     }
+    printf("%s],\n", indent2);
 
-    printf("%s]%s\n", indent1, (z < test_data->num_entries - 1) ? "," : "");
+    // Print samples
+    printf("%s\"%s\": [\n", indent2, "samples");
+    collection = &entry->samples;
+    for (int i = 0; i < collection->num_items; i++) {
+      const struct TestItem *item = &collection->items[i];
+      printf("%s{\n", indent3);
+      print_item(indent4, item);
+      printf("%s}%s\n", indent3, (i < collection->num_items - 1) ? "," : "");
+    }
+    printf("%s]\n", indent2);
+
+    printf("%s}%s\n", indent1, (z < test_data->num_entries - 1) ? "," : "");
   }
 
   printf("%s}\n", indent0);
