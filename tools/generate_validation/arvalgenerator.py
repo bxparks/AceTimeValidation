@@ -139,7 +139,7 @@ namespace {self.db_namespace} {{
     def _generate_validation_data_h_items(self) -> str:
         test_data = self.validation_data['test_data']
         validation_items = ''
-        for zone_name, test_items in sorted(test_data.items()):
+        for zone_name, test_entry in sorted(test_data.items()):
             normalized_name = normalize_name(zone_name)
             validation_items += f"""\
 extern const testing::ValidationData kValidationData{normalized_name};
@@ -183,9 +183,13 @@ namespace {self.db_namespace} {{
         until_year = self.validation_data['until_year']
         epoch_year = self.validation_data['epoch_year']
         validation_items = ''
-        for zone_name, test_items in sorted(test_data.items()):
-            test_items_string = self._generate_validation_data_cpp_test_items(
-                zone_name, test_items)
+        for zone_name, test_entry in sorted(test_data.items()):
+            transitions = test_entry['transitions']
+            samples = test_entry['samples']
+            transitions_string = self._generate_validation_data_cpp_test_items(
+                transitions)
+            samples_string = self._generate_validation_data_cpp_test_items(
+                samples)
             normalized_name = normalize_name(zone_name)
 
             validation_item = f"""\
@@ -193,17 +197,24 @@ namespace {self.db_namespace} {{
 // Zone name: {zone_name}
 //---------------------------------------------------------------------------
 
-static const testing::ValidationItem kValidationItems{normalized_name}[] = {{
+static const testing::ValidationItem kTransitions_{normalized_name}[] = {{
   //     epoch,  utc,  dst,    y,  m,  d,  h,  m,  s,  abbrev, type
-{test_items_string}
+{transitions_string}
+}};
+
+static const testing::ValidationItem kSamples_{normalized_name}[] = {{
+  //     epoch,  utc,  dst,    y,  m,  d,  h,  m,  s,  abbrev, type
+{samples_string}
 }};
 
 const testing::ValidationData kValidationData{normalized_name} = {{
   {start_year} /*startYear*/,
   {until_year} /*untilYear*/,
   {epoch_year} /*epochYear*/,
-  {len(test_items)} /*numItems*/,
-  kValidationItems{normalized_name} /*items*/,
+  {len(transitions)} /*numTransitions*/,
+  kTransitions_{normalized_name} /*transitions*/,
+  {len(samples)} /*numSamples*/,
+  kSamples_{normalized_name} /*samples*/,
 }};
 
 """
@@ -212,11 +223,9 @@ const testing::ValidationData kValidationData{normalized_name} = {{
 
     def _generate_validation_data_cpp_test_items(
         self,
-        zone_name: str,
         test_items: List[TestItem],
     ) -> str:
-        """Generate the C++ code snippet related to the List[TestItem].
-        """
+        """Generate the C++ code snippet for list of TestItems"""
         s = ''
         for test_item in test_items:
             epoch_seconds = test_item['epoch']
