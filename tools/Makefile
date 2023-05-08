@@ -30,7 +30,8 @@ mypy:
 		-m compare_dateutil \
 		-m compare_zoneinfo \
 		-m generate_validation \
-		-m flatten_validation
+		-m flatten_validation \
+		-m diff_validation
 
 tests:
 	python3 -m unittest
