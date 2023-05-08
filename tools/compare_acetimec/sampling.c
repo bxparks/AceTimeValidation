@@ -84,14 +84,6 @@ void add_transitions(
       struct AtcDateTuple *start = &((*t)->start_dt);
       if (start->year != year) continue;
 
-      // Skip if the UTC year bleeds under or over the boundaries.
-      if ((*t)->transition_time_u.year < start_year) {
-        continue;
-      }
-      if ((*t)->transition_time_u.year >= until_year) {
-        continue;
-      }
-
       atc_time_t epoch_seconds = (*t)->start_epoch_seconds;
 
       // Add a test data just before the transition
