@@ -1,6 +1,11 @@
 # Changelog
 
 * Unreleased
+    * Split the `test_data` component of `validation_data.json` into 2 lists:
+        * `transitions` containing DST transitions of the timezone, and
+        * `samples` containing samples from `start_year` to `until_year`
+    * Update all `tools/compare_xxx` scripts to generate `validation_data.json`
+      in this new format.
 * 1.5.2 (2023-04-01, TZDB 2023c)
     * Upgrade TZDB from 2023b to 2023c.
         * https://mm.icann.org/pipermail/tz-announce/2023-March/000079.html
