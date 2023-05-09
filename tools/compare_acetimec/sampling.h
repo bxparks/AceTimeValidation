@@ -12,11 +12,12 @@
  * structure. Similar to `compare_acetz/zptdgenerator.py`.
  */
 void add_transitions(
-    struct TestCollection *collection,
+    TestCollection *collection,
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
-    int16_t until_year);
+    int16_t until_year,
+    int sampling_hours);
 
 /**
  * Add a TestItem for the 1st of each month (using the local time)
@@ -24,7 +25,7 @@ void add_transitions(
  * no DST transitions.
  */
 void add_monthly_samples(
-    struct TestCollection *collection,
+    TestCollection *collection,
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,

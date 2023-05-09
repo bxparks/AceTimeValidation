@@ -24,18 +24,19 @@
 int16_t start_year = 2000;
 int16_t until_year = 2100;
 int16_t epoch_year = 2050;
+const int SAMPLING_INTERVAL_HOURS = 22;
 
 AtcZoneRegistrar registrar;
 
 /** Insert TestItems for the given 'zone_name' into test_data. */
 int8_t process_zone(
-    struct AtcZoneProcessor *processor,
-    struct TestData *test_data,
+    AtcZoneProcessor *processor,
+    TestData *test_data,
     int i,
     const char *zone_name)
 {
   fprintf(stderr, "[%d] Zone %s\n", i, zone_name);
-  const struct AtcZoneInfo *zone_info = atc_registrar_find_by_name(
+  const AtcZoneInfo *zone_info = atc_registrar_find_by_name(
       &registrar, zone_name);
   if (zone_info == NULL) {
     fprintf(stderr, "ERROR: Zone %s: not found\n", zone_name);
@@ -45,7 +46,7 @@ int8_t process_zone(
   AtcTimeZone tz = {zone_info, processor};
 
   // Create entry for a single zone
-  struct TestEntry *entry = test_data_new_entry(test_data);
+  TestEntry *entry = test_data_new_entry(test_data);
   strncpy(entry->zone_name, zone_name, ZONE_NAME_SIZE - 1);
   entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
 
@@ -54,7 +55,8 @@ int8_t process_zone(
       zone_name,
       &tz,
       start_year,
-      until_year);
+      until_year,
+      SAMPLING_INTERVAL_HOURS);
 
   add_monthly_samples(
       &entry->samples,
@@ -69,10 +71,7 @@ int8_t process_zone(
  * Read the list of zones from the 'zones.txt' in the stdin. Ignore blank lines
  * and comments (starting with '#'), and process each zone, one per line.
  */
-int8_t process_zones(
-    struct AtcZoneProcessor *processor,
-    struct TestData *test_data)
-{
+int8_t process_zones(AtcZoneProcessor *processor, TestData *test_data) {
   char line[MAX_LINE_SIZE];
   int i = 0;
   while (1) {
@@ -185,11 +184,11 @@ int main(int argc, const char* const* argv) {
       kAtcZoneAndLinkRegistrySize);
 
   // Initialize an AtcZoneProcessor instance.
-  struct AtcZoneProcessor processor;
+  AtcZoneProcessor processor;
   atc_processor_init(&processor);
 
   // Process the zones on the STDIN.
-  struct TestData test_data;
+  TestData test_data;
   test_data_init(&test_data);
   int8_t err = process_zones(&processor, &test_data);
   if (err) exit(1);
