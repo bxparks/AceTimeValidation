@@ -145,27 +145,60 @@ void addTestItem(TestCollection& testData, const string& zoneName,
 }
 
 /**
+ * Check if (a, b) defines a transition. The return values are:
+ * * 0 - no transition
+ * * 1 - normal transition
+ * * 2 - silent transition (STD and DST canceled each other out)
+ */
+int isTransition(sys_seconds a, sys_seconds b, const time_zone& tz) {
+    sys_info a_info = tz.get_info(a);
+    sys_info b_info = tz.get_info(b);
+
+    int a_total_offset = a_info.offset.count();
+    int b_total_offset = b_info.offset.count();
+
+    int a_dst_offset = a_info.save.count() * 60;
+    int b_dst_offset = b_info.save.count() * 60;
+
+    if (a_total_offset != b_total_offset) {
+      return 1;
+    } else if (a_dst_offset != b_dst_offset) {
+      return 2;
+    } else {
+      return 0;
+    }
+}
+
+/**
  * Add a TestItem for one second before a DST transition, and right at the
  * the DST transition.
  */
 void addTransitions(TestCollection& collection, const time_zone& tz,
     int startYear, int untilYear) {
-  sys_seconds begin = sys_days{January/1/startYear} + seconds(0);
+  sys_seconds curr = sys_days{January/1/startYear} + seconds(0);
   sys_seconds end = sys_days{January/1/untilYear} + seconds(0);
 
-   do {
+  while (curr < end) {
     // One second before the DST transition.
-    sys_seconds before = begin - seconds(1);
-    auto item = toTestItem(tz, before, 'A');
-    collection.push_back(item);
+    sys_seconds before = curr - seconds(1);
 
-    // At the DST transition.
-    item = toTestItem(tz, begin, 'B');
-    collection.push_back(item);
+    // Check that (before, curr) pair is a real transition instead of a phantom
+    // artifact of the implementation details of the Hinnant date library.
+    int status = isTransition(before, curr, tz);
 
-    sys_info info = tz.get_info(begin);
-    begin = info.end;
-  } while (begin < end);
+    if (status > 0) {
+      // One second before transition.
+      auto item = toTestItem(tz, before, (status == 1) ? 'A' : 'a');
+      collection.push_back(item);
+
+      // At transition.
+      item = toTestItem(tz, curr, (status == 1) ? 'B' : 'b');
+      collection.push_back(item);
+    }
+
+    sys_info info = tz.get_info(curr);
+    curr = info.end;
+  }
 }
 
 /**
@@ -246,8 +279,11 @@ void processZone(TestData& testData, const string& zoneName,
 
 /** Process each zoneName in zones and insert into testData map. */
 void processZones(TestData &testData, const vector<string>& zones) {
+  int i = 0;
   for (string zoneName : zones) {
+    fprintf(stderr, "[%d] %s\n", i, zoneName.c_str());
     processZone(testData, zoneName, startYear, untilYear);
+    i++;
   }
 }
 
