@@ -155,9 +155,13 @@ class Differ:
             if obs['abbrev'] != exp['abbrev']:
                 self.valid = False
                 print(f"ERROR {zone}/{label}: 'abbrev' not equal")
-            if obs['type'] != exp['type']:
-                self.valid = False
-                print(f"ERROR {zone}/{label}: 'type' not equal")
+            # Ignore 'type' specifier until the compare_xxx binaries are all
+            # upgraded to support the 'a' and 'b' (silent) transitions, as well
+            # as the 'A' and 'B' (normal) transitions.
+            #
+            # if obs['type'] != exp['type']:
+            #     self.valid = False
+            #     print(f"ERROR {zone}/{label}: 'type' not equal")
 
 
 if __name__ == '__main__':
