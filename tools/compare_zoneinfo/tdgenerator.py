@@ -77,11 +77,11 @@ class TestDataGenerator():
 
     def _create_test_data(self, zones: List[str]) -> TestData:
         """Create both transitions and samples test data.
-        For [2000, 2038], this generates about 100,000 data points.
         """
         test_data: TestData = {}
+        i = 0
         for zone_name in zones:
-            logging.info(f"_create_test_data(): {zone_name}")
+            logging.info(f"[{i}] {zone_name}")
             tz = zoneinfo.ZoneInfo(zone_name)
             if not tz:
                 logging.error(f"Zone '{zone_name}' not found in zoneinfo")
@@ -94,6 +94,7 @@ class TestDataGenerator():
                     "transitions": transitions,
                     "samples": samples,
                 }
+            i += 1
 
         return test_data
 
@@ -196,18 +197,18 @@ class TestDataGenerator():
         dt_right: datetime,
     ) -> Tuple[datetime, datetime]:
         """Do a binary search to find the exact transition times, to within 1
-        minute accuracy. The dt_left and dt_right are 22 hours (1320 minutes)
-        apart. So the binary search should take a maximum of 11 iterations to
-        find the DST transition within one adjacent minute.
+        second accuracy. The dt_left and dt_right are 22 hours (79200 seconds)
+        apart. So the binary search should take a maximum about 17 iterations to
+        find the DST transition within one adjacent second.
         """
         dt_left_local = dt_left.astimezone(tz)
         while True:
-            delta_minutes = int((dt_right - dt_left) / timedelta(minutes=1))
-            delta_minutes //= 2
-            if delta_minutes == 0:
+            delta_seconds = int((dt_right - dt_left) / timedelta(seconds=1))
+            delta_seconds //= 2
+            if delta_seconds == 0:
                 break
 
-            dt_mid = dt_left + timedelta(minutes=delta_minutes)
+            dt_mid = dt_left + timedelta(seconds=delta_seconds)
             mid_dt_local = dt_mid.astimezone(tz)
             if self.is_transition(dt_left_local, mid_dt_local):
                 dt_right = dt_mid
