@@ -75,8 +75,9 @@ class TestDataGenerator():
         For [2000, 2038], this generates about 100,000 data points.
         """
         test_data: TestData = {}
+        i = 0
         for zone_name in zones:
-            logging.info(f"_create_test_data(): {zone_name}")
+            logging.info(f"[{i}] {zone_name}")
             tz = gettz(zone_name)
             if not tz:
                 logging.error(f"Zone '{zone_name}' not found in dateutil")
@@ -89,6 +90,7 @@ class TestDataGenerator():
                     "transitions": transitions,
                     "samples": samples,
                 }
+            i += 1
 
         return test_data
 
@@ -108,17 +110,17 @@ class TestDataGenerator():
                 # samples whole years from 2000 until 2050), and causes the
                 # AceTimeValidation/ExtendedDateUtilTest to fail on the buffer
                 # size check.
-                dt_local = resolve_imaginary(
+                dt = resolve_imaginary(
                     datetime(year, month, 2, 0, 0, 0, tzinfo=tz)
                 )
-                item = self._create_test_item(dt_local, 'S')
+                item = self._create_test_item(dt, 'S')
                 items.append(item)
 
             # Add a sample test point at the end of the year.
-            dt_local = resolve_imaginary(
+            dt = resolve_imaginary(
                 datetime(year, 12, 31, 23, 59, 0, tzinfo=tz)
             )
-            item = self._create_test_item(dt_local, 'Y')
+            item = self._create_test_item(dt, 'Y')
             items.append(item)
         return items
 
@@ -154,13 +156,13 @@ class TestDataGenerator():
                 break
 
             # Look for a UTC or DST transition.
-            if self.is_transition(dt_local, next_dt_local):
+            if self._is_transition(dt_local, next_dt_local):
                 # print(f'Transition between {dt_local} and {next_dt_local}')
-                dt_left, dt_right = self.binary_search_transition(
+                dt_left, dt_right = self._binary_search_transition(
                     tz, dt, next_dt)
                 dt_left_local = dt_left.astimezone(tz)
                 dt_right_local = dt_right.astimezone(tz)
-                only_dst = self.only_dst(dt_left_local, dt_right_local)
+                only_dst = self._only_dst(dt_left_local, dt_right_local)
                 transitions.append((dt_left_local, dt_right_local, only_dst))
 
             dt = next_dt
@@ -168,7 +170,7 @@ class TestDataGenerator():
 
         return transitions
 
-    def is_transition(self, dt1: datetime, dt2: datetime) -> bool:
+    def _is_transition(self, dt1: datetime, dt2: datetime) -> bool:
         """Determine if dt1 -> dt2 is a UTC offset transition. If
         detect_dst_transition is True, then also detect DST offset transition.
         """
@@ -178,33 +180,33 @@ class TestDataGenerator():
             return dt1.dst() != dt2.dst()
         return False
 
-    def only_dst(self, dt1: datetime, dt2: datetime) -> bool:
+    def _only_dst(self, dt1: datetime, dt2: datetime) -> bool:
         """Determine if dt1 -> dt2 is only a DST transition."""
         if not self.detect_dst_transition:
             return False
         return dt1.utcoffset() == dt2.utcoffset() and dt1.dst() != dt2.dst()
 
-    def binary_search_transition(
+    def _binary_search_transition(
         self,
         tz: Any,
         dt_left: datetime,
         dt_right: datetime,
     ) -> Tuple[datetime, datetime]:
         """Do a binary search to find the exact transition times, to within 1
-        minute accuracy. The dt_left and dt_right are 22 hours (1320 minutes)
-        apart. So the binary search should take a maximum of 11 iterations to
-        find the DST transition within one adjacent minute.
+        second accuracy. The dt_left and dt_right are 22 hours (79200 seconds)
+        apart. So the binary search should take a maximum about 17 iterations to
+        find the DST transition within one adjacent second.
         """
         dt_left_local = dt_left.astimezone(tz)
         while True:
-            delta_minutes = int((dt_right - dt_left) / timedelta(minutes=1))
-            delta_minutes //= 2
-            if delta_minutes == 0:
+            delta_seconds = int((dt_right - dt_left) / timedelta(seconds=1))
+            delta_seconds //= 2
+            if delta_seconds == 0:
                 break
 
-            dt_mid = dt_left + timedelta(minutes=delta_minutes)
+            dt_mid = dt_left + timedelta(seconds=delta_seconds)
             mid_dt_local = dt_mid.astimezone(tz)
-            if self.is_transition(dt_left_local, mid_dt_local):
+            if self._is_transition(dt_left_local, mid_dt_local):
                 dt_right = dt_mid
             else:
                 dt_left = dt_mid
