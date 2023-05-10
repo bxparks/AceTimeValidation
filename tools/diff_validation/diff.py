@@ -68,10 +68,18 @@ class Differ:
         self.observed = observed
         self.expected = expected
 
+        self.check_abbrev = observed['has_valid_abbrev'] and \
+            expected['has_valid_abbrev']
+        if not self.check_abbrev:
+            print('Disabling validation for abbrev')
+        self.check_dst = observed['has_valid_dst'] and expected['has_valid_dst']
+        if not self.check_dst:
+            print('Disabling validation for DST offset')
+
     def diff(self):
         self.diff_header()
         self.diff_zone_names()
-        self.diff_zone_data()
+        self.diff_test_data()
 
     def diff_header(self):
         print('Diff header')
@@ -98,13 +106,14 @@ class Differ:
             if extra:
                 print(f'Extra zones compared to expected: {extra}')
 
-    def diff_zone_data(self):
-        print('Diff zone_data')
+    def diff_test_data(self):
+        print('Diff test_data')
         obs_test_data = self.observed['test_data']
         exp_test_data = self.expected['test_data']
         for zone, obs_entry in obs_test_data.items():
             exp_entry = exp_test_data[zone]
 
+            # transitions
             obs_transitions = obs_entry['transitions']
             exp_transitions = exp_entry['transitions']
             if len(obs_transitions) != len(exp_transitions):
@@ -113,6 +122,16 @@ class Differ:
                 continue
             self.diff_test_items(
                 zone, "transitions", obs_transitions, exp_transitions)
+
+            # samples
+            obs_samples = obs_entry['samples']
+            exp_samples = exp_entry['samples']
+            if len(obs_samples) != len(exp_samples):
+                print(f'ERROR {zone}: num samples not equal')
+                self.valid = False
+                continue
+            self.diff_test_items(
+                zone, "samples", obs_samples, exp_samples)
 
     def diff_test_items(
         self,
@@ -127,41 +146,41 @@ class Differ:
             exp = expected[i]
             if obs['epoch'] != exp['epoch']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}:'epoch' not equal")
+                print(f"ERROR {zone}: {label} [{i}]:'epoch' not equal")
             if obs['total_offset'] != exp['total_offset']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'total_offset' not equal")
-            if obs['dst_offset'] != exp['dst_offset']:
+                print(f"ERROR {zone}: {label} [{i}]: 'total_offset' not equal")
+            if self.check_dst and obs['dst_offset'] != exp['dst_offset']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'dst_offset' not equal")
+                print(f"ERROR {zone}: {label} [{i}]: 'dst_offset' not equal")
             if obs['y'] != exp['y']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'y' not equal")
+                print(f"ERROR {zone}: {label} [{i}]: 'y' not equal")
             if obs['M'] != exp['M']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'M' not equal")
+                print(f"ERROR {zone}: {label} [{i}]: 'M' not equal")
             if obs['d'] != exp['d']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'd' not equal")
+                print(f"ERROR {zone}: {label} [{i}]: 'd' not equal")
             if obs['h'] != exp['h']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'h' not equal")
+                print(f"ERROR {zone}: {label} [{i}]: 'h' not equal")
             if obs['m'] != exp['m']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'm' not equal")
+                print(f"ERROR {zone}: {label} [{i}]: 'm' not equal")
             if obs['s'] != exp['s']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 's' not equal")
-            if obs['abbrev'] != exp['abbrev']:
+                print(f"ERROR {zone}: {label} [{i}]: 's' not equal")
+            if self.check_abbrev and obs['abbrev'] != exp['abbrev']:
                 self.valid = False
-                print(f"ERROR {zone}/{label}: 'abbrev' not equal")
+                print(f"ERROR {zone}: {label} [{i}]: 'abbrev' not equal")
             # Ignore 'type' specifier until the compare_xxx binaries are all
             # upgraded to support the 'a' and 'b' (silent) transitions, as well
             # as the 'A' and 'B' (normal) transitions.
             #
             # if obs['type'] != exp['type']:
             #     self.valid = False
-            #     print(f"ERROR {zone}/{label}: 'type' not equal")
+            #     print(f"ERROR {zone}/{label} [{i}]: 'type' not equal")
 
 
 if __name__ == '__main__':
