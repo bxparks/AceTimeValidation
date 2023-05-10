@@ -1,0 +1,4 @@
+*.txt
+*.json
+!zone.txt
+!zones.txt
