@@ -202,9 +202,18 @@ class TestDataGenerator:
             # 2050), and can cause the AceTimeValidation/ExtendedAcetzTest to
             # fail on the buffer size check.
             for month in range(1, 13):
-                tt = datetime(year, month, 2, 0, 0, 0, tzinfo=tz)
-                item = self._create_test_item_from_datetime(tt, 'S')
-                items.append(item)
+                # If 00:00 on the second of the month does not exist (i.e. in
+                # the "gap"), then try subsequent days, until the 28th. The
+                # python datetime API does not provide a direct way to detect
+                # this. The workaround is to normalize the datetime using
+                # perform a round-trip conversion through the unix_seconds, then
+                # compare the resulting date components.
+                for day in range(2, 29):
+                    dt = datetime(year, month, day, 0, 0, 0, tzinfo=tz)
+                    if _is_simple_datetime(dt, tz):
+                        item = self._create_test_item_from_datetime(dt, 'S')
+                        items.append(item)
+                        break
         return items
 
     def _create_test_item_from_datetime(
@@ -236,3 +245,29 @@ class TestDataGenerator:
             'abbrev': abbrev,
             'type': tag,
         }
+
+
+def _is_simple_datetime(dt: datetime, tz: tzinfo) -> bool:
+    """Return True if `dt` is not a gap nor an overlap."""
+    # Check if in the gap
+    unix_seconds = int(dt.timestamp())
+    et = datetime.fromtimestamp(unix_seconds, tz)
+    if (
+        dt.year != et.year
+        or dt.month != et.month
+        or dt.day != et.day
+        or dt.hour != et.hour
+        or dt.minute != et.minute
+        or dt.second != et.second
+    ):
+        return False
+
+    # Check for overlap
+    et = datetime(
+        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
+        tzinfo=tz, fold=1)
+    alt_unix_seconds = int(et.timestamp())
+    if alt_unix_seconds != unix_seconds:
+        return False
+
+    return True
