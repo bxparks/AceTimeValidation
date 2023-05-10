@@ -227,6 +227,18 @@ void add_transitions(
 
 //-----------------------------------------------------------------------------
 
+// Add a sample test point on the *second* of each month instead of the first of
+// the month. This prevents Jan 1, 2000 from being converted to a negative epoch
+// seconds for certain timezones, which gets converted into a UTC date in 1999
+// when epoch seconds is converted back to a ZonedDateTime. The UTC date in 1999
+// causes the actual max buffer size of ExtendedZoneProcessor to become
+// different than the one predicted by BufSizeEstimator (which samples whole
+// years from 2000 until 2050), and causes the
+// AceTimeValidation/ExtendedAceTimeCTest to fail on the buffer size check.
+//
+// But if that day of the month (with the time of 00:00) is ambiguous, I use a
+// loop to try subsequent days of month to find a day that works.  The first
+// attempt is marked with a type 'S'; subsequent attempts are marked with a 'T'.
 void add_monthly_samples(
     TestCollection *collection,
     const char *zone_name,
@@ -236,29 +248,26 @@ void add_monthly_samples(
 {
   for (int y = start_year; y < until_year; y++) {
     for (int m = 1; m <= 12; m++) {
-      // Add a sample test point on the *second* of each month instead of the
-      // first of the month. This prevents Jan 1, 2000 from being converted to a
-      // negative epoch seconds for certain timezones, which gets converted into
-      // a UTC date in 1999 when epoch seconds is converted back to a
-      // ZonedDateTime. The UTC date in 1999 causes the actual max buffer
-      // size of ExtendedZoneProcessor to become different than the one
-      // predicted by BufSizeEstimator (which samples whole years from 2000
-      // until 2050), and causes the AceTimeValidation/ExtendedAceTimeCTest
-      // to fail on the buffer size check.
-      //
-      // But if that day of the month (with the time of 00:00) is ambiguous, I
-      // use a loop to try subsequent days of month to find a day that works.
+      char type = 'S';
       for (int d = 2; d <= 28; d++) {
-        AtcZonedDateTime zdt;
+        AtcZonedExtra extra;
         AtcLocalDateTime ldt = {y, m, d, 0, 0, 0, 0 /*fold*/};
-        int8_t err = atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
-        if (err) continue;
-
-        atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
-        if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
-        add_test_item_from_epoch_seconds(
-            collection, zone_name, tz, epoch_seconds, 'S');
-        break;
+        int8_t err = atc_zoned_extra_from_local_date_time(&extra, &ldt, tz);
+        if (!err && (extra.type == kAtcZonedExtraExact
+          || extra.type == kAtcZonedExtraOverlap)) {
+          AtcZonedDateTime zdt;
+          err = atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
+          if (!err) {
+            atc_time_t epoch_seconds =
+                atc_zoned_date_time_to_epoch_seconds(&zdt);
+            if (epoch_seconds != kAtcInvalidEpochSeconds) {
+              add_test_item_from_epoch_seconds(
+                  collection, zone_name, tz, epoch_seconds, type);
+              break;
+            }
+          }
+        }
+        type = 'T';
       }
     }
   }
