@@ -6,7 +6,7 @@
 
 """
 Generate the JSON validation test data on the STDOUT from the `acetz` package
-(using .zptdgenerator.TestDataGenerator) given the 'zones.txt' file from the
+(using tdgenerator.TestDataGenerator) given the 'zones.txt' file from the
 tzcompiler.py on the STDIN.
 
 Usage
@@ -22,9 +22,9 @@ import json
 from argparse import ArgumentParser
 from typing import List
 
-# Can't use relative import (.zptdgenerator) here because PEP 3122 got rejected
+# Can't use relative import (tdgenerator) here because PEP 3122 got rejected
 # https://mail.python.org/pipermail/python-3000/2007-April/006793.html.
-from zptdgenerator import TestDataGenerator  # noqa
+from tdgenerator import TestDataGenerator  # noqa
 
 # -----------------------------------------------------------------------------
 
