@@ -125,6 +125,18 @@ static int8_t add_test_item_from_epoch_seconds(
   return 0;
 }
 
+// Add a sample test point on the *second* of each month instead of the first of
+// the month. This prevents Jan 1, 2000 from being converted to a negative epoch
+// seconds for certain timezones, which gets converted into a UTC date in 1999
+// when epoch seconds is converted back to a ZonedDateTime. The UTC date in 1999
+// causes the actual max buffer size of ExtendedZoneProcessor to become
+// different than the one predicted by BufSizeEstimator (which samples whole
+// years from 2000 until 2050), and causes the
+// AceTimeValidation/ExtendedAceTimeCTest to fail on the buffer size check.
+//
+// But if the second of the month (with the time of 00:00) is in a gap, use a
+// loop to try subsequent days to find a day that works. The first attempt is
+// tagged with an 'S'; subsequent attempts are tagged with a 'T'.
 void add_monthly_samples(
     struct TestCollection *collection,
     const char *zone_name,
@@ -133,25 +145,20 @@ void add_monthly_samples(
 {
   for (int y = start_year; y < until_year; y++) {
     for (int m = 1; m <= 12; m++) {
-      // Add a sample test point on the *second* of each month instead of the
-      // first of the month. This prevents Jan 1, 2000 from being converted to a
-      // negative epoch seconds for certain timezones, which gets converted into
-      // a UTC date in 1999 when epoch seconds is converted back to a
-      // ZonedDateTime. The UTC date in 1999 causes the actual max buffer
-      // size of ExtendedZoneProcessor to become different than the one
-      // predicted by BufSizeEstimator (which samples whole years from 2000
-      // until 2050), and causes the AceTimeValidation/ExtendedAceTimeCTest
-      // to fail on the buffer size check.
-      //
-      // But if that day of the month (with the time of 00:00) is ambiguous, I
-      // use a loop to try subsequent days of month to find a day that works.
-      //for (int d = 2; d <= 28; d++) {
-      for (int d = 2; d <= 2; d++) {
+      char type = 'S';
+      for (int d = 2; d <= 28; d++) {
         time_t unix_seconds = to_unix_seconds(y, m, d, 0, 0, 0);
-        long epoch_seconds = convert_unix_time_to_ace_time(unix_seconds);
-        add_test_item_from_epoch_seconds(
-            collection, zone_name, epoch_seconds, 'S');
-        break;
+        struct LocalDateTime ldt = to_local_date_time(unix_seconds);
+        bool is_gap = ldt.year != y || ldt.month != m || ldt.day != d
+            || ldt.hour != 0 || ldt.minute != 0 || ldt.second != 0;
+
+        if (!is_gap) {
+          long epoch_seconds = convert_unix_time_to_ace_time(unix_seconds);
+          add_test_item_from_epoch_seconds(
+              collection, zone_name, epoch_seconds, type);
+          break;
+        }
+        type = 'T';
       }
     }
   }
@@ -166,18 +173,18 @@ static bool is_transition(
 }
 
 // Do a binary search to find the (known) transition in the interval [left,
-// right) to within 1-minute accuracy.
+// right) to within 1 second accuracy.
 static void binary_search_transition(
   time_t left, time_t right,
   time_t *t_left, time_t * t_right)
 {
   struct LocalDateTime ldt_left = to_local_date_time(left);
   for (;;) {
-    time_t delta_minutes = (right - left) / 60;
-    delta_minutes /= 2;
-    if (delta_minutes == 0) break;
+    time_t delta_seconds = right - left;
+    delta_seconds /= 2;
+    if (delta_seconds == 0) break;
 
-    time_t mid = left + delta_minutes * 60;
+    time_t mid = left + delta_seconds;
     struct LocalDateTime ldt_mid = to_local_date_time(mid);
     if (is_transition(&ldt_left, &ldt_mid)) {
       right = mid;
