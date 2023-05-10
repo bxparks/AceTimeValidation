@@ -6,6 +6,8 @@
         * `samples` containing samples from `start_year` to `until_year`
     * Update all `tools/compare_xxx` scripts to generate `validation_data.json`
       in this new format.
+    * Add `./validation` directory which supports peer-to-peer validation,
+      instead of testing `validation_data.json` against AceTime only.
 * 1.5.2 (2023-04-01, TZDB 2023c)
     * Upgrade TZDB from 2023b to 2023c.
         * https://mm.icann.org/pipermail/tz-announce/2023-March/000079.html

@@ -2,7 +2,7 @@
 #include <stdlib.h> // realloc()
 #include "test_data.h"
 
-void test_collection_init(struct TestCollection *collection)
+void test_collection_init(TestCollection *collection)
 {
   collection->num_items = 0;
   collection->capacity = 0;
@@ -10,7 +10,7 @@ void test_collection_init(struct TestCollection *collection)
   test_collection_resize(collection, 10);
 }
 
-void test_collection_clear(struct TestCollection *collection)
+void test_collection_clear(TestCollection *collection)
 {
   free(collection->items);
   collection->num_items = 0;
@@ -18,11 +18,9 @@ void test_collection_clear(struct TestCollection *collection)
   collection->items = NULL;
 }
 
-void test_collection_resize(struct TestCollection *collection, int newsize)
+void test_collection_resize(TestCollection *collection, int newsize)
 {
-  struct TestItem *newitems = realloc(
-      collection->items,
-      sizeof(struct TestItem) * newsize);
+  TestItem *newitems = realloc(collection->items, sizeof(TestItem) * newsize);
   if (newitems == NULL) {
     fprintf(stderr, "test_collection_resize(): realloc failure\n");
     exit(1);
@@ -31,7 +29,7 @@ void test_collection_resize(struct TestCollection *collection, int newsize)
   collection->capacity = newsize;
 }
 
-struct TestItem *test_collection_new_item(struct TestCollection *collection)
+TestItem *test_collection_new_item(TestCollection *collection)
 {
   if (collection->num_items >= collection->capacity) {
     test_collection_resize(collection, collection->capacity * 2);
@@ -39,20 +37,20 @@ struct TestItem *test_collection_new_item(struct TestCollection *collection)
   return &collection->items[collection->num_items++];
 }
 
-void test_collection_delete_item(struct TestCollection *collection)
+void test_collection_delete_item(TestCollection *collection)
 {
   collection->num_items--;
 }
 
 //-----------------------------------------------------------------------------
 
-void test_data_entry_init(struct TestEntry *entry)
+void test_data_entry_init(TestEntry *entry)
 {
   test_collection_init(&entry->transitions);
   test_collection_init(&entry->samples);
 }
 
-void test_data_entry_clear(struct TestEntry *entry)
+void test_data_entry_clear(TestEntry *entry)
 {
   test_collection_clear(&entry->samples);
   test_collection_clear(&entry->transitions);
@@ -60,7 +58,7 @@ void test_data_entry_clear(struct TestEntry *entry)
 
 //-----------------------------------------------------------------------------
 
-void test_data_init(struct TestData *data)
+void test_data_init(TestData *data)
 {
   data->num_entries = 0;
   data->capacity = 0;
@@ -68,7 +66,7 @@ void test_data_init(struct TestData *data)
   test_data_resize(data, 10);
 }
 
-void test_data_clear(struct TestData *data)
+void test_data_clear(TestData *data)
 {
   for (int i = data->num_entries - 1; i >= 0; i--) {
     test_data_entry_clear(&data->entries[i]);
@@ -80,11 +78,9 @@ void test_data_clear(struct TestData *data)
   data->entries = NULL;
 }
 
-void test_data_resize(struct TestData *data, int newsize)
+void test_data_resize(TestData *data, int newsize)
 {
-  struct TestEntry *newentries = realloc(
-      data->entries,
-      sizeof(struct TestEntry) * newsize);
+  TestEntry *newentries = realloc(data->entries, sizeof(TestEntry) * newsize);
   if (newentries == NULL) {
     fprintf(stderr, "test_data_resize(): realloc failure\n");
     exit(1);
@@ -93,20 +89,20 @@ void test_data_resize(struct TestData *data, int newsize)
   data->capacity = newsize;
 }
 
-struct TestEntry *test_data_new_entry(struct TestData *data)
+TestEntry *test_data_new_entry(TestData *data)
 {
   if (data->num_entries >= data->capacity) {
     test_data_resize(data, data->capacity * 2);
   }
-  struct TestEntry *entry = &data->entries[data->num_entries++];
+  TestEntry *entry = &data->entries[data->num_entries++];
   test_data_entry_init(entry);
   return entry;
 }
 
-void test_data_delete_entry(struct TestData *data)
+void test_data_delete_entry(TestData *data)
 {
   data->num_entries--;
-  struct TestEntry *entry = &data->entries[data->num_entries];
+  TestEntry *entry = &data->entries[data->num_entries];
   test_data_entry_clear(entry);
 }
 
@@ -115,27 +111,27 @@ void test_data_delete_entry(struct TestData *data)
 /*
 static int compare_test_item(const void *a, const void *b)
 {
-  const struct TestItem *ta = a;
-  const struct TestItem *tb = b;
+  const TestItem *ta = a;
+  const TestItem *tb = b;
   if (ta->epoch_seconds < tb->epoch_seconds) return -1;
   if (ta->epoch_seconds > tb->epoch_seconds) return 1;
   return 0;
 }
 
-void test_collection_sort_items(struct TestCollection *test_data)
+void test_collection_sort_items(TestCollection *test_data)
 {
   for (int i = 0; i < test_data->num_entries; i++) {
-    struct TestCollection *collection = &test_data->entries[i];
+    TestCollection *collection = &test_data->entries[i];
     qsort(
         entry->items,
         entry->num_items,
-        sizeof(struct TestItem),
+        sizeof(TestItem),
         compare_test_item);
   }
 }
 */
 
-static void print_item(const char *indent, const struct TestItem *item)
+static void print_item(const char *indent, const TestItem *item)
 {
   printf("%s\"epoch\": %ld,\n", indent, item->epoch_seconds);
   printf("%s\"total_offset\": %d,\n", indent, item->utc_offset);
@@ -151,7 +147,7 @@ static void print_item(const char *indent, const struct TestItem *item)
 }
 
 void print_json(
-  const struct TestData *test_data,
+  const TestData *test_data,
   int start_year,
   int until_year,
   int epoch_year,
@@ -179,15 +175,15 @@ void print_json(
   // Print each zone
   int num_zones = test_data->num_entries;
   for (int z = 0; z < num_zones; z++) {
-    const struct TestEntry *entry = &test_data->entries[z];
+    const TestEntry *entry = &test_data->entries[z];
     const char *zone_name = entry->zone_name;
     printf("%s\"%s\": {\n", indent1, zone_name);
 
     // Print transitions
     printf("%s\"%s\": [\n", indent2, "transitions");
-    const struct TestCollection *collection = &entry->transitions;
+    const TestCollection *collection = &entry->transitions;
     for (int i = 0; i < collection->num_items; i++) {
-      const struct TestItem *item = &collection->items[i];
+      const TestItem *item = &collection->items[i];
       printf("%s{\n", indent3);
       print_item(indent4, item);
       printf("%s}%s\n", indent3, (i < collection->num_items - 1) ? "," : "");
@@ -198,7 +194,7 @@ void print_json(
     printf("%s\"%s\": [\n", indent2, "samples");
     collection = &entry->samples;
     for (int i = 0; i < collection->num_items; i++) {
-      const struct TestItem *item = &collection->items[i];
+      const TestItem *item = &collection->items[i];
       printf("%s{\n", indent3);
       print_item(indent4, item);
       printf("%s}%s\n", indent3, (i < collection->num_items - 1) ? "," : "");

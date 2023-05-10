@@ -27,32 +27,6 @@ from typing import List
 from tdgenerator import TestDataGenerator  # noqa
 
 
-def generate_data(
-    invocation: str,
-    start_year: int,
-    until_year: int,
-    epoch_year: int,
-    sampling_interval: int,
-) -> None:
-    """Generate the validation_data JSON."""
-
-    # Read the zones from the STDIN
-    zones = read_zones()
-
-    # Generate the test data set.
-    test_generator = TestDataGenerator(
-        start_year=start_year,
-        until_year=until_year,
-        epoch_year=epoch_year,
-        sampling_interval=sampling_interval,
-    )
-    validation_data = test_generator.get_validation_data(zones)
-
-    # Write the JSON object to STDOUT
-    json.dump(validation_data, sys.stdout, indent=2)
-    print()  # add terminating newline
-
-
 def read_zones() -> List[str]:
     """Read the list of zone_names from the sys.stdin."""
     zones: List[str] = []
@@ -96,15 +70,21 @@ def main() -> None:
     # Configure logging
     logging.basicConfig(level=logging.INFO)
 
-    invocation = ' '.join(sys.argv)
+    # Read the zones from the STDIN
+    zones = read_zones()
 
-    generate_data(
-        invocation=invocation,
+    # Generate the test data set.
+    test_generator = TestDataGenerator(
         start_year=args.start_year,
         until_year=args.until_year,
         epoch_year=args.epoch_year,
         sampling_interval=args.sampling_interval,
     )
+    validation_data = test_generator.get_validation_data(zones)
+
+    # Write the JSON object to STDOUT
+    json.dump(validation_data, sys.stdout, indent=2)
+    print()  # add terminating newline
 
 
 if __name__ == '__main__':

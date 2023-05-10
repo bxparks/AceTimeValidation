@@ -48,6 +48,11 @@ func findTransitions(
 	return transitions
 }
 
+// Determine if a transition occurs by comparing the total offset in minutes.
+// The go.time library does not expose the DST offset at a given time, so we
+// cannot determine if there was a silent transition (i.e. a transition whose
+// total offset remained the same, but the DST offset and STD offset changed and
+// cancelled each other, sometimes resulting in an abbreviation change.
 func isTransition(before time.Time, after time.Time) bool {
 	return utcOffsetMinutes(before) != utcOffsetMinutes(after)
 }
@@ -59,14 +64,16 @@ func binarySearchTransition(
 
 	dtLeftLocal := dtLeft.In(tz)
 	for {
+
+		// 1-second transition resolution.
 		duration := dtRight.Sub(dtLeft)
-		durationMinutes := int(duration.Minutes())
-		deltaMinutes := durationMinutes / 2
-		if deltaMinutes == 0 {
+		durationSeconds := int(duration.Seconds())
+		deltaSeconds := durationSeconds / 2
+		if deltaSeconds == 0 {
 			break
 		}
 
-		dtMid := dtLeft.Add(time.Duration(deltaMinutes * 60 * 1000000000))
+		dtMid := dtLeft.Add(time.Duration(deltaSeconds * int(time.Second)))
 		dtMidLocal := dtMid.In(tz)
 		if isTransition(dtLeftLocal, dtMidLocal) {
 			dtRight = dtMid

@@ -176,7 +176,7 @@ type TestItem struct {
 	Minute       int    `json:"m"`
 	Second       int    `json:"s"`
 	Abbrev       string `json:"abbrev"`
-	ItemType     string `json:"type"` // "A", "B", "S", "T" or "Y"
+	ItemType     string `json:"type"` // "A", "B", "a", "b", "S"
 }
 
 //-----------------------------------------------------------------------------
@@ -263,18 +263,43 @@ func createTransitions(tz *time.Location) []TestItem {
 	return testItems
 }
 
-// createSamples() add a testItem for each month for the given zone.
+// createSamples() add a testItem for the second day of each month for the given
+// zone.
 func createSamples(tz *time.Location) []TestItem {
 	testItems := make([]TestItem, 0, 2000)
 	for year := startYear; year < untilYear; year++ {
 		for month := 1; month <= 12; month++ {
-			dtSample := time.Date(year, time.Month(month), 2, 0, 0, 0, 0, tz)
-			sampleTestItem := createTestItem(dtSample, "S")
-			testItems = append(testItems, sampleTestItem)
+			itemType := "S"
+			// If the second day of the month is in the gap, try subsequent days until
+			// we find one that is not in a gap.
+			for day := 2; day <= 28; day++ {
+				dtSample := time.Date(year, time.Month(month), day, 0, 0, 0, 0, tz)
+				if !inGap(year, month, day, 0, 0, 0, dtSample) {
+					sampleTestItem := createTestItem(dtSample, itemType)
+					testItems = append(testItems, sampleTestItem)
+					break
+				}
+				itemType = "T" // subsequent samples marked with "T" instead of "S"
+			}
 		}
 	}
 
 	return testItems
+}
+
+// inGap() returns true if the given `t` occurs in a gap. The Go time package
+// provides no mechanism to detect if a given date-time component is in an
+// overlap because it automatically selects one of the two to convert to its
+// internal epochseconds representation.
+func inGap(year, month, day, hour, minute, second int, t time.Time) bool {
+	y, mon, d := t.Date()
+	h, m, s := t.Clock()
+	return year != y ||
+		int(mon) != month ||
+		d != day ||
+		h != hour ||
+		m != minute ||
+		s != second
 }
 
 func createTestItem(t time.Time, itemType string) TestItem {

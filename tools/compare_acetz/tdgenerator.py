@@ -1,22 +1,22 @@
-# Copyright 2020 Brian T. Park
+# Copyright 2019 Brian T. Park
 #
 # MIT License
 
 """
-Generate validation TestData using 'dateutil' package. This version was derived
-from the 'validation.tdgenerator' module with the critical difference that it
-does not pull in the ZoneProcessor to determine the DST transition times. This
-means that this module also avoids pulling in the ZoneInfo, ZonePolicy and other
-related classes from 'extractor' and 'transformer' processing pipeline.
-Therefore, this module is truly dependent on only the 'dateutil' package.
+Implements the TestDataGenerator to generate the validation test data using
+the AceTimePython/acetz package.
 """
 
+from typing import List
+from typing import Tuple
 import logging
-from datetime import datetime, timedelta, timezone
-import dateutil
-from dateutil.tz import gettz, resolve_imaginary, UTC
-from typing import Any, Tuple, List
+from datetime import tzinfo, datetime, timezone, timedelta
+from dateutil.tz import UTC  # datetime.UTC requires Python 3.11
 
+import acetime.version
+from acetime.acetz import ZoneManager
+from acetime.zonedb_types import ZoneInfoMap
+from acetime.zonedb.zone_registry import ZONE_AND_LINK_REGISTRY
 from acetimetools.data_types.validation_types import (
     TestItem, TestData, ValidationData
 )
@@ -26,10 +26,11 @@ from acetimetools.data_types.validation_types import (
 TransitionTimes = Tuple[datetime, datetime, bool]
 
 
-class TestDataGenerator():
-    # Number of seconds from Unix Epoch (1970-01-01 00:00:00) to AceTime Epoch
-    # (2000-01-01 00:00:00)
-    seconds_to_ace_time_epoch_from_unix_epoch = 946684800
+class TestDataGenerator:
+    """Generate the validation test data for all  zones specified by the
+    'zone_infos'. The Transitions are extracted from the ZoneProcessor and the
+    UTC offsets determined by acetz.
+    """
 
     def __init__(
         self,
@@ -37,24 +38,20 @@ class TestDataGenerator():
         until_year: int,
         epoch_year: int,
         sampling_interval: int,
+        zone_infos: ZoneInfoMap = ZONE_AND_LINK_REGISTRY,
         detect_dst_transition: bool = True,
     ):
-        """If detect_dst_transition is set to True, changes in the DST offset
-        will be considered to be a time offset transition. Enabling this will
-        cause additional test data points to be generated, but often they will
-        conflict with the DST offsets calculated by AceTime or HinnantDate
-        library. In other words, I think dateutil is incorrect for those DST
-        transitions.
-        """
         self.start_year = start_year
         self.until_year = until_year
         self.epoch_year = epoch_year
         self.sampling_interval = timedelta(hours=sampling_interval)
+        self.zone_infos = zone_infos
+        self.zone_manager = ZoneManager(zone_infos)
         self.detect_dst_transition = detect_dst_transition
 
-        dt = datetime(epoch_year, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-        TestDataGenerator.seconds_to_ace_time_epoch_from_unix_epoch = \
-            int(dt.timestamp())
+        self.seconds_to_acetime_epoch_from_unix_epoch = int(
+            datetime(epoch_year, 1, 1, tzinfo=timezone.utc).timestamp()
+        )
 
     def get_validation_data(self, zones: List[str]) -> ValidationData:
         test_data = self._create_test_data(zones)
@@ -62,8 +59,8 @@ class TestDataGenerator():
             'start_year': self.start_year,
             'until_year': self.until_year,
             'epoch_year': self.epoch_year,
-            'source': 'dateutil',
-            'version': str(dateutil.__version__),  # type: ignore
+            'source': 'acetz',
+            'version': str(acetime.version.__version__),
             'tz_version': 'unknown',
             'has_valid_abbrev': True,
             'has_valid_dst': True,
@@ -78,9 +75,9 @@ class TestDataGenerator():
         i = 0
         for zone_name in zones:
             logging.info(f"[{i}] {zone_name}")
-            tz = gettz(zone_name)
+            tz = self.zone_manager.gettz(zone_name)
             if not tz:
-                logging.error(f"Zone '{zone_name}' not found in dateutil")
+                logging.error(f"Zone '{zone_name}' not found in acetz package")
                 continue
 
             transitions = self._create_transitions_for_zone(tz)
@@ -94,46 +91,22 @@ class TestDataGenerator():
 
         return test_data
 
-    def _create_samples_for_zone(self, tz: Any) -> List[TestItem]:
-        """Add a TestItem for each month from start_year to until_year."""
-        items: List[TestItem] = []
-        for year in range(self.start_year, self.until_year):
-            for month in range(1, 13):
-                # Add a sample test point on the *second* of each month instead
-                # of the first of the month. This prevents Jan 1, 2000 from
-                # being converted to a negative epoch seconds for certain
-                # timezones, which gets converted into a UTC date in 1999 when
-                # ExtendedZoneProcessor is used to convert the epoch seconds
-                # back to a ZonedDateTime. The UTC date in 1999 causes the
-                # actual max buffer size of ExtendedZoneProcessor to become
-                # different than the one predicted by BufSizeEstimator (which
-                # samples whole years from 2000 until 2050), and causes the
-                # AceTimeValidation/ExtendedDateUtilTest to fail on the buffer
-                # size check.
-                dt = resolve_imaginary(
-                    datetime(year, month, 2, 0, 0, 0, tzinfo=tz)
-                )
-                item = self._create_test_item(dt, 'S')
-                items.append(item)
-        return items
-
-    def _create_transitions_for_zone(self, tz: Any) -> List[TestItem]:
+    def _create_transitions_for_zone(self, tz: tzinfo) -> List[TestItem]:
         """Add DST transitions, using 'A' and 'B' designators"""
         items: List[TestItem] = []
         transitions = self._find_transitions(tz)
         for (left, right, only_dst) in transitions:
-            left_item = self._create_test_item(
-                left, 'a' if only_dst else 'A')
+            left_item = self._create_test_item(left, 'a' if only_dst else 'A')
             items.append(left_item)
 
-            right_item = self._create_test_item(
-                right, 'b' if only_dst else 'B')
+            right_item = self._create_test_item(right, 'b' if only_dst else 'B')
             items.append(right_item)
         return items
 
-    def _find_transitions(self, tz: Any) -> List[TransitionTimes]:
+    def _find_transitions(self, tz: tzinfo) -> List[TransitionTimes]:
         """Find the DST transition using dateutil by sampling the time period
         from [start_year, until_year].
+        (Copied from compare_dateutil/tdgenerator.py).
         """
         # TODO: Do I need to start 1 day before Jan 1 UTC, in case the
         # local time is ahead of UTC?
@@ -166,6 +139,7 @@ class TestDataGenerator():
     def _is_transition(self, dt1: datetime, dt2: datetime) -> bool:
         """Determine if dt1 -> dt2 is a UTC offset transition. If
         detect_dst_transition is True, then also detect DST offset transition.
+        (Copied from compare_dateutil/tdgenerator.py).
         """
         if dt1.utcoffset() != dt2.utcoffset():
             return True
@@ -181,14 +155,15 @@ class TestDataGenerator():
 
     def _binary_search_transition(
         self,
-        tz: Any,
+        tz: tzinfo,
         dt_left: datetime,
         dt_right: datetime,
     ) -> Tuple[datetime, datetime]:
         """Do a binary search to find the exact transition times, to within 1
         second accuracy. The dt_left and dt_right are 22 hours (79200 seconds)
-        apart. So the binary search should take a maximum about 17 iterations to
-        find the DST transition within one adjacent second.
+        apart. So the binary search should take about 17 iterations to find the
+        DST transition within one adjacent second.
+        (Copied from compare_dateutil/tdgenerator.py).
         """
         dt_left_local = dt_left.astimezone(tz)
         while True:
@@ -207,14 +182,41 @@ class TestDataGenerator():
 
         return dt_left, dt_right
 
-    @staticmethod
-    def _create_test_item(dt: datetime, tag: str) -> TestItem:
-        """Create a TestItem from a datetime."""
+    def _create_samples_for_zone(self, tz: tzinfo) -> List[TestItem]:
+        """Create samples for the tz in the years [start_year, until_year).
+        One test point for each month, on the *second* of the month,
+        annotated by tag='S' on the first attempt, then 'T' on the second
+        attempt.
+
+        Using the *second* of each month instead of the first of the month
+        prevents Jan 1, 2000 from being converted to a negative epoch seconds
+        for certain timezones, which gets converted into a UTC date in 1999 when
+        ExtendedZoneProcessor is used to convert the epoch seconds back to a
+        ZonedDateTime. The UTC date in 1999 causes the actual max buffer size of
+        ExtendedZoneProcessor to become different than the one predicted by
+        BufSizeEstimator (which samples whole years from 2000 until 2050), and
+        causes the AceTimeValidation/ExtendedZoneInfoTest to fail on the buffer
+        size check.
+        """
+        items: List[TestItem] = []
+        for year in range(self.start_year, self.until_year):
+            for month in range(1, 13):
+                # If 00:00 on the second of the month is not a "simple"
+                # datetime, then try subsequent days.
+                tag = 'S'
+                for day in range(2, 29):
+                    dt = datetime(year, month, day, 0, 0, 0, tzinfo=tz)
+                    if not _in_gap(dt, tz):
+                        item = self._create_test_item(dt, tag)
+                        items.append(item)
+                        break
+                    tag = 'T'
+        return items
+
+    def _create_test_item(self, dt: datetime, tag: str) -> TestItem:
         unix_seconds = int(dt.timestamp())
-        epoch_seconds = (
-            unix_seconds
-            - TestDataGenerator.seconds_to_ace_time_epoch_from_unix_epoch
-        )
+        acetime_seconds = unix_seconds \
+            - self.seconds_to_acetime_epoch_from_unix_epoch
         total_offset = int(dt.utcoffset().total_seconds())  # type: ignore
         dst_offset = int(dt.dst().total_seconds())  # type: ignore
 
@@ -225,7 +227,7 @@ class TestDataGenerator():
         abbrev = dt.tzinfo.tzname(dt)
 
         return {
-            'epoch': epoch_seconds,
+            'epoch': acetime_seconds,
             'total_offset': total_offset,
             'dst_offset': dst_offset,
             'y': dt.year,
@@ -237,3 +239,19 @@ class TestDataGenerator():
             'abbrev': abbrev,
             'type': tag,
         }
+
+
+def _in_gap(dt: datetime, tz: tzinfo) -> bool:
+    """Return True if `dt` in a gap. The python datetime API does
+    not provide a direct way to detect this, so we have to work a little harder.
+    """
+    unix_seconds = int(dt.timestamp())
+    et = datetime.fromtimestamp(unix_seconds, tz)
+    return (
+        dt.year != et.year
+        or dt.month != et.month
+        or dt.day != et.day
+        or dt.hour != et.hour
+        or dt.minute != et.minute
+        or dt.second != et.second
+    )

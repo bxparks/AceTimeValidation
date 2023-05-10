@@ -54,7 +54,7 @@ struct TestItem {
   int hour;
   int minute;
   int second;
-  char type; //'A', 'B', 'S', 'T' or 'Y'
+  char type; //'A', 'B', 'a', 'b', 'S'
 };
 
 /** Collection of test items. */
@@ -145,36 +145,87 @@ void addTestItem(TestCollection& testData, const string& zoneName,
 }
 
 /**
+ * Check if (a, b) defines a transition. The return values are:
+ * * 0 - no transition
+ * * 1 - normal transition
+ * * 2 - silent transition (STD and DST canceled each other out)
+ */
+int isTransition(sys_seconds a, sys_seconds b, const time_zone& tz) {
+    sys_info a_info = tz.get_info(a);
+    sys_info b_info = tz.get_info(b);
+
+    int a_total_offset = a_info.offset.count();
+    int b_total_offset = b_info.offset.count();
+
+    int a_dst_offset = a_info.save.count() * 60;
+    int b_dst_offset = b_info.save.count() * 60;
+
+    if (a_total_offset != b_total_offset) {
+      return 1;
+    } else if (a_dst_offset != b_dst_offset) {
+      return 2;
+    } else {
+      return 0;
+    }
+}
+
+/**
  * Add a TestItem for one second before a DST transition, and right at the
  * the DST transition.
  */
 void addTransitions(TestCollection& collection, const time_zone& tz,
     int startYear, int untilYear) {
-  sys_seconds begin = sys_days{January/1/startYear} + seconds(0);
+  sys_seconds curr = sys_days{January/1/startYear} + seconds(0);
   sys_seconds end = sys_days{January/1/untilYear} + seconds(0);
 
-   do {
+  while (curr < end) {
     // One second before the DST transition.
-    sys_seconds before = begin - seconds(1);
-    auto item = toTestItem(tz, before, 'A');
-    collection.push_back(item);
+    sys_seconds before = curr - seconds(1);
 
-    // At the DST transition.
-    item = toTestItem(tz, begin, 'B');
-    collection.push_back(item);
+    // Check that (before, curr) pair is a real transition instead of a phantom
+    // artifact of the implementation details of the Hinnant date library.
+    int status = isTransition(before, curr, tz);
 
-    sys_info info = tz.get_info(begin);
-    begin = info.end;
-  } while (begin < end);
+    if (status > 0) {
+      // One second before transition.
+      auto item = toTestItem(tz, before, (status == 1) ? 'A' : 'a');
+      collection.push_back(item);
+
+      // At transition.
+      item = toTestItem(tz, curr, (status == 1) ? 'B' : 'b');
+      collection.push_back(item);
+    }
+
+    sys_info info = tz.get_info(curr);
+    curr = info.end;
+  }
 }
 
 /**
- * Add a TestItem for the 1st of each month (using the local time)
+ * Add a TestItem for the 2nd of each month (using the local time)
  * as a sanity sample, to make sure things are working, even for timezones with
  * no DST transitions. See
  * https://github.com/HowardHinnant/date/wiki/Examples-and-Recipes#obtaining-a-time_point-from-ymd-hms-components
  * to get code for converting date/time components to a time_point<> (aka
  * sys_time<>).
+ *
+ * We use the *second* of each month instead of the first of the month to
+ * prevent Jan 1, 2000 from being converted to a negative epoch seconds for
+ * certain timezones, which gets converted into a UTC date in 1999 when
+ * ExtendedZoneProcessor is used to convert the epoch seconds back to a
+ * ZonedDateTime. The UTC date in 1999 causes the actual max buffer size of
+ * ExtendedZoneProcessor to become different than the one predicted by
+ * BufSizeEstimator (which samples whole years from 2000 until 2050), and causes
+ * the AceTimeValidation/ExtendedHinnantDateTest to fail on the buffer size
+ * check.
+ *
+ * The original attempt on the 2nd is marked with a type 'S'. If the 2nd of the
+ * month (with the time of 00:00) is in the gap, it does not exist, so the
+ * Hinnant date library seems to throw an exception. Unfortunately, I cannot
+ * understand the documentation enough to figure out how to do what I want, so
+ * just punt and use the next day. Use a loop to try every subsequent day of
+ * month up to the 28th (which exists in all months). A sample using the 3rd or
+ * subsequent days are marked with a type of 'T'.
  */
 void addMonthlySamples(TestCollection& collection, const time_zone& tz,
     int startYear, int untilYear) {
@@ -182,50 +233,22 @@ void addMonthlySamples(TestCollection& collection, const time_zone& tz,
   for (int y = startYear; y < untilYear; y++) {
     for (int m = 1; m <= 12; m++) {
       char type = 'S';
-
-      // Add a sample test point on the *second* of each month instead of the
-      // first of the month. This prevents Jan 1, 2000 from being converted to a
-      // negative epoch seconds for certain timezones, which gets converted into
-      // a UTC date in 1999 when ExtendedZoneProcessor is used to convert the
-      // epoch seconds back to a ZonedDateTime. The UTC date in 1999 causes the
-      // actual max buffer size of ExtendedZoneProcessor to become different
-      // than the one predicted by BufSizeEstimator (which samples whole years
-      // from 2000 until 2050), and causes the
-      // AceTimeValidation/ExtendedHinnantDateTest to fail on the buffer size
-      // check.
-      //
-      // But if that day of the month (with the time of 00:00) is ambiguous, the
-      // Hinnant date library throws an exception. Unfortunately, I cannot
-      // understand the documentation to figure out how to do what I want, so
-      // just punt and use the next day. Use a loop to try every subsequent day
-      // of month up to the 28th (which exists in all months).
       for (int d = 2; d <= 28; d++) {
         local_days ld = local_days{month(m)/d/year(y)};
         try {
-          zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
+          zoned_time<seconds> zdt = make_zoned(
+              &tz, ld + seconds(0), choose::earliest);
 
           sys_seconds ss = zdt.get_sys_time();
           TestItem item = toTestItem(tz, ss, type);
           collection.push_back(item);
-          // One day sample is enough, so break as soon as we get one.
+          // One sample per month is enough, so break as soon as we get one.
           break;
-        } catch (...) {
-          // Set type to 'T' to indicate that the initial attempted day of month
-          // was invalid, so this is the alternate.
-          type = 'T';
+
+        } catch (const nonexistent_local_time& e) {
+          type = 'T'; // indicate a retry using subsequent days
         }
       }
-    }
-
-    // Add the last day of the year...
-    local_days ld = local_days{year(y)/December/1};
-    try {
-      zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
-      sys_seconds ss = zdt.get_sys_time();
-      TestItem item = toTestItem(tz, ss, 'Y');
-      collection.push_back(item);
-    } catch (...) {
-      // ...unless it's an ambiguous date, in which case just skip it.
     }
   }
 }
@@ -246,8 +269,11 @@ void processZone(TestData& testData, const string& zoneName,
 
 /** Process each zoneName in zones and insert into testData map. */
 void processZones(TestData &testData, const vector<string>& zones) {
+  int i = 0;
   for (string zoneName : zones) {
+    fprintf(stderr, "[%d] %s\n", i, zoneName.c_str());
     processZone(testData, zoneName, startYear, untilYear);
+    i++;
   }
 }
 

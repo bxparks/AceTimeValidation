@@ -40,7 +40,7 @@ struct TestItem {
   int minute;
   int second;
   char abbrev[MAX_ABBREV_SIZE];
-  char type; //'A', 'B', 'S', 'T' or 'Y'
+  char type; //'A', 'B', 'a', 'b', 'S'
 };
 
 /** A growable collection of test items. */
