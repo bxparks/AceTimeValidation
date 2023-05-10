@@ -119,13 +119,6 @@ class TestDataGenerator():
                 dt_local = datetime.fromtimestamp(dt_local.timestamp(), tz=tz)
                 item = self._create_test_item(dt_local, 'S')
                 items.append(item)
-
-            # Add a sample test point at the end of the year.
-            dt_local = datetime(year, 12, 31, 23, 59, 0, tzinfo=tz)
-            # Resolve gap or fold.
-            dt_local = datetime.fromtimestamp(dt_local.timestamp(), tz=tz)
-            item = self._create_test_item(dt_local, 'Y')
-            items.append(item)
         return items
 
     def _create_transitions_for_zone(self, tz: Any) -> List[TestItem]:

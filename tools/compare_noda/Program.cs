@@ -256,10 +256,6 @@ namespace compare_noda
                     ZonedDateTime zdt = new LocalDateTime(year, month, 2, 0, 0).InZoneLeniently(tz);
                     items.Add(CreateTestItem(tz, zdt.ToInstant(), 'S'));
                 }
-
-                // Add the last day and hour of the year
-                ZonedDateTime lastdt = new LocalDateTime(year, 12, 31, 23, 0).InZoneLeniently(tz);
-                items.Add(CreateTestItem(tz, lastdt.ToInstant(), 'Y'));
             }
             return items;
         }

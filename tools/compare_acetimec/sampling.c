@@ -261,16 +261,5 @@ void add_monthly_samples(
         break;
       }
     }
-
-    // Add the last day of the year...
-    AtcLocalDateTime ldt = {y, 12, 31, 0, 0, 0, 0 /*fold*/ };
-    AtcZonedDateTime zdt;
-    int8_t err = atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
-    if (err) continue;
-
-    atc_time_t epoch_seconds = atc_zoned_date_time_to_epoch_seconds(&zdt);
-    if (epoch_seconds == kAtcInvalidEpochSeconds) continue;
-    add_test_item_from_epoch_seconds(
-        collection, zone_name, tz, epoch_seconds, 'Y');
   }
 }

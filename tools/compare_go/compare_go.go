@@ -176,7 +176,7 @@ type TestItem struct {
 	Minute       int    `json:"m"`
 	Second       int    `json:"s"`
 	Abbrev       string `json:"abbrev"`
-	ItemType     string `json:"type"` // "A", "B", "S", "T" or "Y"
+	ItemType     string `json:"type"` // "A", "B", "a", "b", "S"
 }
 
 //-----------------------------------------------------------------------------

@@ -54,7 +54,7 @@ struct TestItem {
   int hour;
   int minute;
   int second;
-  char type; //'A', 'B', 'S', 'T' or 'Y'
+  char type; //'A', 'B', 'a', 'b', 'S'
 };
 
 /** Collection of test items. */
@@ -214,8 +214,6 @@ void addMonthlySamples(TestCollection& collection, const time_zone& tz,
 
   for (int y = startYear; y < untilYear; y++) {
     for (int m = 1; m <= 12; m++) {
-      char type = 'S';
-
       // Add a sample test point on the *second* of each month instead of the
       // first of the month. This prevents Jan 1, 2000 from being converted to a
       // negative epoch seconds for certain timezones, which gets converted into
@@ -238,27 +236,15 @@ void addMonthlySamples(TestCollection& collection, const time_zone& tz,
           zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
 
           sys_seconds ss = zdt.get_sys_time();
-          TestItem item = toTestItem(tz, ss, type);
+          TestItem item = toTestItem(tz, ss, 'S');
           collection.push_back(item);
-          // One day sample is enough, so break as soon as we get one.
+          // One sample per month is enough, so break as soon as we get one.
           break;
+
         } catch (...) {
-          // Set type to 'T' to indicate that the initial attempted day of month
-          // was invalid, so this is the alternate.
-          type = 'T';
+          continue; // to next day if error
         }
       }
-    }
-
-    // Add the last day of the year...
-    local_days ld = local_days{year(y)/December/1};
-    try {
-      zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
-      sys_seconds ss = zdt.get_sys_time();
-      TestItem item = toTestItem(tz, ss, 'Y');
-      collection.push_back(item);
-    } catch (...) {
-      // ...unless it's an ambiguous date, in which case just skip it.
     }
   }
 }

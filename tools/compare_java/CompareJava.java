@@ -261,10 +261,6 @@ public class CompareJava {
         ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, zoneId);
         items.add(createTestItem(zonedDateTime.toInstant(), zoneId, 'S'));
       }
-      // Add last day and hour of the year ({year}-12-31-23:00:00)
-      LocalDateTime localDateTime = LocalDateTime.of(year, 12, 31, 23, 0, 0);
-      ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, zoneId);
-      items.add(createTestItem(zonedDateTime.toInstant(), zoneId, 'Y'));
     }
     return items;
   }

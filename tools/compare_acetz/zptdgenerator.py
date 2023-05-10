@@ -186,11 +186,8 @@ class TestDataGenerator:
 
     def _create_samples_for_zone(self, tz: tzinfo) -> List[TestItem]:
         """Create samples for the tz in the years [start_year, until_year).
-
-        * One test point for each month, on the *second* of the month.
-            * Annotated by type='S'
-        * One test point for Dec 31, 23:59 for each year.
-            * Annotated by type='Y'
+        One test point for each month, on the *second* of the month,
+        annotated by tag='S'.
         """
         items: List[TestItem] = []
         for year in range(self.start_year, self.until_year):
@@ -208,11 +205,6 @@ class TestDataGenerator:
                 tt = datetime(year, month, 2, 0, 0, 0, tzinfo=tz)
                 item = self._create_test_item_from_datetime(tt, 'S')
                 items.append(item)
-
-            # Add a sample test point at the end of the year.
-            tt = datetime(year, 12, 31, 23, 59, 0, tzinfo=tz)
-            item = self._create_test_item_from_datetime(tt, 'Y')
-            items.append(item)
         return items
 
     def _create_test_item_from_datetime(

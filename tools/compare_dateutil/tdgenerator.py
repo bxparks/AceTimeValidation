@@ -115,13 +115,6 @@ class TestDataGenerator():
                 )
                 item = self._create_test_item(dt, 'S')
                 items.append(item)
-
-            # Add a sample test point at the end of the year.
-            dt = resolve_imaginary(
-                datetime(year, 12, 31, 23, 59, 0, tzinfo=tz)
-            )
-            item = self._create_test_item(dt, 'Y')
-            items.append(item)
         return items
 
     def _create_transitions_for_zone(self, tz: Any) -> List[TestItem]:

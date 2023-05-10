@@ -26,6 +26,7 @@ from typing import List
 # https://mail.python.org/pipermail/python-3000/2007-April/006793.html.
 from tdgenerator import TestDataGenerator  # noqa
 
+
 def read_zones() -> List[str]:
     """Read the list of zone_names from the sys.stdin."""
     zones: List[str] = []

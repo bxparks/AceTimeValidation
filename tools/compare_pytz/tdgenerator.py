@@ -111,13 +111,6 @@ class TestDataGenerator():
                 dt_local = tz.normalize(dt_local)
                 item = self._create_test_item(dt_local, 'S')
                 items.append(item)
-
-            # Add a sample test point at the end of the year.
-            dt_wall = datetime(year, 12, 31, 23, 59, 0)
-            dt_local = tz.localize(dt_wall)
-            dt_local = tz.normalize(dt_local)
-            item = self._create_test_item(dt_local, 'Y')
-            items.append(item)
         return items
 
     def _create_transitions_for_zone(self, tz: Any) -> List[TestItem]:
