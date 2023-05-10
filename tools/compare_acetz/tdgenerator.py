@@ -185,7 +185,8 @@ class TestDataGenerator:
     def _create_samples_for_zone(self, tz: tzinfo) -> List[TestItem]:
         """Create samples for the tz in the years [start_year, until_year).
         One test point for each month, on the *second* of the month,
-        annotated by tag='S'.
+        annotated by tag='S' on the first attempt, then 'T' on the second
+        attempt.
 
         Using the *second* of each month instead of the first of the month
         prevents Jan 1, 2000 from being converted to a negative epoch seconds
@@ -202,12 +203,14 @@ class TestDataGenerator:
             for month in range(1, 13):
                 # If 00:00 on the second of the month is not a "simple"
                 # datetime, then try subsequent days.
+                tag = 'S'
                 for day in range(2, 29):
                     dt = datetime(year, month, day, 0, 0, 0, tzinfo=tz)
-                    if _is_simple_datetime(dt, tz):
-                        item = self._create_test_item(dt, 'S')
+                    if not _in_gap(dt, tz):
+                        item = self._create_test_item(dt, tag)
                         items.append(item)
                         break
+                    tag = 'T'
         return items
 
     def _create_test_item(self, dt: datetime, tag: str) -> TestItem:
@@ -238,30 +241,17 @@ class TestDataGenerator:
         }
 
 
-def _is_simple_datetime(dt: datetime, tz: tzinfo) -> bool:
-    """Return True if `dt` is not a gap nor an overlap. The python datetime API
-    does not provide a direct way to detect this, so we have to work a little
-    harder.
+def _in_gap(dt: datetime, tz: tzinfo) -> bool:
+    """Return True if `dt` in a gap. The python datetime API does
+    not provide a direct way to detect this, so we have to work a little harder.
     """
-    # Check if in the gap
     unix_seconds = int(dt.timestamp())
     et = datetime.fromtimestamp(unix_seconds, tz)
-    if (
+    return (
         dt.year != et.year
         or dt.month != et.month
         or dt.day != et.day
         or dt.hour != et.hour
         or dt.minute != et.minute
         or dt.second != et.second
-    ):
-        return False
-
-    # Check for overlap
-    et = datetime(
-        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
-        tzinfo=tz, fold=1)
-    alt_unix_seconds = int(et.timestamp())
-    if alt_unix_seconds != unix_seconds:
-        return False
-
-    return True
+    )
