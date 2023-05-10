@@ -13,7 +13,7 @@ only the 'zoneinfo' package.
 """
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import tzinfo, datetime, timedelta, timezone
 from typing import Any, Tuple, List
 
 # Using sys.version_info works better for MyPy than using a try/except block.
@@ -33,10 +33,6 @@ TransitionTimes = Tuple[datetime, datetime, bool]
 
 
 class TestDataGenerator():
-    # Number of seconds from Unix Epoch (1970-01-01 00:00:00) to AceTime Epoch
-    # (usually 2050-01-01 00:00:00)
-    seconds_to_ace_time_epoch_from_unix_epoch = 946684800
-
     def __init__(
         self,
         start_year: int,
@@ -58,8 +54,7 @@ class TestDataGenerator():
         self.detect_dst_transition = detect_dst_transition
 
         dt = datetime(epoch_year, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-        TestDataGenerator.seconds_to_ace_time_epoch_from_unix_epoch = \
-            int(dt.timestamp())
+        self.seconds_to_ace_time_epoch_from_unix_epoch = int(dt.timestamp())
 
     def get_validation_data(self, zones: List[str]) -> ValidationData:
         test_data = self._create_test_data(zones)
@@ -99,26 +94,31 @@ class TestDataGenerator():
         return test_data
 
     def _create_samples_for_zone(self, tz: Any) -> List[TestItem]:
-        """Add a TestItem for each month from start_year to until_year."""
+        """Create samples for the tz in the years [start_year, until_year).
+        One test point for each month, on the *second* of the month,
+        annotated by tag='S'.
+
+        Using the *second* of each month instead of the first of the month
+        prevents Jan 1, 2000 from being converted to a negative epoch seconds
+        for certain timezones, which gets converted into a UTC date in 1999 when
+        ExtendedZoneProcessor is used to convert the epoch seconds back to a
+        ZonedDateTime. The UTC date in 1999 causes the actual max buffer size of
+        ExtendedZoneProcessor to become different than the one predicted by
+        BufSizeEstimator (which samples whole years from 2000 until 2050), and
+        causes the AceTimeValidation/ExtendedZoneInfoTest to fail on the buffer
+        size check.
+        """
         items: List[TestItem] = []
         for year in range(self.start_year, self.until_year):
             for month in range(1, 13):
-                # Add a sample test point on the *second* of each month instead
-                # of the first of the month. This prevents Jan 1, 2000 from
-                # being converted to a negative epoch seconds for certain
-                # timezones, which gets converted into a UTC date in 1999 when
-                # ExtendedZoneProcessor is used to convert the epoch seconds
-                # back to a ZonedDateTime. The UTC date in 1999 causes the
-                # actual max buffer size of ExtendedZoneProcessor to become
-                # different than the one predicted by BufSizeEstimator (which
-                # samples whole years from 2000 until 2050), and causes the
-                # AceTimeValidation/ExtendedZoneInfoTest to fail on the buffer
-                # size check.
-                dt_local = datetime(year, month, 2, 0, 0, 0, tzinfo=tz)
-                # Resolve gap or fold.
-                dt_local = datetime.fromtimestamp(dt_local.timestamp(), tz=tz)
-                item = self._create_test_item(dt_local, 'S')
-                items.append(item)
+                # If 00:00 on the second of the month is not a "simple"
+                # datetime, then try subsequent days.
+                for day in range(2, 29):
+                    dt = datetime(year, month, day, 0, 0, 0, tzinfo=tz)
+                    if _is_simple_datetime(dt, tz):
+                        item = self._create_test_item(dt, 'S')
+                        items.append(item)
+                        break
         return items
 
     def _create_transitions_for_zone(self, tz: Any) -> List[TestItem]:
@@ -126,12 +126,10 @@ class TestDataGenerator():
         items: List[TestItem] = []
         transitions = self._find_transitions(tz)
         for (left, right, only_dst) in transitions:
-            left_item = self._create_test_item(
-                left, 'a' if only_dst else 'A')
+            left_item = self._create_test_item(left, 'a' if only_dst else 'A')
             items.append(left_item)
 
-            right_item = self._create_test_item(
-                right, 'b' if only_dst else 'B')
+            right_item = self._create_test_item(right, 'b' if only_dst else 'B')
             items.append(right_item)
         return items
 
@@ -211,14 +209,11 @@ class TestDataGenerator():
 
         return dt_left, dt_right
 
-    @staticmethod
-    def _create_test_item(dt: datetime, tag: str) -> TestItem:
+    def _create_test_item(self, dt: datetime, tag: str) -> TestItem:
         """Create a TestItem from a datetime."""
         unix_seconds = int(dt.timestamp())
-        epoch_seconds = (
-            unix_seconds
-            - TestDataGenerator.seconds_to_ace_time_epoch_from_unix_epoch
-        )
+        epoch_seconds = unix_seconds \
+            - self.seconds_to_ace_time_epoch_from_unix_epoch
         total_offset = int(dt.utcoffset().total_seconds())  # type: ignore
         dst_offset = int(dt.dst().total_seconds())  # type: ignore
 
@@ -241,3 +236,32 @@ class TestDataGenerator():
             'abbrev': abbrev,
             'type': tag,
         }
+
+
+def _is_simple_datetime(dt: datetime, tz: tzinfo) -> bool:
+    """Return True if `dt` is not a gap nor an overlap. The python datetime API
+    does not provide a direct way to detect this, so we have to work a little
+    harder.
+    """
+    # Check if in the gap
+    unix_seconds = int(dt.timestamp())
+    et = datetime.fromtimestamp(unix_seconds, tz)
+    if (
+        dt.year != et.year
+        or dt.month != et.month
+        or dt.day != et.day
+        or dt.hour != et.hour
+        or dt.minute != et.minute
+        or dt.second != et.second
+    ):
+        return False
+
+    # Check for overlap
+    et = datetime(
+        dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
+        tzinfo=tz, fold=1)
+    alt_unix_seconds = int(et.timestamp())
+    if alt_unix_seconds != unix_seconds:
+        return False
+
+    return True
