@@ -96,12 +96,10 @@ class TestDataGenerator:
         items: List[TestItem] = []
         transitions = self._find_transitions(tz)
         for (left, right, only_dst) in transitions:
-            left_item = self._create_test_item_from_datetime(
-                left, 'a' if only_dst else 'A')
+            left_item = self._create_test_item(left, 'a' if only_dst else 'A')
             items.append(left_item)
 
-            right_item = self._create_test_item_from_datetime(
-                right, 'b' if only_dst else 'B')
+            right_item = self._create_test_item(right, 'b' if only_dst else 'B')
             items.append(right_item)
         return items
 
@@ -188,41 +186,34 @@ class TestDataGenerator:
         """Create samples for the tz in the years [start_year, until_year).
         One test point for each month, on the *second* of the month,
         annotated by tag='S'.
+
+        Using the *second* of each month instead of the first of the month
+        prevents Jan 1, 2000 from being converted to a negative epoch seconds
+        for certain timezones, which gets converted into a UTC date in 1999 when
+        ExtendedZoneProcessor is used to convert the epoch seconds back to a
+        ZonedDateTime. The UTC date in 1999 causes the actual max buffer size of
+        ExtendedZoneProcessor to become different than the one predicted by
+        BufSizeEstimator (which samples whole years from 2000 until 2050), and
+        causes the AceTimeValidation/ExtendedZoneInfoTest to fail on the buffer
+        size check.
         """
         items: List[TestItem] = []
         for year in range(self.start_year, self.until_year):
-            # Add a sample test point on the *second* of each month instead of
-            # the first of the month. This prevents Jan 1, 2000 from being
-            # converted to a negative epoch seconds for certain timezones, which
-            # gets converted into a UTC date in 1999 when ExtendedZoneProcessor
-            # is used to convert the epoch seconds back to a ZonedDateTime. The
-            # UTC date in 1999 causes the actual max buffer size of
-            # ExtendedZoneProcessor to become different than the one predicted
-            # by BufSizeEstimator (which samples whole years from 2000 until
-            # 2050), and can cause the AceTimeValidation/ExtendedAcetzTest to
-            # fail on the buffer size check.
             for month in range(1, 13):
-                # If 00:00 on the second of the month does not exist (i.e. in
-                # the "gap"), then try subsequent days, until the 28th. The
-                # python datetime API does not provide a direct way to detect
-                # this. The workaround is to normalize the datetime using
-                # perform a round-trip conversion through the unix_seconds, then
-                # compare the resulting date components.
+                # If 00:00 on the second of the month is not a "simple"
+                # datetime, then try subsequent days.
                 for day in range(2, 29):
                     dt = datetime(year, month, day, 0, 0, 0, tzinfo=tz)
                     if _is_simple_datetime(dt, tz):
-                        item = self._create_test_item_from_datetime(dt, 'S')
+                        item = self._create_test_item(dt, 'S')
                         items.append(item)
                         break
         return items
 
-    def _create_test_item_from_datetime(
-        self, dt: datetime, tag: str
-    ) -> TestItem:
+    def _create_test_item(self, dt: datetime, tag: str) -> TestItem:
         unix_seconds = int(dt.timestamp())
-        acetime_seconds = \
-            unix_seconds - self.seconds_to_acetime_epoch_from_unix_epoch
-
+        acetime_seconds = unix_seconds \
+            - self.seconds_to_acetime_epoch_from_unix_epoch
         total_offset = int(dt.utcoffset().total_seconds())  # type: ignore
         dst_offset = int(dt.dst().total_seconds())  # type: ignore
 
@@ -248,7 +239,10 @@ class TestDataGenerator:
 
 
 def _is_simple_datetime(dt: datetime, tz: tzinfo) -> bool:
-    """Return True if `dt` is not a gap nor an overlap."""
+    """Return True if `dt` is not a gap nor an overlap. The python datetime API
+    does not provide a direct way to detect this, so we have to work a little
+    harder.
+    """
     # Check if in the gap
     unix_seconds = int(dt.timestamp())
     et = datetime.fromtimestamp(unix_seconds, tz)
