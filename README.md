@@ -229,7 +229,7 @@ The required Python, Java and C++ tools and libraries are explained in:
 
 * [compare_acetimec](tools/compare_acetimec)
 * [compare_acetz](tools/compare_acetz)
-* [compare_cpp](tools/compare_c)
+* [compare_c](tools/compare_c)
 * [compare_cpp](tools/compare_cpp)
 * [compare_dateutil](tools/compare_dateutil)
 * [compare_go](tools/compare_go)

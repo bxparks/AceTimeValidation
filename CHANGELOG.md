@@ -8,6 +8,10 @@
       in this new format.
     * Add `./validation` directory which supports peer-to-peer validation,
       instead of testing `validation_data.json` against AceTime only.
+    * `tests/`
+        * Move top-level `BasicXxxTest` and `ExtendedXxxtest` to be under new
+          `tests/` subdirectory.
+        * Rename `{Basic,Extended}XxxTest` to `Xxx{Basic,Extended}Test`.
 * 1.5.2 (2023-04-01, TZDB 2023c)
     * Upgrade TZDB from 2023b to 2023c.
         * https://mm.icann.org/pipermail/tz-announce/2023-March/000079.html
