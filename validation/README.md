@@ -84,7 +84,7 @@ The following libraries are supported:
 * Hinnant date library
     * files: `hinnant.json`, `hinnant.txt`
     * diff target: `make diff_hinnant`
-    * script: `tools/compare_cpp`
+    * script: `tools/compare_hinnant`
 * libc C library
     * files: `libc.json`, `libc.txt`
     * target: `make diff_libc`

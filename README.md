@@ -79,7 +79,7 @@ These scripts live under the `AceTimeValidation/tools/` directory:
 * `compare_acetimec` - AceTimeC library
 * `compare_acetz` - AceTimePython library
 * `compare_libc` - C GNU libc library
-* `compare_cpp` - C++ Hinnant Date library
+* `compare_hinnant` - C++ Hinnant Date library
 * `compare_dateutil` - Python `python-dateutil` library
 * `compare_go` - Go Lang time library
 * `compare_java` - Java JDK11 `java.time` library
@@ -126,7 +126,7 @@ zones.txt
    |    Hinnant/date                             |
    |        |                                    |
    |        v                                    |
-   +--> compare_cpp/generate_data.cpp ---------> +
+   +--> compare_hinnant/compare_hinnant.out ---> +
    |                                             |
    |                                             |
    |         pytz                                |
@@ -229,11 +229,11 @@ The required Python, Java and C++ tools and libraries are explained in:
 
 * [compare_acetimec](tools/compare_acetimec)
 * [compare_acetz](tools/compare_acetz)
-* [compare_libc](tools/compare_libc)
-* [compare_cpp](tools/compare_cpp)
 * [compare_dateutil](tools/compare_dateutil)
 * [compare_go](tools/compare_go)
+* [compare_hinnant](tools/compare_hinnant)
 * [compare_java](tools/compare_java)
+* [compare_libc](tools/compare_libc)
 * [compare_noda](tools/compare_noda)
 * [compare_pytz](tools/compare_pytz)
 * [compare_zoneinfo](tools/compare_zoneinfo)

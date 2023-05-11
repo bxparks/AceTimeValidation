@@ -15,7 +15,7 @@ date/time components.
 
 ## Compiling
 
-I have tested this Ubuntu 18.04 and 20.04. Install the following:
+I have tested this on Ubuntu 18.04, 20.04, and 22.04. Install the following:
 
 * CMake (optional)
     * `$ sudo apt install cmake`
@@ -29,8 +29,8 @@ I have tested this Ubuntu 18.04 and 20.04. Install the following:
       Occasionally, the repo may need to be updated manually with a `$ git
       pull`.
 
-Then type make to generate `compare_cpp.out`:
+Then type make to generate `compare_hinnant.out`:
 ```
 $ make
-$ ./compare_cpp.out < zones.txt > validation_data.json
+$ ./compare_hinnant.out < zones.txt > validation_data.json
 ```

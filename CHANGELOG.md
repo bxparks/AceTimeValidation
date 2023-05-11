@@ -66,7 +66,7 @@
 * 1.2.0 (2022-11-04, TZDB 2022f)
     * Support AceTime v2.0.0
         * Add `--epoch_year` flags
-            * `compare_cpp`, `compare_acetimec` and `compare_acetz`
+            * `compare_hinnant`, `compare_acetimec` and `compare_acetz`
         * Separate the validation start/until year params from the TZDB
           start/until year params
             * `*HinnantDateTest`, `*AceTimeCTest`, `*AcetzTest`

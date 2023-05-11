@@ -5,11 +5,11 @@ written in various languages:
 
 * `compare_acetimec` - use `AceTimeC` library in C
 * `compare_acetz` - use `AceTimePython` library in Python
-* `compare_libc` - use the standard libc library in C
-* `compare_cpp` - use Howard Hinnant `date` library in C++
 * `compare_dateutil` - use the `python-dateutil` library in Python
 * `compare_go` - use the `time` library in Go
+* `compare_hinnant` - use Howard Hinnant `date` library in C++
 * `compare_java` - use `java.time` library in Java
+* `compare_libc` - use the standard libc library in C
 * `compare_noda` - use the Noda Time library in C#
 * `compare_pytz` - use the `pytz` library in Python
 * `compare_zoneinfo` - use the `zoneinfo` library in Python
