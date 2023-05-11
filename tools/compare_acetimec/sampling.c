@@ -11,8 +11,8 @@ static int8_t create_test_item_from_epoch_seconds(
     char type)
 {
   AtcZonedDateTime zdt;
-  int8_t err = atc_zoned_date_time_from_epoch_seconds(&zdt, epoch_seconds, tz);
-  if (err) return err;
+  atc_zoned_date_time_from_epoch_seconds(&zdt, epoch_seconds, tz);
+  if (atc_zoned_date_time_is_error(&zdt)) return kAtcErrGeneric;
 
   ti->epoch_seconds = epoch_seconds;
   ti->year = zdt.year;
@@ -24,8 +24,8 @@ static int8_t create_test_item_from_epoch_seconds(
   ti->type = type;
 
   AtcZonedExtra zet;
-  err = atc_zoned_extra_from_epoch_seconds(&zet, epoch_seconds, tz);
-  if (err) return err;
+  atc_zoned_extra_from_epoch_seconds(&zet, epoch_seconds, tz);
+  if ((atc_zoned_date_time_is_error(&zdt))) return kAtcErrGeneric;
 
   strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
   ti->abbrev[kAtcAbbrevSize - 1] = '\0';
@@ -62,12 +62,11 @@ static int8_t add_test_item_from_epoch_seconds(
 // * 2 - silent transition (both STD or DST changed and canceled each other)
 static int8_t is_transition(atc_time_t t1, atc_time_t t2, const AtcTimeZone *tz)
 {
-  int8_t err;
   AtcZonedExtra ze1, ze2;
-  err = atc_zoned_extra_from_epoch_seconds(&ze1, t1, tz);
-  if (err) return -1;
-  err = atc_zoned_extra_from_epoch_seconds(&ze2, t2, tz);
-  if (err) return -1;
+  atc_zoned_extra_from_epoch_seconds(&ze1, t1, tz);
+  if (atc_zoned_extra_is_error(&ze1)) return -1;
+  atc_zoned_extra_from_epoch_seconds(&ze2, t2, tz);
+  if (atc_zoned_extra_is_error(&ze2)) return -1;
 
   // total UTC offsets
   int32_t offset1 = ze1.std_offset_seconds + ze1.dst_offset_seconds;
@@ -137,19 +136,19 @@ void add_transitions(
 {
   AtcLocalDateTime ldt = {start_year, 1, 1, 0, 0, 0, 0 /*fold*/};
   AtcZonedDateTime zdt;
-  int8_t err = atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
-  if (err) return;
+  atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
+  if (atc_zoned_date_time_is_error(&zdt)) return;
 
   atc_time_t t = atc_zoned_date_time_to_epoch_seconds(&zdt);
   t -= 86400; // go back one day because local TZ may not be UTC
 
-  err = atc_zoned_date_time_from_epoch_seconds(&zdt, t, tz);
-  if (err) return;
+  atc_zoned_date_time_from_epoch_seconds(&zdt, t, tz);
+  if (atc_zoned_date_time_is_error(&zdt)) return;
   for (;;) {
     atc_time_t nextt = t + sampling_hours * 3600;
     AtcZonedDateTime nextzdt;
-    int8_t err = atc_zoned_date_time_from_epoch_seconds(&nextzdt, nextt, tz);
-    if (err) continue;
+    atc_zoned_date_time_from_epoch_seconds(&nextzdt, nextt, tz);
+    if (atc_zoned_date_time_is_error(&nextzdt)) continue;
     if (nextzdt.year >= until_year) break;
 
     // Look for utc offset transition
@@ -252,12 +251,11 @@ void add_monthly_samples(
       for (int d = 2; d <= 28; d++) {
         AtcZonedExtra extra;
         AtcLocalDateTime ldt = {y, m, d, 0, 0, 0, 0 /*fold*/};
-        int8_t err = atc_zoned_extra_from_local_date_time(&extra, &ldt, tz);
-        if (!err && (extra.type == kAtcZonedExtraExact
-          || extra.type == kAtcZonedExtraOverlap)) {
+        atc_zoned_extra_from_local_date_time(&extra, &ldt, tz);
+        if (atc_zoned_extra_is_error(&extra)) {
           AtcZonedDateTime zdt;
-          err = atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
-          if (!err) {
+          atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
+          if (!atc_zoned_date_time_is_error(&zdt)) {
             atc_time_t epoch_seconds =
                 atc_zoned_date_time_to_epoch_seconds(&zdt);
             if (epoch_seconds != kAtcInvalidEpochSeconds) {
