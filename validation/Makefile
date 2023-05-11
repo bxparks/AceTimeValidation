@@ -125,7 +125,7 @@ acetimec.txt: acetimec.json
 
 # Takes about 13 secs to process 350 zones on a dual-core i5-6300U computer.
 ctime.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_c/compare_c.out \
+	$(VALIDATION_TOOLS)/compare_libc/compare_libc.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \

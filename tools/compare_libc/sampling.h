@@ -1,5 +1,5 @@
-#ifndef COMPARE_C_SAMPLING_H
-#define COMPARE_C_SAMPLING_H
+#ifndef COMPARE_LIBC_SAMPLING_H
+#define COMPARE_LIBC_SAMPLING_H
 
 #include "test_data.h"
 

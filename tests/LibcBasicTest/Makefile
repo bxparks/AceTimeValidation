@@ -49,15 +49,15 @@ validation_data.h: validation_data.json
 		< validation_data.json
 
 validation_data.json: $(DB_NAMESPACE)/zones.txt
-	$(VALIDATION_TOOLS)/compare_c/compare_c.out \
+	$(VALIDATION_TOOLS)/compare_libc/compare_libc.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
-$(VALIDATION_TOOLS)/compare_c/compare_c.out:
-	$(MAKE) -C $(VALIDATION_TOOLS)/compare_c/
+$(VALIDATION_TOOLS)/compare_libc/compare_libc.out:
+	$(MAKE) -C $(VALIDATION_TOOLS)/compare_libc/
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@

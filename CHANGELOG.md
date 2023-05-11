@@ -37,7 +37,7 @@
         * 2023b: https://mm.icann.org/pipermail/tz-announce/2023-March/000078.html
             * Lebanon delays the start of DST this year.
 * 1.5.0 (2023-02-12, TZDB 2022g)
-    * Add `tools/compare_c`
+    * Add `tools/compare_libc`
         * Generate validation data using the GNU libc functions of the C
           language.
     * Rename overloaded `tools/compare_xxx/generate_data.out` to

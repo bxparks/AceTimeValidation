@@ -5,7 +5,7 @@ written in various languages:
 
 * `compare_acetimec` - use `AceTimeC` library in C
 * `compare_acetz` - use `AceTimePython` library in Python
-* `compare_c` - use the standard libc library in C
+* `compare_libc` - use the standard libc library in C
 * `compare_cpp` - use Howard Hinnant `date` library in C++
 * `compare_dateutil` - use the `python-dateutil` library in Python
 * `compare_go` - use the `time` library in Go

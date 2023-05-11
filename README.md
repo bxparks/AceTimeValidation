@@ -78,7 +78,7 @@ These scripts live under the `AceTimeValidation/tools/` directory:
 
 * `compare_acetimec` - AceTimeC library
 * `compare_acetz` - AceTimePython library
-* `compare_c` - C GNU libc library
+* `compare_libc` - C GNU libc library
 * `compare_cpp` - C++ Hinnant Date library
 * `compare_dateutil` - Python `python-dateutil` library
 * `compare_go` - Go Lang time library
@@ -229,7 +229,7 @@ The required Python, Java and C++ tools and libraries are explained in:
 
 * [compare_acetimec](tools/compare_acetimec)
 * [compare_acetz](tools/compare_acetz)
-* [compare_c](tools/compare_c)
+* [compare_libc](tools/compare_libc)
 * [compare_cpp](tools/compare_cpp)
 * [compare_dateutil](tools/compare_dateutil)
 * [compare_go](tools/compare_go)

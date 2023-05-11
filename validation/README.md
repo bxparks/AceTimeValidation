@@ -41,7 +41,7 @@ A number of helper scripts and binaries exist under the [tools](../tools)
 directory to implement this function of this directory:
 
 * `tools/compare_xxx/`
-    * Each library `xxx` has a native binary (e.g. `compare_ctime.out`), or a
+    * Each library `xxx` has a native binary (e.g. `compare_libc.out`), or a
       script (e.g. `compare_zoneutil.py`), or an intermediate object file (e.g.
       `compare_java.class`).
     * The job of those binaries or scripts is to read the list of timezones on
@@ -88,7 +88,7 @@ The following libraries are supported:
 * libc C library
     * files: `ctime.json`, `ctime.txt`
     * target: `make diff_ctime`
-    * script: `tools/compare_c`
+    * script: `tools/compare_libc`
 * Python dateutil C library
     * files: `dateutil.json`, `dateutil.txt`
     * target: `make diff_dateutil`
