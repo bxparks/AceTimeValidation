@@ -124,7 +124,7 @@ acetimec.txt: acetimec.json
 #------------------------------------------------------------------------------
 
 # Takes about 13 secs to process 350 zones on a dual-core i5-6300U computer.
-ctime.json: zones.txt
+libc.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_libc/compare_libc.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
@@ -132,7 +132,7 @@ ctime.json: zones.txt
 		< zones.txt \
 		> $@
 
-ctime.txt: ctime.json
+libc.txt: libc.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
@@ -178,9 +178,9 @@ diff_zoneinfo: zoneinfo.json baseline.json
 		--observed zoneinfo.json \
 		--expected baseline.json
 
-diff_ctime: ctime.json baseline.json
+diff_libc: libc.json baseline.json
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed ctime.json \
+		--observed libc.json \
 		--expected baseline.json
 
 diff_go: go.json baseline.json

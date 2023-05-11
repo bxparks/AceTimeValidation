@@ -24,8 +24,8 @@ it is convenient to compare each library against a baseline. Currently, the
 library.
 
 The `Makefile` provides targets of the form `diff_xxx` which compare those
-validation files against the `baseline.json` file. For example, the `diff_ctime`
-target compares the `ctime.json` file produced by the C libc library against the
+validation files against the `baseline.json` file. For example, the `diff_libc`
+target compares the `libc.json` file produced by the C libc library against the
 baseline.
 
 ### Timezone List
@@ -86,8 +86,8 @@ The following libraries are supported:
     * diff target: `make diff_hinnant`
     * script: `tools/compare_cpp`
 * libc C library
-    * files: `ctime.json`, `ctime.txt`
-    * target: `make diff_ctime`
+    * files: `libc.json`, `libc.txt`
+    * target: `make diff_libc`
     * script: `tools/compare_libc`
 * Python dateutil C library
     * files: `dateutil.json`, `dateutil.txt`
@@ -121,9 +121,9 @@ Here are the diff result for the following targets which validate against the
 +-------------------+---------------+
 | diff_acetimec     | OK            |
 | diff_acetz        | OK            |
-| diff_ctime        | OK            |
 | diff_go           | OK            |
 | diff_hinnant      | errors        |
+| diff_libc         | OK            |
 | diff_zoneinfo     | errors        |
 +-------------------+---------------+
 ```
