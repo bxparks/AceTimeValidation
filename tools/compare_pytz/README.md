@@ -4,8 +4,8 @@ Compare the [AceTime](https://github.com/bxparks/AceTime) library with  the
 Python `pytz` package.
 Generates the `validation_data.json` file needed by:
 
-* `BasicPytzTest/`
-* `ExtendedPytzTest/`
+* `PytzBasicTest/`
+* `PytzExtendedTest/`
 
 ## Blacklist
 

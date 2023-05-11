@@ -1,10 +1,11 @@
 # AceTimeValidation Tools
 
-Validation data generators for various third party libraries written
-in various languages:
+Validation data generators for various first party and third party libraries
+written in various languages:
 
 * `compare_acetimec` - use `AceTimeC` library in C
 * `compare_acetz` - use `AceTimePython` library in Python
+* `compare_c` - use the standard libc library in C
 * `compare_cpp` - use Howard Hinnant `date` library in C++
 * `compare_dateutil` - use the `python-dateutil` library in Python
 * `compare_go` - use the `time` library in Go
@@ -13,9 +14,13 @@ in various languages:
 * `compare_pytz` - use the `pytz` library in Python
 * `compare_zoneinfo` - use the `zoneinfo` library in Python
 
-These produce a `validation_data.json` file, which is processed by the
-[generate_validation](generate_validation) script to generate the following
-Arduino-compatible C++ files:
+These produce a `validation_data.json` file which are consumed by various tests
+and validation suites.
+
+For the validation tests under by [tests](../tests), the
+[generate_validation](generate_validation) script consumes the
+`validation_data.json` file to generate the following Arduino-compatible C++
+files:
 
 * `validation_data.h`
 * `validation_data.cpp`

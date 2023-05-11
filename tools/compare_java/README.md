@@ -4,14 +4,14 @@ Compare the [AceTime](https://github.com/bxparks/AceTime) library with the Java
 `java.time` package.
 Generates the `validation_data.json` file needed by:
 
-* `BasicJavaDateTest/`
-* `ExtendedJavaDateTest/`
+* `JavaBasicTest/`
+* `JavaExtendedTest/`
 
 ## Requirements
 
 You need to install the Java 11 JDK to get the `javac` compiler.
 
-**Ubuntu 18.04 and 20.04**
+**Ubuntu 18.04, 20.04, 22.04**
 
 ```
 $ sudo apt install openjdk-11-jdk

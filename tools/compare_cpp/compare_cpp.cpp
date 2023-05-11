@@ -216,7 +216,7 @@ void addTransitions(TestCollection& collection, const time_zone& tz,
  * ZonedDateTime. The UTC date in 1999 causes the actual max buffer size of
  * ExtendedZoneProcessor to become different than the one predicted by
  * BufSizeEstimator (which samples whole years from 2000 until 2050), and causes
- * the AceTimeValidation/ExtendedHinnantDateTest to fail on the buffer size
+ * the AceTimeValidation/tests/HinnantExtendedTest to fail on the buffer size
  * check.
  *
  * The original attempt on the 2nd is marked with a type 'S'. If the 2nd of the

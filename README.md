@@ -267,10 +267,10 @@ The `make validations` target runs only a subset of the integration tests which
 validate against libraries that are known to work when a new TZDB version is
 released:
 
-* BasicAcetzTest
-* ExtendedAcetzTest
-* BasicHinnantDateTest
-* ExtendedHinnantDateTest
+* AcetzBasicTest
+* AcetzExtendedTest
+* HinnantBasicTest
+* HinnantExtendedTest
 
 That's because these libraries allow the IANA TZDB version to be explicitly
 specified. The other libraries instead rely on the TZDB version that is
@@ -309,8 +309,8 @@ host OS.
 The Python pytz library was a natural choice since the `tzcompiler.py` was
 already written in Python. I created:
 
-* [BasicPytzTest](BasicPytzTest/)
-* [ExtendedPytzTest](ExtendedPytzTest/)
+* [PytzBasicTest](tests/PytzBasicTest/)
+* [PytzExtendedTest](tests/PytzExtendedTest/)
 
 The `pytz` library is used to generate various C++ source code
 (`validation_data.cpp`, `validation_data.h`, `validation_tests.cpp`) which
@@ -341,8 +341,8 @@ have been listed in the `compare_pytz/blacklist.json` file.
 
 Validation against the Python dateutil library is similar to pytz. I created:
 
-* [BasicDateUtilTest](BasicDateUtilTest/)
-* [ExtendedDateUtilTest](ExtendedDateUtilTest/)
+* [DateUtilBasicTest](tests/DateUtilBasicTest/)
+* [DateUtilExtendedTest](tests/DateUtilExtendedTest/)
 
 Similar to the `pytz` library, the `dateutil` library supports [dates only until
 2038](https://github.com/dateutil/dateutil/issues/462). The
@@ -364,8 +364,8 @@ These validate against the `acetz` class of the
 algorithm is exposed through the `acetz` subclass of the `tzinfo` class of the
 standard `datetime` library.
 
-* [BasicAcetzTest](BasicAcetzTest/)
-* [ExtendedAcetzTest](ExtendedAcetzTest/)
+* [AcetzBasicTest](tests/AcetzBasicTest/)
+* [AcetzExtendedTest](tests/AcetzExtendedTest/)
 
 If the zonedb files in the `src/acetime/zonedb/` directory of the
 `AceTimePython` library is generated from the same version of the TZDB as the
@@ -386,8 +386,8 @@ the `tzcompiler.py` program, and produced data points from year 2000 to year
 
 The result is 2 validation programs:
 
-* [BasicJavaTest](BasicJavaTest/)
-* [ExtendedJavaTest](ExtendedJavaTest/)
+* [JavaBasicTest](tests/JavaBasicTest/)
+* [JavaExtendedTest](tests/JavaExtendedTest/)
 
 The most difficult part of using Java is figuring out how to install it
 and figuring out which of the many variants of the JDK to use. On Ubuntu 18.04,
@@ -416,8 +416,8 @@ powerful, complex and difficult to use. I managed to incorporate it into 2 more
 validation tests, and verified that the AceTime library matches the Hinnant date
 library for all timezones from 2000 to 2049 (inclusive):
 
-* [BasicHinnantDateTest](BasicHinnantDateTest/)
-* [ExtendedHinnantDateTest](ExtendedHinnantDateTest/)
+* [HinnantBasicTest](tests/HinnantBasicTest/)
+* [HinnantExtendedTest](tests/HinnantExtendedTest/)
 
 AceTime matches Hinnant Date on all data points from the year 2000 to 2050. No
 `blacklist.json` file was needed.
@@ -429,8 +429,8 @@ I wrote the test data generator [compare_noda](tools/compare_noda) in C# to
 generate a `validation_data.json` file using the
 [Noda Time](https://nodatime.org) library. The result is 2 validation programs:
 
-* [BasicNodaTest](BasicNodaTest/)
-* [ExtendedNodaTest](ExtendedNodaTest/)
+* [NodaBasicTest](tests/NodaBasicTest/)
+* [NodaExtendedTest](tests/NodaExtendedTest/)
 
 AceTime matches Noda Time on all data points from the year 2000 to 2050. No
 `blacklist.json` file was needed.
@@ -443,8 +443,8 @@ file using the `time` package (https://pkg.go.dev/time) in the Golang standard
 library. I believe the `time` package uses the underlying TZDB installed on the
 host operating system. There are 2 validation programs: that consume this test
 
-* [BasicGoTest](BasicGoTest/)
-* [ExtendedGoTest](ExtendedGoTest/)
+* [GoBasicTest](tests/GoBasicTest/)
+* [GoExtendedTest](tests/GoExtendedTest/)
 
 AceTime matches the Go lang `time` package on all data points from the year 2000
 to 2050. No `blacklist.json` file was needed. The `time` package does not
@@ -458,8 +458,8 @@ the C language to generate a `validation_data.json` file using the
 [AceTimeC](https://github.com/bxparks/AceTimeC) library. The result is 2
 validation programs:
 
-* [BasicAceTimeCTest](BasicAceTimeCTest/)
-* [ExtendedAceTimeCTest](ExtendedAceTimeCTest/)
+* [AceTimeCBasicTest](tests/AceTimeCBasicTest/)
+* [AceTimeCExtendedTest](tests/AceTimeCExtendedTest/)
 
 <a name="License"></a>
 ## License

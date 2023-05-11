@@ -4,8 +4,8 @@ Compare the [AceTime](https://github.com/bxparks/AceTime) library with the
 Python `zoneinfo` package added in Python 3.9.
 Generates the `validation_data.json` file needed by:
 
-* `BasicZoneInfoTest/`
-* `ExtendedZoneInfoTest/`
+* `ZoneInfoBasicTest/`
+* `ZoneInfoExtendedTest/`
 
 ## Blacklist
 

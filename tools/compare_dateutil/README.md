@@ -4,8 +4,8 @@ Compare the [AceTime](https://github.com/bxparks/AceTime) library with the
 Python `dateutil` package.
 Generates the `validation_data.json` file needed by:
 
-* `BasicDateUtilTest/`
-* `ExtendedDateUtilTest/`
+* `DateUtilBasicTest/`
+* `DateUtilExtendedTest/`
 
 ## Blacklist
 

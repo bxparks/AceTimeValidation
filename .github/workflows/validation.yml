@@ -77,14 +77,14 @@ jobs:
 
     - name: Validations
       run: |
-        make validations
+        make -C tests validations
 
     # Run the validation tests which will succeed when the TZDB version is
-    # updated (BasicHinnantDateTest, ExtendedHinnantDateTest, BasicAcetzTest,
-    # ExtendedAcetzTest). We don't run the others because when a new TZDB
+    # updated (HinnantBasicTest, HinnantExtendedTest, AcetzBasicTest,
+    # AcetzExtendedTest). We don't run the others because when a new TZDB
     # version comes out, the Python pytz, dateutil, and Java validation tests
     # will always fail because they depend on the obsolete TZ database on the
     # host Operating System.
     - name: RunValidations
       run: |
-        make runvalidations
+        make -C tests runvalidations
