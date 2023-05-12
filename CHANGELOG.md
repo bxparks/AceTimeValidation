@@ -4,11 +4,15 @@
     * Split the `test_data` component of `validation_data.json` into 2 lists:
         * `transitions` containing DST transitions of the timezone, and
         * `samples` containing samples from `start_year` to `until_year`
-    * Update all `tools/compare_xxx` scripts to generate `validation_data.json`
-      in this new format.
-    * Add `./validation` directory which supports peer-to-peer validation,
-      instead of testing `validation_data.json` against AceTime only.
-    * `tests/`
+    * `./tools/compare_xxx`
+        * Update scripts to generate `validation_data.json` with split
+          `transitions` and `samples`.
+        * Add `compare_acetime` using AceTime library.
+        * Rename `compare_c` to `compare_libc`
+        * Rename `compare_cpp` to `compare_hinnant`
+    * `./validation`
+        * Add files to support peer-to-peer validation.
+    * `./tests/`
         * Move top-level `BasicXxxTest` and `ExtendedXxxtest` to be under new
           `tests/` subdirectory.
         * Rename `{Basic,Extended}XxxTest` to `Xxx{Basic,Extended}Test`.
