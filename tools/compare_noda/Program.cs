@@ -175,8 +175,10 @@ namespace compare_noda
         public IDictionary<string, TestEntry> CreateTestData(List<string> zones)
         {
             var testData = new SortedDictionary<string, TestEntry>();
+            int i = 0;
             foreach (string zone in zones)
             {
+                Console.Error.WriteLine($"[{i}] {zone}");
                 DateTimeZone tz = dateTimeZoneProvider[zone];
                 var startInstant = new LocalDateTime(startYear, 1, 1, 0, 0)
                     .InZoneLeniently(tz).ToInstant();
@@ -187,6 +189,8 @@ namespace compare_noda
                 testEntry.transitions = CreateTransitions(tz, startInstant, untilInstant);
                 testEntry.samples = CreateSamples(tz, startInstant, untilInstant);
                 testData.Add(zone, testEntry);
+
+                i++;
             }
             return testData;
         }
@@ -199,13 +203,13 @@ namespace compare_noda
                 if (zi.HasStart)
                 {
                     var isoStart = zi.IsoLocalStart;
-                    if (isoStart.Year > startYear)
+                    if (isoStart.Year >= startYear)
                     {
                         // A: One minute before the transition
                         // B: Right after the DST transition.
                         Instant after = zi.Start;
-                        Duration oneMinute = Duration.FromMinutes(1);
-                        Instant before = after - oneMinute;
+                        Duration oneSecond = Duration.FromSeconds(1);
+                        Instant before = after - oneSecond;
                         items.Add(CreateTestItem(tz, before, 'A'));
                         items.Add(CreateTestItem(tz, after, 'B'));
                     }
@@ -235,8 +239,8 @@ namespace compare_noda
         }
 
         private List<TestItem> CreateSamples(
-                DateTimeZone tz, Instant startInstant, Instant untilInstant) {
-
+            DateTimeZone tz, Instant startInstant, Instant untilInstant)
+        {
             var items = new List<TestItem>();
             ZonedDateTime startDt = startInstant.InZone(tz);
             ZonedDateTime untilDt = untilInstant.InZone(tz);
