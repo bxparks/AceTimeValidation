@@ -252,7 +252,8 @@ void add_monthly_samples(
         AtcZonedExtra extra;
         AtcLocalDateTime ldt = {y, m, d, 0, 0, 0, 0 /*fold*/};
         atc_zoned_extra_from_local_date_time(&extra, &ldt, tz);
-        if (atc_zoned_extra_is_error(&extra)) {
+        if (extra.type == kAtcZonedExtraExact
+            || extra.type == kAtcZonedExtraOverlap) {
           AtcZonedDateTime zdt;
           atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
           if (!atc_zoned_date_time_is_error(&zdt)) {
