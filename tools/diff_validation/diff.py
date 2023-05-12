@@ -148,6 +148,7 @@ class Differ:
             obs = observed[io]
             exp = expected[ie]
 
+            # Skip silent transitions if not supported by observed algorithm.
             if not self.check_dst and exp['type'] in ['a', 'b']:
                 ie += 1
                 continue
@@ -202,6 +203,18 @@ class Differ:
 
             io += 1
             ie += 1
+
+        # Verify that all samples in both arrays have been consumed
+        if io != len(observed):
+            self.valid = False
+            print(
+                f"ERROR {zone} {label}: unprocessed observed: "
+                f"index {io} != {len(observed)}")
+        if ie != len(expected):
+            self.valid = False
+            print(
+                f"ERROR {zone} {label}: unprocessed expected: "
+                f"index {ie} != {len(expected)}")
 
 
 if __name__ == '__main__':
