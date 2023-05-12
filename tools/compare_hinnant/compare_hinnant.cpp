@@ -236,17 +236,23 @@ void addMonthlySamples(TestCollection& collection, const time_zone& tz,
       for (int d = 2; d <= 28; d++) {
         local_days ld = local_days{month(m)/d/year(y)};
         try {
-          zoned_time<seconds> zdt = make_zoned(
-              &tz, ld + seconds(0), choose::earliest);
-
+          // Try to obtain sample at given local seconds.
+          zoned_time<seconds> zdt = make_zoned(&tz, ld + seconds(0));
           sys_seconds ss = zdt.get_sys_time();
           TestItem item = toTestItem(tz, ss, type);
           collection.push_back(item);
-          // One sample per month is enough, so break as soon as we get one.
           break;
-
+        } catch (const ambiguous_local_time& e) {
+          // Choose the earlier one.
+          zoned_time<seconds> zdt = make_zoned(
+              &tz, ld + seconds(0), choose::earliest);
+          sys_seconds ss = zdt.get_sys_time();
+          TestItem item = toTestItem(tz, ss, type);
+          collection.push_back(item);
+          break;
         } catch (const nonexistent_local_time& e) {
-          type = 'T'; // indicate a retry using subsequent days
+          // Loop to the next day
+          type = 'T';
         }
       }
     }

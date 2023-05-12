@@ -78,7 +78,7 @@ acetimec.txt: acetimec.json
 
 #------------------------------------------------------------------------------
 
-# Takes about 75 secs to processor 350 zones on a dual-core i5-6300U computer.
+# Takes about 70 secs to processor 350 zones on a dual-core i5-6300U computer.
 hinnant.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_hinnant/compare_hinnant.out \
 		--start_year $(VAL_START_YEAR) \
