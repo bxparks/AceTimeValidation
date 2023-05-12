@@ -48,6 +48,37 @@ baseline.txt: acetimec.txt
 
 #------------------------------------------------------------------------------
 
+# Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
+acetime.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		< zones.txt \
+		> $@
+
+acetime.txt: acetime.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+#------------------------------------------------------------------------------
+
+# Takes about 55 secs to process 350 zones on a dual-core i5-6300U computer.
+# TODO: This shouldn't 55 seconds. Should be about the same as acetime.json.
+acetimec.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		< zones.txt \
+		> $@
+
+acetimec.txt: acetimec.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+#------------------------------------------------------------------------------
+
 # Takes about 75 secs to processor 350 zones on a dual-core i5-6300U computer.
 hinnant.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_hinnant/compare_hinnant.out \
@@ -108,21 +139,6 @@ zoneinfo.txt: zoneinfo.json
 
 #------------------------------------------------------------------------------
 
-# Takes about 55 secs to process 350 zones on a dual-core i5-6300U computer.
-acetimec.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
-		< zones.txt \
-		> $@
-
-acetimec.txt: acetimec.json
-	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
-		< $< > $@
-
-#------------------------------------------------------------------------------
-
 # Takes about 13 secs to process 350 zones on a dual-core i5-6300U computer.
 libc.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_libc/compare_libc.out \
@@ -158,32 +174,37 @@ diff: expected.txt observed.txt
 		--observed observed.json \
 		--expected expected.json
 
-diff_hinnant: hinnant.json baseline.json
+diff_acetime: acetime.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetime.json \
+		--expected baseline.json
+
+diff_hinnant: hinnant.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed hinnant.json \
 		--expected baseline.json
 
-diff_acetz: acetz.json baseline.json
+diff_acetz: acetz.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed acetz.json \
 		--expected baseline.json
 
-diff_acetimec: acetimec.json baseline.json
+diff_acetimec: acetimec.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed acetimec.json \
 		--expected baseline.json
 
-diff_zoneinfo: zoneinfo.json baseline.json
+diff_zoneinfo: zoneinfo.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed zoneinfo.json \
 		--expected baseline.json
 
-diff_libc: libc.json baseline.json
+diff_libc: libc.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed libc.json \
 		--expected baseline.json
 
-diff_go: go.json baseline.json
+diff_go: go.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed go.json \
 		--expected baseline.json

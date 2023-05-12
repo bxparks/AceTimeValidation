@@ -62,6 +62,10 @@ The following libraries are supported:
 
 **AceTime** family of libraries
 
+* AceTime library
+    * files: `acetime.json`, `acetime.txt`
+    * target: `make diff_acetime`
+    * script: `tools/compare_acetime`
 * AceTimeC library (**baseline**)
     * files: `acetimec.json`, `acetimec.txt`
     * target: `make diff_acetimec`
@@ -119,6 +123,7 @@ Here are the diff result for the following targets which validate against the
 +-------------------+---------------+
 | target            | status        |
 +-------------------+---------------+
+| diff_acetime      | OK            |
 | diff_acetimec     | OK            |
 | diff_acetz        | OK            |
 | diff_go           | OK            |

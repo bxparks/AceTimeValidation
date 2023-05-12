@@ -76,6 +76,7 @@ timezones.
 
 These scripts live under the `AceTimeValidation/tools/` directory:
 
+* `compare_acetime` - AceTime library
 * `compare_acetimec` - AceTimeC library
 * `compare_acetz` - AceTimePython library
 * `compare_libc` - C GNU libc library
