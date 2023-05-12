@@ -204,17 +204,23 @@ class Differ:
             io += 1
             ie += 1
 
-        # Verify that all samples in both arrays have been consumed
-        if io != len(observed):
+        # Verify number of test items ignoring silent transitions of type 'a'
+        # and 'b'.
+        len_observed = len([
+            item
+            for item in observed
+            if item['type'] in ['A', 'B', 'S', 'T']
+        ])
+        len_expected = len([
+            item
+            for item in expected
+            if item['type'] in ['A', 'B', 'S', 'T']
+        ])
+        if len_observed != len_expected:
             self.valid = False
             print(
-                f"ERROR {zone} {label}: unprocessed observed: "
-                f"index {io} != {len(observed)}")
-        if ie != len(expected):
-            self.valid = False
-            print(
-                f"ERROR {zone} {label}: unprocessed expected: "
-                f"index {ie} != {len(expected)}")
+                f"ERROR {zone} {label}: len(observed) ({len_observed}) != "
+                f"len(expected) ({len_expected})")
 
 
 if __name__ == '__main__':
