@@ -160,7 +160,8 @@ namespace compare_noda
         private const string indent3 = "        ";
         private const string indent4 = "          ";
 
-        public GenerateData(int startYear, int untilYear, int epochYear, IDateTimeZoneProvider provider)
+        public GenerateData(
+            int startYear, int untilYear, int epochYear, IDateTimeZoneProvider provider)
         {
             this.startYear = startYear;
             this.untilYear = untilYear;
@@ -195,7 +196,9 @@ namespace compare_noda
             return testData;
         }
 
-        private List<TestItem> CreateTransitions(DateTimeZone tz, Instant startInstant, Instant untilInstant) {
+        private List<TestItem> CreateTransitions(
+            DateTimeZone tz, Instant startInstant, Instant untilInstant) {
+
             var items = new List<TestItem>();
             var intervals = tz.GetZoneIntervals(startInstant, untilInstant);
             foreach (ZoneInterval zi in intervals)
@@ -205,13 +208,32 @@ namespace compare_noda
                     var isoStart = zi.IsoLocalStart;
                     if (isoStart.Year >= startYear)
                     {
-                        // A: One minute before the transition
-                        // B: Right after the DST transition.
+                        // Get before and after the transition.
                         Instant after = zi.Start;
                         Duration oneSecond = Duration.FromSeconds(1);
                         Instant before = after - oneSecond;
-                        items.Add(CreateTestItem(tz, before, 'A'));
-                        items.Add(CreateTestItem(tz, after, 'B'));
+
+                        ZoneInterval beforeInterval = tz.GetZoneInterval(before);
+                        ZoneInterval afterInterval = tz.GetZoneInterval(after);
+                        int beforeUtcOffset = beforeInterval.WallOffset.Seconds;
+                        int afterUtcOffset = afterInterval.WallOffset.Seconds;
+                        int beforeDstOffset = beforeInterval.Savings.Seconds;
+                        int afterDstOffset = afterInterval.Savings.Seconds;
+
+                        // skip phantom transitions which are artifacts of the implementation
+                        if (beforeUtcOffset == afterUtcOffset && beforeDstOffset == afterDstOffset)
+                        {
+                            continue;
+                        }
+
+                        // 'A': One second before the transition
+                        // 'B': Right after the DST transition
+                        // 'a': silent transition where only the DST changes
+                        // 'b': silent transition where only the DST changes
+                        items.Add(CreateTestItem(
+                            tz, before, (beforeUtcOffset != afterUtcOffset) ? 'A' : 'a'));
+                        items.Add(CreateTestItem(
+                            tz, after, (beforeUtcOffset != afterUtcOffset) ? 'B' : 'b'));
                     }
                 }
             }
@@ -238,6 +260,13 @@ namespace compare_noda
             return testItem;
         }
 
+        // Add a sample test point on the *second* of each month instead of the first of the month.
+        // This prevents Jan 1, 2000 from being converted to a negative epoch seconds for certain
+        // timezones, which gets converted into a UTC date in 1999 when ExtendedZoneProcessor is
+        // used to convert the epoch seconds back to a ZonedDateTime. The UTC date in 1999 causes
+        // the actual max buffer size of ExtendedZoneProcessor to become different than the one
+        // predicted by BufSizeEstimator (which samples whole years from 2000 until 2050), and
+        // causes the AceTimeValidation/ExtendedNodaTest to fail on the buffer size check.
         private List<TestItem> CreateSamples(
             DateTimeZone tz, Instant startInstant, Instant untilInstant)
         {
@@ -247,18 +276,32 @@ namespace compare_noda
 
             for (int year = startDt.Year; year < untilDt.Year; year++)
             {
-                // Add a sample test point on the *second* of each month instead of the first of the
-                // month. This prevents Jan 1, 2000 from being converted to a negative epoch seconds
-                // for certain timezones, which gets converted into a UTC date in 1999 when
-                // ExtendedZoneProcessor is used to convert the epoch seconds back to a
-                // ZonedDateTime. The UTC date in 1999 causes the actual max buffer size of
-                // ExtendedZoneProcessor to become different than the one predicted by
-                // BufSizeEstimator (which samples whole years from 2000 until 2050), and causes the
-                // AceTimeValidation/ExtendedNodaTest to fail on the buffer size check.
                 for (int month = 1; month <= 12; month++)
                 {
-                    ZonedDateTime zdt = new LocalDateTime(year, month, 2, 0, 0).InZoneLeniently(tz);
-                    items.Add(CreateTestItem(tz, zdt.ToInstant(), 'S'));
+                    char type = 'S';
+                    for (int day = 2; day <= 28; day++)
+                    {
+                        try {
+                            // try getting a sample
+                            ZonedDateTime zdt = new LocalDateTime(
+                                year, month, day, 0, 0).InZoneStrictly(tz);
+                            items.Add(CreateTestItem(tz, zdt.ToInstant(), type));
+                            break;
+                        }
+                        catch (AmbiguousTimeException)
+                        {
+                            // select first match
+                            ZonedDateTime zdt = new LocalDateTime(
+                                year, month, 2, 0, 0).InZoneLeniently(tz);
+                            items.Add(CreateTestItem(tz, zdt.ToInstant(), type));
+                            break;
+                        }
+                        catch (SkippedTimeException)
+                        {
+                            // retry using the next day
+                            type = 'T';
+                        }
+                    }
                 }
             }
             return items;
