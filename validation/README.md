@@ -74,10 +74,6 @@ The following libraries are supported:
     * files: `acetz.json`, `acetz.txt`
     * target: `make diff_acetz`
     * script: `tools/compare_acetz`
-* AceTime (TBD)
-    * files: `acetime.json`, `acetime.txt`
-    * target: `make diff_acetime`
-    * script: `tools/compare_acetime`
 * AceTimeGo (TBD)
     * files: `gotz.json`, `gotz.txt`
     * target: `make diff_gotz`
@@ -85,7 +81,7 @@ The following libraries are supported:
 
 **Third Party**
 
-* Hinnant date library
+* Hinnant date C++ library
     * files: `hinnant.json`, `hinnant.txt`
     * diff target: `make diff_hinnant`
     * script: `tools/compare_hinnant`
@@ -93,26 +89,30 @@ The following libraries are supported:
     * files: `libc.json`, `libc.txt`
     * target: `make diff_libc`
     * script: `tools/compare_libc`
-* Python dateutil C library
+* dateutil Python library
     * files: `dateutil.json`, `dateutil.txt`
     * target: `make diff_dateutil`
     * script: `tools/compare_dateutil`
-* Python zoneinfo C library
-    * files: `zoneinfo.json`, `zoneinfo.txt`
-    * target: `make diff_zoneinfo`
-    * script: `tools/compare_zoneinfo`
-* Go time library
+* go.time Go library
     * files: `go.json`, `go.txt`
     * target: `make diff_go`
     * script: `tools/compare_go`
-* Java java.time library (TBD)
+* java.time Java library
     * files: `java.json`, `java.txt`
     * target: `make diff_java`
     * script: `tools/compare_java`
-* C# NodaTime library (TBD)
+* NodaTime C# library
     * files: `noda.json`, `noda.txt`
     * target: `make diff_noda`
     * script: `tools/compare_noda`
+* pytz Python library (TBD)
+    * files: `pytz.json`, `pytz.txt`
+    * target: `make diff_pytz`
+    * script: `tools/compare_pytz`
+* zoneinfo Python library
+    * files: `zoneinfo.json`, `zoneinfo.txt`
+    * target: `make diff_zoneinfo`
+    * script: `tools/compare_zoneinfo`
 
 ## Diff Status
 
@@ -120,20 +120,22 @@ Here are the diff result for the following targets which validate against the
 `baseline.json` (which is currently the `acetimec.json` file from AceTimeC):
 
 ```
-+-------------------+---------------+
-| target            | status        |
-+-------------------+---------------+
-| diff_acetime      | OK            |
-| diff_acetimec     | OK            |
-| diff_acetz        | OK            |
-| diff_go           | OK            |
-| diff_hinnant      | errors        |
-| diff_libc         | OK            |
-| diff_zoneinfo     | errors        |
-+-------------------+---------------+
++-------------------+--------+--------------------------------+
+| target            | status | comment                        |
++-------------------+--------+--------------------------------+
+| diff_acetime      | OK     |                                |
+| diff_acetimec     | OK     |                                |
+| diff_acetz        | OK     |                                |
+| diff_dateutil     | errors | supports only y <= 2038        |
+| diff_go           | OK     |                                |
+| diff_hinnant      | OK     |                                |
+| diff_java         | errors | old TZDB, invalid DST          |
+| diff_libc         | OK     |                                |
+| diff_noda         | OK     |                                |
+| diff_pytz         | errors | supports only y <= 2038        |
+| diff_zoneinfo     | errors | incorrect DST offsets          |
++-------------------+--------+--------------------------------+
 ```
-
-(Note: This may become a matrix in the future)
 
 ## Debugging
 
