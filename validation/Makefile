@@ -138,6 +138,21 @@ hinnant.txt: hinnant.json
 
 #------------------------------------------------------------------------------
 
+# Takes about 10 secs to processor 350 zones on a dual-core i5-6300U computer.
+java.json: zones.txt
+	java -cp $(VALIDATION_TOOLS)/compare_java CompareJava \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		< zones.txt \
+		> $@
+
+java.txt: java.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+#------------------------------------------------------------------------------
+
 # Takes about 13 secs to process 350 zones on a dual-core i5-6300U computer.
 libc.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_libc/compare_libc.out \
@@ -245,6 +260,11 @@ diff_go: go.txt baseline.txt
 diff_hinnant: hinnant.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed hinnant.json \
+		--expected baseline.json
+
+diff_java: java.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed java.json \
 		--expected baseline.json
 
 diff_libc: libc.txt baseline.txt

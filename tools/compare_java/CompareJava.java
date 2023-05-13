@@ -182,7 +182,9 @@ public class CompareJava {
    */
   private Map<String, TestEntry> createTestData(List<String> zones) {
     Map<String, TestEntry> testData = new TreeMap<>();
+    int i = 0;
     for (String zoneName : zones) {
+      System.err.printf("[%d] %s\n", i, zoneName);
       ZoneId zoneId;
       try {
         zoneId = ZoneId.of(zoneName);
@@ -192,6 +194,8 @@ public class CompareJava {
       }
       TestEntry entry = createTestEntry(zoneId);
       testData.put(zoneName, entry);
+
+      i++;
     }
     return testData;
   }
@@ -230,17 +234,42 @@ public class CompareJava {
 
       // Get transition time
       Instant currentInstant = transition.getInstant();
+      Instant beforeInstant = currentInstant.minusSeconds(1);
 
-      // One second before the transition, and at the transition
-      items.add(createTestItem(currentInstant.minusSeconds(1), zoneId, 'A'));
-      items.add(createTestItem(currentInstant, zoneId, 'B'));
+      // Get UTC offsets
+      long currentDst = rules.getDaylightSavings(currentInstant).getSeconds();
+      long currentOffset = rules.getOffset(currentInstant).getTotalSeconds();
+      long beforeDst = rules.getDaylightSavings(beforeInstant).getSeconds();
+      long beforeOffset = rules.getOffset(beforeInstant).getTotalSeconds();
+
+      // Skip phantom transitions which are implementation artifacts.
+      if (currentOffset == beforeOffset && currentDst == beforeDst) {
+        continue;
+      }
+
+      // 'A': One second before the transition
+      // 'B': Right after the DST transition
+      // 'a': silent transition where only the DST offset changes
+      // 'b': silent transition where only the DST offset changes
+      char aType = (beforeOffset != currentOffset) ? 'A': 'a';
+      char bType = (beforeOffset != currentOffset) ? 'B': 'b';
+      items.add(createTestItem(beforeInstant, zoneId, aType));
+      items.add(createTestItem(currentInstant, zoneId, bType));
 
       prevInstant = currentInstant;
     }
     return items;
   }
 
-  /** Add intervening sample test items from startInstant to untilInstant for zoneId. */
+  /**
+   * Add sample test items from startInstant to untilInstant for zoneId. Use the *second* of each
+   * month instead of the first of the month. This prevents Jan 1, 2000 from being converted to a
+   * negative epoch seconds for certain timezones, which gets converted into a UTC date in 1999 when
+   * ExtendedZoneProcessor is used to convert the epoch seconds back to a ZonedDateTime. The UTC
+   * date in 1999 causes the actual max buffer size of ExtendedZoneProcessor to become different
+   * than the one predicted by BufSizeEstimator (which samples whole years from 2000 until 2050),
+   * and causes the AceTimeValidation/ExtendedJavaTest to fail on the buffer size check.
+  */
   private static List<TestItem> createSamples(
       ZoneId zoneId, Instant startInstant, Instant untilInstant) {
 
@@ -249,17 +278,28 @@ public class CompareJava {
 
     List<TestItem> items = new ArrayList<>();
     for (int year = startDateTime.getYear(); year < untilDateTime.getYear(); year++) {
-      // Add a sample test point on the *second* of each month instead of the first of the month.
-      // This prevents Jan 1, 2000 from being converted to a negative epoch seconds for certain
-      // timezones, which gets converted into a UTC date in 1999 when ExtendedZoneProcessor is used
-      // to convert the epoch seconds back to a ZonedDateTime. The UTC date in 1999 causes the
-      // actual max buffer size of ExtendedZoneProcessor to become different than the one predicted
-      // by BufSizeEstimator (which samples whole years from 2000 until 2050), and causes the
-      // AceTimeValidation/ExtendedJavaTest to fail on the buffer size check.
       for (int month = 1; month <= 12; month++) {
-        LocalDateTime localDateTime = LocalDateTime.of(year, month, 2, 0, 0, 0);
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, zoneId);
-        items.add(createTestItem(zonedDateTime.toInstant(), zoneId, 'S'));
+        char type = 'S';
+        for (int day = 2; day <= 28; day++) {
+          LocalDateTime ldt = LocalDateTime.of(year, month, day, 0, 0, 0);
+          ZonedDateTime zdt = ZonedDateTime.of(ldt, zoneId);
+          Instant instant = zdt.toInstant();
+          ZonedDateTime rdt = ZonedDateTime.ofInstant(instant, zoneId);
+
+          // check not a gap
+          if (rdt.getYear() == year
+              && rdt.getMonth().getValue() == month
+              && rdt.getDayOfMonth() == day
+              && rdt.getHour() == 0
+              && rdt.getMinute() == 0
+              && rdt.getSecond() == 0) {
+            items.add(createTestItem(zdt.toInstant(), zoneId, type));
+            break;
+          }
+
+          // continue trying subsequent days
+          type = 'T';
+        }
       }
     }
     return items;
