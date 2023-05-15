@@ -18,14 +18,14 @@ OBJS := validation_data.o \
 	$(DB_NAMESPACE)/zone_infos.o \
 	$(DB_NAMESPACE)/zone_policies.o \
 	$(DB_NAMESPACE)/zone_registry.o
-APP_NAME := GoBasicTest
+APP_NAME := GoTimeExtendedTest
 ARDUINO_LIBS := AUnit AceCommon AceTime AceSorting
 MORE_CLEAN := more_clean
 include ../../../EpoxyDuino/EpoxyDuino.mk
 
 # Define the scope of the test data.
-SCOPE := basic
-TZ_VERSION := 2022g
+SCOPE := extended
+TZ_VERSION := 2023c
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 10000
@@ -41,25 +41,25 @@ validation_data.cpp: validation_data.h
 
 validation_tests.cpp: validation_data.h
 
-# --blacklist $(VALIDATION_TOOLS)/compare_go/blacklist.json
-validation_data.h: validation_data.json \
-$(VALIDATION_TOOLS)/compare_go/compare_go.out
+# --blacklist $(VALIDATION_TOOLS)/compare_gotime/blacklist.json
+validation_data.h: validation_data.json
 	$(VALIDATION_TOOLS)/generate_validation/generate_validation.py \
 		--tz_version $(TZ_VERSION) \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
 		< validation_data.json
 
-validation_data.json: $(DB_NAMESPACE)/zones.txt
-	$(VALIDATION_TOOLS)/compare_go/compare_go.out \
+validation_data.json: $(DB_NAMESPACE)/zones.txt \
+$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out
+	$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
-$(VALIDATION_TOOLS)/compare_go/compare_go.out:
-	$(MAKE) -C $(VALIDATION_TOOLS)/compare_go/
+$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out:
+	$(MAKE) -C $(VALIDATION_TOOLS)/compare_gotime/
 
 $(DB_NAMESPACE)/%.o: $(DB_NAMESPACE)/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@

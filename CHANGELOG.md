@@ -10,6 +10,7 @@
         * Add `compare_acetime` using AceTime library.
         * Rename `compare_c` to `compare_libc`
         * Rename `compare_cpp` to `compare_hinnant`
+        * Rename `compare_go` to `compare_gotime`
     * `./validation`
         * Add files to support peer-to-peer validation.
     * `./tests/`
@@ -61,8 +62,8 @@
 * 1.3.0 (2022-12-04, TZDB 2022g)
     * Add support for AceTime v2 for additional 3rd party timezone libraries:
         * Add `--epoch_year` flags to:
-            * `compare_dateutil`, `compare_go`, `compare_java`, `compare_pytz`,
-              `compare_zoneinfo`
+            * `compare_dateutil`, `compare_gotime`, `compare_java`,
+              `compare_pytz`, `compare_zoneinfo`
         * Pass `--generate_int16_year` to `tzcompiler.py`:
             * `*DateUtilTest`, `*GoTest`, `*JavaTest`, `*PytzTest`,
               `*ZoneInfoTest`
@@ -92,8 +93,8 @@
     * Move `tools/compare_xxx` scripts from `AceTimeTools`.
     * Move `tools/generate_validation` script from `AceTimeTools`.
     * Add validation against the Go lang `time` package:
-        * Add `tools/compare_go` scrip
-        * Add `BasicGoTest` and `ExtendedGoTest`.
+        * Add `tools/compare_gotime` script
+        * Add `BasicGoTimeTest` and `ExtendedGoTimeTest`.
     * Call `Print::setLineModeUnix()` from EpoxyDuino v1.2 to write Unix line
       terminator instead of DOS terminator.
 * 1.0.0 (2021-12-08, TZDB 2021e)

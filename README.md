@@ -82,7 +82,7 @@ These scripts live under the `AceTimeValidation/tools/` directory:
 * `compare_libc` - C GNU libc library
 * `compare_hinnant` - C++ Hinnant Date library
 * `compare_dateutil` - Python `python-dateutil` library
-* `compare_go` - Go Lang time library
+* `compare_gotime` - Go Lang time library
 * `compare_java` - Java JDK11 `java.time` library
 * `compare_noda` - Noda Time library
 * `compare_pytz` - Python `pytz` library
@@ -231,7 +231,7 @@ The required Python, Java and C++ tools and libraries are explained in:
 * [compare_acetimec](tools/compare_acetimec)
 * [compare_acetz](tools/compare_acetz)
 * [compare_dateutil](tools/compare_dateutil)
-* [compare_go](tools/compare_go)
+* [compare_gotime](tools/compare_gotime)
 * [compare_hinnant](tools/compare_hinnant)
 * [compare_java](tools/compare_java)
 * [compare_libc](tools/compare_libc)
@@ -439,13 +439,14 @@ AceTime matches Noda Time on all data points from the year 2000 to 2050. No
 <a name="TestGoLangTime"></a>
 ### Go Lang Time
 
-The [compare_go](tools/compare_go) tool generates a `validation_data.json`
-file using the `time` package (https://pkg.go.dev/time) in the Golang standard
-library. I believe the `time` package uses the underlying TZDB installed on the
-host operating system. There are 2 validation programs: that consume this test
+The [compare_gotime](tools/compare_gotime) tool generates a
+`validation_data.json` file using the `time` package (https://pkg.go.dev/time)
+in the Golang standard library. I believe the `time` package uses the underlying
+TZDB installed on the host operating system. There are 2 validation programs:
+that consume this test
 
-* [GoBasicTest](tests/GoBasicTest/)
-* [GoExtendedTest](tests/GoExtendedTest/)
+* [GoTimeBasicTest](tests/GoTimeBasicTest/)
+* [GoTimeExtendedTest](tests/GoTimeExtendedTest/)
 
 AceTime matches the Go lang `time` package on all data points from the year 2000
 to 2050. No `blacklist.json` file was needed. The `time` package does not

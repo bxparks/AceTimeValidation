@@ -96,7 +96,7 @@ The following libraries are supported:
 * go.time Go library
     * files: `go.json`, `go.txt`
     * target: `make diff_go`
-    * script: `tools/compare_go`
+    * script: `tools/compare_gotime`
 * java.time Java library
     * files: `java.json`, `java.txt`
     * target: `make diff_java`

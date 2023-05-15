@@ -72,7 +72,7 @@ jobs:
         make -C ../AceTimeC/src
         make -C tools/compare_acetimec
         make -C tools/compare_libc
-        make -C tools/compare_go
+        make -C tools/compare_gotime
         make -C tools/compare_hinnant
 
     - name: Validations

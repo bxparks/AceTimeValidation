@@ -109,15 +109,15 @@ dateutil.txt: dateutil.json
 #------------------------------------------------------------------------------
 
 # Takes about 8 secs to process 350 zones.
-go.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_go/compare_go.out \
+gotime.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
-go.txt: go.json
+gotime.txt: gotime.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
@@ -252,9 +252,9 @@ diff_dateutil: dateutil.txt baseline.txt
 		--observed dateutil.json \
 		--expected baseline.json
 
-diff_go: go.txt baseline.txt
+diff_gotime: gotime.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed go.json \
+		--observed gotime.json \
 		--expected baseline.json
 
 diff_hinnant: hinnant.txt baseline.txt
