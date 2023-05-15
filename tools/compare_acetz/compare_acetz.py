@@ -10,7 +10,7 @@ Generate the JSON validation test data on the STDOUT from the `acetz` package
 tzcompiler.py on the STDIN.
 
 Usage
-$ ./generate_data.py [--start_year start] [--until_year until]
+$ ./compare_acetz.py [--start_year start] [--until_year until]
     [--epoch_year year] [--sampling_interval hours]
     < zones.txt
     > validation_data.json
