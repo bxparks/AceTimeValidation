@@ -13,7 +13,6 @@ from typing import cast
 import logging
 from datetime import tzinfo, datetime, timezone, timedelta
 from dateutil.tz import UTC  # datetime.UTC requires Python 3.11
-import sys
 
 import acetime.version
 from acetime.acetz import ZoneManager
@@ -44,7 +43,6 @@ class TestDataGenerator:
         sampling_interval: int,
         use_internal_transitions: bool = False,
         zone_infos: ZoneInfoMap = ZONE_AND_LINK_REGISTRY,
-        detect_dst_transition: bool = True,
     ):
         self.start_year = start_year
         self.until_year = until_year
@@ -52,7 +50,6 @@ class TestDataGenerator:
         self.sampling_interval = timedelta(hours=sampling_interval)
         self.use_internal_transitions = use_internal_transitions
         self.zone_infos = zone_infos
-        self.detect_dst_transition = detect_dst_transition
 
         self.zone_manager = ZoneManager(zone_infos)
 
@@ -147,20 +144,14 @@ class TestDataGenerator:
         return transitions
 
     def _is_transition(self, dt1: datetime, dt2: datetime) -> bool:
-        """Determine if dt1 -> dt2 is a UTC offset transition. If
-        detect_dst_transition is True, then also detect DST offset transition.
-        (Copied from compare_dateutil/tdgenerator.py).
+        """Determine if dt1 -> dt2 is a UTC offset transition. Also detect DST
+        offset transition. (Copied from compare_dateutil/tdgenerator.py).
         """
-        if dt1.utcoffset() != dt2.utcoffset():
-            return True
-        if self.detect_dst_transition:
-            return dt1.dst() != dt2.dst()
-        return False
+        return dt1.utcoffset() != dt2.utcoffset() \
+            or dt1.dst() != dt2.dst()
 
     def _only_dst(self, dt1: datetime, dt2: datetime) -> bool:
         """Determine if dt1 -> dt2 is only a DST transition."""
-        if not self.detect_dst_transition:
-            return False
         return dt1.utcoffset() == dt2.utcoffset() and dt1.dst() != dt2.dst()
 
     def _binary_search_transition(
