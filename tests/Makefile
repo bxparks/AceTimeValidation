@@ -10,9 +10,7 @@ SHELL=bash
 # That means that they can be used in the GitHub CI workflow. These
 # deterministic validation tests are:
 #
-#	* HinnantBasicDateTest
 #	* HinnantExtendedDateTest
-#	* AcetzBasicTest
 #	* AcetzExtendedTest
 #
 # They are invoked using:
@@ -34,10 +32,12 @@ SHELL=bash
 # $ make allvalidations-serial
 
 # Build the deterministic validation tests. These can be trusted to pass no
-# matter which OS version is running in the docker image on GitHub.
+# matter which OS version is running in the docker image on GitHub. Validation
+# only ExtendedZoneProcessor of AceTime, to reduce the time taken by this
+# validation test.
 validations:
 	set -e; \
-	for i in Hinnant*Test/Makefile Acetz*Test/Makefile; do \
+	for i in HinnantExtendedTest/Makefile AcetzExtendedTest/Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
 		$(MAKE) -C $$(dirname $$i); \
 	done
@@ -46,7 +46,7 @@ validations:
 # workflow.
 runvalidations:
 	set -e; \
-	for i in Hinnant*Test/Makefile Acetz*Test/Makefile; do \
+	for i in HinnantExtendedTest/Makefile AcetzExtendedTest/Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
 		$(MAKE) -C $$(dirname $$i) run; \
 	done

@@ -54,6 +54,7 @@ validation_data.json: $(DB_NAMESPACE)/zones.txt
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--use_internal_transitions \
 		< $(DB_NAMESPACE)/zones.txt \
 		> $@
 
