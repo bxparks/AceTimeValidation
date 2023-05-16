@@ -12,6 +12,7 @@ tzcompiler.py on the STDIN.
 Usage
 $ ./compare_acetz.py [--start_year start] [--until_year until]
     [--epoch_year year] [--sampling_interval hours]
+    [--use_internal_transitions]
     < zones.txt
     > validation_data.json
 """
@@ -53,6 +54,11 @@ def main() -> None:
         default=22,
         help='Sampling interval in hours (default 22)',
     )
+    parser.add_argument(
+        '--use_internal_transitions',
+        action="store_true",
+        help="Use internal transitions (default: false)",
+    )
 
     args = parser.parse_args()
 
@@ -70,6 +76,7 @@ def main() -> None:
         until_year=args.until_year,
         epoch_year=args.epoch_year,
         sampling_interval=args.sampling_interval,
+        use_internal_transitions=args.use_internal_transitions,
     )
     validation_data = test_generator.get_validation_data(zones)
 

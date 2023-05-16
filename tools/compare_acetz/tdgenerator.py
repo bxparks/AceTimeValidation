@@ -9,12 +9,16 @@ the AceTimePython/acetz package.
 
 from typing import List
 from typing import Tuple
+from typing import cast
 import logging
 from datetime import tzinfo, datetime, timezone, timedelta
 from dateutil.tz import UTC  # datetime.UTC requires Python 3.11
+import sys
 
 import acetime.version
 from acetime.acetz import ZoneManager
+from acetime.acetz import acetz
+from acetime.common import to_unix_seconds
 from acetime.zonedb_types import ZoneInfoMap
 from acetime.zonedb.zone_registry import ZONE_AND_LINK_REGISTRY
 from acetimetools.data_types.validation_types import (
@@ -38,6 +42,7 @@ class TestDataGenerator:
         until_year: int,
         epoch_year: int,
         sampling_interval: int,
+        use_internal_transitions: bool = False,
         zone_infos: ZoneInfoMap = ZONE_AND_LINK_REGISTRY,
         detect_dst_transition: bool = True,
     ):
@@ -45,9 +50,11 @@ class TestDataGenerator:
         self.until_year = until_year
         self.epoch_year = epoch_year
         self.sampling_interval = timedelta(hours=sampling_interval)
+        self.use_internal_transitions = use_internal_transitions
         self.zone_infos = zone_infos
-        self.zone_manager = ZoneManager(zone_infos)
         self.detect_dst_transition = detect_dst_transition
+
+        self.zone_manager = ZoneManager(zone_infos)
 
         self.seconds_to_acetime_epoch_from_unix_epoch = int(
             datetime(epoch_year, 1, 1, tzinfo=timezone.utc).timestamp()
@@ -80,7 +87,10 @@ class TestDataGenerator:
                 logging.error(f"Zone '{zone_name}' not found in acetz package")
                 continue
 
-            transitions = self._create_transitions_for_zone(tz)
+            if self.use_internal_transitions:
+                transitions = self._create_transitions_using_internal(tz)
+            else:
+                transitions = self._create_transitions_for_zone(tz)
             samples = self._create_samples_for_zone(tz)
             if transitions or samples:
                 test_data[zone_name] = {
@@ -181,6 +191,55 @@ class TestDataGenerator:
                 dt_left_local = mid_dt_local
 
         return dt_left, dt_right
+
+    def _create_transitions_using_internal(self, tz: tzinfo) -> List[TestItem]:
+        """Create list of DST transitions using the internal cache of
+        transitions in the tz object. Must take care to eliminate phantom
+        transitions (no total UTC offset or DST offset change), which are just
+        artifacts of the implementation.
+        """
+        atz = cast(acetz, tz)
+        zone_processor = atz.zp  # maybe use a copy instead?
+        items: List[TestItem] = []
+        for year in range(self.start_year, self.until_year):
+            # Add samples just before and just after the DST transition.
+            zone_processor.init_for_year(year)
+            for transition in zone_processor.transitions:
+                # Skip if the start year of the Transition does not match the
+                # year of interest. This may happen since we use generate
+                # transitions over a 14-month interval.
+                start = transition.start_date_time
+                transition_year = start.y
+                if transition_year != year:
+                    continue
+
+                epoch_seconds = transition.start_epoch_second
+                before_seconds = epoch_seconds - 1
+                after_dt = datetime.fromtimestamp(
+                    to_unix_seconds(epoch_seconds), tz)
+                before_dt = datetime.fromtimestamp(
+                    to_unix_seconds(before_seconds), tz)
+
+                # Ignore for phantom transitions
+                if (
+                    before_dt.utcoffset() == after_dt.utcoffset()
+                    and before_dt.dst() == after_dt.dst()
+                ):
+                    continue
+
+                # Add a test data just before the transition
+                tag = 'A' if before_dt.utcoffset() != after_dt.utcoffset() \
+                    else 'a'
+                item = self._create_test_item(before_dt, tag)
+                items.append(item)
+
+                # Add a test data at the transition itself (which will
+                # normally be shifted forward or backwards).
+                tag = 'B' if before_dt.utcoffset() != after_dt.utcoffset() \
+                    else 'b'
+                item = self._create_test_item(after_dt, tag)
+                items.append(item)
+        return items
 
     def _create_samples_for_zone(self, tz: tzinfo) -> List[TestItem]:
         """Create samples for the tz in the years [start_year, until_year).

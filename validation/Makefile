@@ -17,6 +17,7 @@ observed.json: zone.txt Makefile
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--use_internal_transition \
 		< zone.txt \
 		> $@
 
@@ -78,8 +79,24 @@ acetimec.txt: acetimec.json
 
 #------------------------------------------------------------------------------
 
-# Takes about 7 mins to process 350 zones on a dual-core i5-6300U computer.
+# Takes about 40 secs to process 350 zones on a dual-core i5-6300U computer.
+# The result must be identical to acetzb.json.
 acetz.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--use_internal_transition \
+		< zones.txt \
+		> $@
+
+acetz.txt: acetz.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+# Same as acetz.json, but use binary search to find transtions, which takes
+# about 7 minutes on a dual-core i5-6300U processor.
+acetzb.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
@@ -87,7 +104,7 @@ acetz.json: zones.txt
 		< zones.txt \
 		> $@
 
-acetz.txt: acetz.json
+acetzb.txt: acetzb.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
