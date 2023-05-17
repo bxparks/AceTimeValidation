@@ -18,7 +18,7 @@ import acetime.version
 from acetime.acetz import ZoneManager
 from acetime.acetz import acetz
 from acetime.common import to_unix_seconds
-from acetime.zonedb_types import ZoneInfoMap
+from acetime.typing import ZoneInfoMap
 from acetime.zonedb.zone_registry import ZONE_AND_LINK_REGISTRY
 from acetimetools.data_types.validation_types import (
     TestItem, TestData, ValidationData
