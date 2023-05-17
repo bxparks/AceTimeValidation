@@ -1,11 +1,8 @@
 # Peer-to-Peer Validation
 
 This directory allows different timezone libraries to be validated against each
-other. This slightly different than the [../tests](../tests) directory which
-converts the `validation_data.json` files from each library into an
-[AUnit](https://github.com/bxparks/AUnit) unit test that is executed under the
-[EpoxyDuino](https://github.com/bxparks/EpoxyDuino) environment on a Unix
-machine.
+other in pairs. This slightly different than the [../tests](../tests) directory
+whose primary purpose is to validate the [AceTime](https://github.com/bxparks/AceTime) Arduino library against various third party timezone libraries.
 
 ## Files
 
@@ -49,7 +46,8 @@ directory to implement this function of this directory:
       validation data in JSON format on the *stdout* (which is redirected to the
       `xxx.json` file).
 * `tools/flatten_validation/flatten.py`
-    * Convert a `xxx.json` file into a `xxx.txt` file.
+    * Convert a `xxx.json` file into a more human-readable and easier to debug
+      `xxx.txt` file.
 * `tools/diff_validation/diff.py`
     * Compare the `--observed xxx.json` file with the `--expected yyy.json`
       file.
@@ -116,7 +114,7 @@ The following libraries are supported:
 
 ## Diff Status
 
-Here are the diff result for the following targets which validate against the
+Here are the diff result for the various targets which validate against the
 `baseline.json` (which is currently the `acetimec.json` file from AceTimeC):
 
 ```
@@ -124,7 +122,7 @@ Here are the diff result for the following targets which validate against the
 | target            | status | comment                        |
 +-------------------+--------+--------------------------------+
 | diff_acetime      | OK     |                                |
-| diff_acetimec     | OK     |                                |
+| diff_acetimec     | OK     | comparison with self           |
 | diff_acetz        | OK     |                                |
 | diff_dateutil     | errors | supports only y <= 2038        |
 | diff_go           | OK     |                                |
