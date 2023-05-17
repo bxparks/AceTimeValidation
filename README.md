@@ -148,15 +148,18 @@ See additional information in [validation/README.md](validation).
 <a name="BugsAndLimitations"></a>
 ## Bugs and Limitations
 
-* Writing tests for this library was challenging, probably taking up 2-3X more
-  effort than the core of the library. I think the reason is that the number of
-  input variables into the library and the number of output variables are
-  substantially large, making it difficult to write isolated unit tests.
-  Secondly, the TZ Database zone files are deceptively easy to read by humans,
-  but contain many implicit rules that are difficult to translate into computer
-  algorithms, creating a large number of code paths to test.
+* Writing these validation tests was challenging, probably taking up 2-3X more
+  effort than the core of the library.
+    * I think the reason is that the number of input variables into the library
+      and the number of output variables are substantially large, making it
+      difficult to write isolated unit tests.
+    * Secondly, the TZ Database zone files are deceptively easy to read by
+      humans, but contain many implicit rules that are difficult to translate
+      into computer algorithms, creating a large number of code paths to test.
 * The `./validation` suite scans only the 100 years over `[2000, 2100)`
   interval.
+    * Additional tests should be written to validate the entire range supported
+      by the IANA TZDB: [1844, 2087]
 
 <a name="License"></a>
 ## License
