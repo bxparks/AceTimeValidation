@@ -1,5 +1,5 @@
 # Bash shell is required to allow using the `wait` command when invoking the
-# parallel build target 'allvalidations'
+# parallel build target 'alltests'
 SHELL=bash
 
 # There are 2 sets of validation test targets in this Makefile.
@@ -15,27 +15,27 @@ SHELL=bash
 #
 # They are invoked using:
 #
-# $ make validations
-# $ make runvalidations
+# $ make tests
+# $ make runtests
 #
 # 2) The full validation tests (Basic*Test and Extended*Test). Some of these
 # will be broken when a new TZ DB is released because the dependent library has
 # not released a new version of the library yet. The full set of validation
 # tests are invoked using:
 #
-# $ make allvalidations # compiles in parallel
-# $ make runallvalidations
+# $ make alltests # compiles in parallel
+# $ make runalltests
 #
-# Sometimes `make allvalidations` fails because it tries to build the targets
+# Sometimes `make alltests` fails because it tries to build the targets
 # in parallel. In that case, we can use:
 #
-# $ make allvalidations-serial
+# $ make alltests-serial
 
 # Build the deterministic validation tests. These can be trusted to pass no
 # matter which OS version is running in the docker image on GitHub. Validation
 # only ExtendedZoneProcessor of AceTime, to reduce the time taken by this
 # validation test.
-validations:
+tests:
 	set -e; \
 	for i in HinnantExtendedTest/Makefile AcetzExtendedTest/Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
@@ -44,7 +44,7 @@ validations:
 
 # Run the deterministic validation tests. These are used in the GitHub CI
 # workflow.
-runvalidations:
+runtests:
 	set -e; \
 	for i in HinnantExtendedTest/Makefile AcetzExtendedTest/Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
@@ -53,8 +53,8 @@ runvalidations:
 
 # Build *all* validation tests in parallel for reduced waiting time. Sometimes,
 # this fails for some race condition which I have not spent time figuring out.
-# When that happens, use the 'allvalidations-serial' instead.
-allvalidations:
+# When that happens, use the 'alltests-serial' instead.
+alltests:
 	(set -e; \
 	trap 'kill 0' SIGHUP SIGINT SIGQUIT SIGKILL SIGTERM; \
 	for i in */Makefile; do \
@@ -63,9 +63,9 @@ allvalidations:
 	done; \
 	wait)
 
-# Same as 'make allvalidations' but in series not in parallel. Useful when
-# 'allvalidations` fails due to some sporadic race condition.
-allvalidations-serial:
+# Same as 'make alltests' but in series not in parallel. Useful when
+# 'alltests` fails due to some sporadic race condition.
+alltests-serial:
 	set -e; \
 	for i in */Makefile; do \
 		echo '==== Making:' $$(dirname $$i); \
@@ -73,7 +73,7 @@ allvalidations-serial:
 	done
 
 # Run *all* validation tests.
-runallvalidations:
+runalltests:
 	set -e; \
 	for i in */Makefile; do \
 		echo '==== Running:' $$(dirname $$i); \
