@@ -4,7 +4,7 @@
 
 """
 Implements the TestDataGenerator to generate the validation test data using
-the AceTimePython/acetz package.
+the acetime.timezone.acetz class from the acetimepy library.
 """
 
 from typing import List
@@ -15,8 +15,8 @@ from datetime import tzinfo, datetime, timezone, timedelta
 from dateutil.tz import UTC  # datetime.UTC requires Python 3.11
 
 import acetime.version
-from acetime.acetz import ZoneManager
-from acetime.acetz import acetz
+from acetime.timezone import ZoneManager
+from acetime.timezone import acetz
 from acetime.common import to_unix_seconds
 from acetime.typing import ZoneInfoMap
 from acetime.zonedb.zone_registry import ZONE_AND_LINK_REGISTRY
@@ -63,7 +63,7 @@ class TestDataGenerator:
             'start_year': self.start_year,
             'until_year': self.until_year,
             'epoch_year': self.epoch_year,
-            'source': 'acetz',
+            'source': 'acetimepy',
             'version': str(acetime.version.__version__),
             'tz_version': 'unknown',
             'has_valid_abbrev': True,
@@ -81,7 +81,7 @@ class TestDataGenerator:
             logging.info(f"[{i}] {zone_name}")
             tz = self.zone_manager.gettz(zone_name)
             if not tz:
-                logging.error(f"Zone '{zone_name}' not found in acetz package")
+                logging.error(f"Zone '{zone_name}' not found in acetimepy")
                 continue
 
             if self.use_internal_transitions:

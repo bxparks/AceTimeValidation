@@ -33,7 +33,7 @@ jobs:
         git clone --depth 1 https://github.com/bxparks/AceTime
         git clone --depth 1 https://github.com/bxparks/AceTimeC
         git clone --depth 1 https://github.com/bxparks/AceTimeTools
-        git clone --depth 1 https://github.com/bxparks/AceTimePython
+        git clone --depth 1 https://github.com/bxparks/acetimepython
         git clone --depth 1 https://github.com/HowardHinnant/date
         git clone https://github.com/eggert/tz
 
@@ -49,9 +49,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r ../AceTimeTools/requirements.txt
-        pip install -r ../AceTimePython/requirements.txt
         pip install -e ../AceTimeTools
-        pip install -e ../AceTimePython
+        pip install -r ../acetimepython/requirements.txt
+        pip install -e ../acetimepython
 
     - name: Install Go lang
       uses: actions/setup-go@v3

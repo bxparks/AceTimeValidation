@@ -18,7 +18,7 @@ all:
 python: mypy flake8 tests
 
 # Mypy complains if I run 'mypy --strict' on compare_xxx directories. It cannot
-# find definitions for AceTimePython and AceTimeTools. If I explicitly add the
+# find definitions for acetimepy and AceTimeTools. If I explicitly add the
 # source path for those then it complains about not finding `tdgenerator.py`
 # and `zptdgenerator.py` and so on. The -m flag seems to resolve the error, but
 # I am not convinced that mypy actually does anything with that flag. Python

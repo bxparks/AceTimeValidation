@@ -19,7 +19,7 @@ using the [EpoxyDuino](https://github.com/bxparks/EpoxyDuino) framework.
 The AceTime library inspired additional first-party timezone libraries for
 different languages:
 
-* [AceTimePython](https://github.com/bxparks/AceTimePython) for Python
+* [acetimepy](https://github.com/bxparks/acetimepy) for Python
 * [AceTimeC](https://github.com/bxparks/AceTimeC) for C
 * [AceTimeGo](https://github.com/bxparks/AceTimeGo) for Go and TinyGo
 
@@ -33,7 +33,7 @@ The timezone libraries supported by this project are:
 * First party (libraries written by me)
     * [AceTime](https://github.com/bxparks/AceTime) for Arduino
     * [AceTimeC](https://github.com/bxparks/AceTimeC) for C
-    * [AceTimePython](https://github.com/bxparks/AceTimePython) for Python
+    * [acetimepy](https://github.com/bxparks/acetimepy) for Python
     * [AceTimeGo](https://github.com/bxparks/AceTimeGo) for Go and TinyGo
 * Third party (libraries written by others)
     * [GNU libc](https://www.gnu.org/software/libc/manual/2.35/html_node/Calendar-Time.html) for C lang

@@ -68,7 +68,7 @@ The following libraries are supported:
     * files: `acetimec.json`, `acetimec.txt`
     * target: `make diff_acetimec`
     * script: `tools/compare_acetimec`
-* AceTimePython library
+* acetimepy library
     * files: `acetz.json`, `acetz.txt`
     * target: `make diff_acetz`
     * script: `tools/compare_acetz`

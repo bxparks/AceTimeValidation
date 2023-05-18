@@ -7,7 +7,7 @@ given on the `stdin`. Usually, the list of timezones is contained in a
 
 * `compare_acetime` - AceTime library in Arduino C++
 * `compare_acetimec` - `AceTimeC` library in C
-* `compare_acetz` - `AceTimePython` library in Python
+* `compare_acetz` - `acetimepy` library in Python
 * `compare_dateutil` - `python-dateutil` library in Python
 * `compare_gotime` - standard library `time` package in Go
 * `compare_hinnant` - Howard Hinnant `date` library in C++
@@ -49,10 +49,10 @@ files:
         * `$ git clone https://github.com/bxparks/AceTime`
     * [AceTimeC](https://github.com/bxparks/AceTimeC) as a sibling project
         * `$ git clone https://github.com/bxparks/AceTimeC`
-    * [AceTimePython](https://github.com/bxparks/AceTimePython) library
+    * [acetimepy](https://github.com/bxparks/acetimepy) library
         * Not yet available on PyPI, so the installation process is manual.
-        * `$ git clone https://github.com/bxparks/AceTimePython`
-        * `$ cd AceTimePython`
+        * `$ git clone https://github.com/bxparks/acetimepy`
+        * `$ cd acetimepy`
         * `$ pip3 install --user -e .`
 * third party libraries
     * [Hinnant date](https://github.com/HowardHinnant/date) as a sibling project
