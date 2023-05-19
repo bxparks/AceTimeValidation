@@ -142,7 +142,7 @@ void printJson(
   printf("%s\"start_year\": %d,\n", indent0, startYear);
   printf("%s\"until_year\": %d,\n", indent0, untilYear);
   printf("%s\"epoch_year\": %d,\n", indent0, epochYear);
-  printf("%s\"source\": \"AceTimeC\",\n", indent0);
+  printf("%s\"source\": \"AceTime\",\n", indent0);
   printf("%s\"version\": \"%s\",\n", indent0, version);
   printf("%s\"tz_version\": \"%s\",\n", indent0, tzVersion);
   printf("%s\"has_valid_abbrev\": true,\n", indent0);

@@ -26,15 +26,15 @@ jobs:
     - name: Checkout Additional Repos
       run: |
         cd ..
+        git clone --depth 1 https://github.com/HowardHinnant/date
         git clone --depth 1 https://github.com/bxparks/EpoxyDuino
         git clone --depth 1 https://github.com/bxparks/AUnit
         git clone --depth 1 https://github.com/bxparks/AceCommon
         git clone --depth 1 https://github.com/bxparks/AceSorting
         git clone --depth 1 https://github.com/bxparks/AceTime
-        git clone --depth 1 https://github.com/bxparks/AceTimeC
         git clone --depth 1 https://github.com/bxparks/AceTimeTools
-        git clone --depth 1 https://github.com/bxparks/acetimepython
-        git clone --depth 1 https://github.com/HowardHinnant/date
+        git clone --depth 1 https://github.com/bxparks/acetimec
+        git clone --depth 1 https://github.com/bxparks/acetimepy
         git clone https://github.com/eggert/tz
 
     - name: Set up Python 3.7
@@ -50,8 +50,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r ../AceTimeTools/requirements.txt
         pip install -e ../AceTimeTools
-        pip install -r ../acetimepython/requirements.txt
-        pip install -e ../acetimepython
+        pip install -r ../acetimepy/requirements.txt
+        pip install -e ../acetimepy
 
     - name: Install Go lang
       uses: actions/setup-go@v3
@@ -69,7 +69,7 @@ jobs:
 
     - name: Build Other Compare tools
       run: |
-        make -C ../AceTimeC/src
+        make -C ../acetimec/src
         make -C tools/compare_acetimec
         make -C tools/compare_libc
         make -C tools/compare_gotime

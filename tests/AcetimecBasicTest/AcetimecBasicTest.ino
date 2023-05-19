@@ -1,4 +1,4 @@
-#line 2 "AceTimeCExtendedTest.ino"
+#line 2 "AcetimecBasicTest.ino"
 
 /*
  * This unit test depends on 'validation_data.cpp' which is so large that it

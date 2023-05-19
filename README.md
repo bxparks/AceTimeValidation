@@ -20,7 +20,7 @@ The AceTime library inspired additional first-party timezone libraries for
 different languages:
 
 * [acetimepy](https://github.com/bxparks/acetimepy) for Python
-* [AceTimeC](https://github.com/bxparks/AceTimeC) for C
+* [acetimec](https://github.com/bxparks/acetimec) for C
 * [AceTimeGo](https://github.com/bxparks/AceTimeGo) for Go and TinyGo
 
 These additional libraries required more general validation tests which are
@@ -32,7 +32,7 @@ The timezone libraries supported by this project are:
 
 * First party (libraries written by me)
     * [AceTime](https://github.com/bxparks/AceTime) for Arduino
-    * [AceTimeC](https://github.com/bxparks/AceTimeC) for C
+    * [acetimec](https://github.com/bxparks/acetimec) for C
     * [acetimepy](https://github.com/bxparks/acetimepy) for Python
     * [AceTimeGo](https://github.com/bxparks/AceTimeGo) for Go and TinyGo
 * Third party (libraries written by others)
@@ -50,7 +50,7 @@ tool under the [./tools/](tools) directeory:
 
 * First party (libraries written by me)
     * `compare_acetime` - AceTime library
-    * `compare_acetimec` - AceTimeC library
+    * `compare_acetimec` - acetimec library
     * `compare_acetz` - AceTimePython library
     * `compare_gotz` - (TBD) AceTimeGo library
 * Third party (libraries written by others)

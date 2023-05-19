@@ -1,11 +1,11 @@
 CFLAGS := -Wall -Wextra -Werror -std=c11 \
-	-I../../../AceTimeC/src
+	-I../../../acetimec/src
 
 compare_acetimec.out: \
 	compare_acetimec.o \
 	test_data.o \
 	sampling.o \
-	../../../AceTimeC/src/acetimec.a
+	../../../acetimec/src/acetimec.a
 	$(CC) -o $@ $^
 
 compare_acetimec.o: compare_acetimec.c test_data.h sampling.h

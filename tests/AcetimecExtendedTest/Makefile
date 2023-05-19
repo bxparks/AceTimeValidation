@@ -18,14 +18,14 @@ OBJS := validation_data.o \
 	$(DB_NAMESPACE)/zone_infos.o \
 	$(DB_NAMESPACE)/zone_policies.o \
 	$(DB_NAMESPACE)/zone_registry.o
-APP_NAME := AceTimeCBasicTest
+APP_NAME := AcetimecExtendedTest
 ARDUINO_LIBS := AUnit AceCommon AceTime AceSorting
 MORE_CLEAN := more_clean
 include ../../../EpoxyDuino/EpoxyDuino.mk
 
 # Define the scope of the test data.
-SCOPE := basic
-TZ_VERSION := 2022g
+SCOPE := extended
+TZ_VERSION := 2023c
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 10000

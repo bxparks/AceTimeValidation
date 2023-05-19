@@ -1,7 +1,7 @@
 /*
  * Generate the validation JSON output for the zones given on the STDIN. The
- * transition time and UTC offsets are calculated using the AceTimeC library
- * (https://github.com/bxparks/AceTimeC).
+ * transition time and UTC offsets are calculated using the acetimec library
+ * (https://github.com/bxparks/acetimec).
  *
  * Usage:
  * $ ./compare_acetimec.out

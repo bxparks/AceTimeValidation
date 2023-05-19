@@ -17,8 +17,8 @@ the `xxx.txt` file from the corresponding `xxx.json` file. The `.txt` file is
 In theory, any `xxx.json` file can be compared to any other `yyy.json` file
 using the [diff.py](../tools/diff_validation/diff.py) tool. But for simplicity,
 it is convenient to compare each library against a baseline. Currently, the
-`baseline.json` is copied from `acetimec.json` which is provided by the AceTimeC
-library.
+`baseline.json` is copied from `acetimec.json` which is provided by the
+`acetimec` library.
 
 The `Makefile` provides targets of the form `diff_xxx` which compare those
 validation files against the `baseline.json` file. For example, the `diff_libc`
@@ -64,7 +64,7 @@ The following libraries are supported:
     * files: `acetime.json`, `acetime.txt`
     * target: `make diff_acetime`
     * script: `tools/compare_acetime`
-* AceTimeC library (**baseline**)
+* acetimec library (**baseline**)
     * files: `acetimec.json`, `acetimec.txt`
     * target: `make diff_acetimec`
     * script: `tools/compare_acetimec`
@@ -115,7 +115,7 @@ The following libraries are supported:
 ## Diff Status
 
 Here are the diff result for the various targets which validate against the
-`baseline.json` (which is currently the `acetimec.json` file from AceTimeC):
+`baseline.json` (which is currently the `acetimec.json` file from acetimec):
 
 ```
 +-------------------+--------+--------------------------------+
