@@ -18,3 +18,6 @@ validation_data.json: compare_acetime.out small.txt
 		--epoch_year 2050 \
 		< small.txt \
 		> $@
+
+more_clean:
+	rm -f validation_data.json

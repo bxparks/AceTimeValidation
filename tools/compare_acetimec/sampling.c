@@ -233,7 +233,7 @@ void add_transitions(
 // causes the actual max buffer size of ExtendedZoneProcessor to become
 // different than the one predicted by BufSizeEstimator (which samples whole
 // years from 2000 until 2050), and causes the
-// AceTimeValidation/ExtendedAceTimeCTest to fail on the buffer size check.
+// AceTimeValidation/ExtendedAcetimecTest to fail on the buffer size check.
 //
 // But if that day of the month (with the time of 00:00) is ambiguous, I use a
 // loop to try subsequent days of month to find a day that works.  The first
