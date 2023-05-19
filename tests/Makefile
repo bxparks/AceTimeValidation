@@ -36,20 +36,16 @@ SHELL=bash
 # only ExtendedZoneProcessor of AceTime, to reduce the time taken by this
 # validation test.
 tests:
-	set -e; \
-	for i in HinnantExtendedTest/Makefile AcetzExtendedTest/Makefile; do \
-		echo '==== Making:' $$(dirname $$i); \
-		$(MAKE) -C $$(dirname $$i); \
-	done
+	$(MAKE) -C HinnantExtendedTest
+	$(MAKE) -C AcetzExtendedTest
+	$(MAKE) -C AcetimecExtendedTest
 
 # Run the deterministic validation tests. These are used in the GitHub CI
 # workflow.
 runtests:
-	set -e; \
-	for i in HinnantExtendedTest/Makefile AcetzExtendedTest/Makefile; do \
-		echo '==== Running:' $$(dirname $$i); \
-		$(MAKE) -C $$(dirname $$i) run; \
-	done
+	$(MAKE) -C HinnantExtendedTest run
+	$(MAKE) -C AcetzExtendedTest run
+	$(MAKE) -C AcetimecExtendedTest run
 
 # Build *all* validation tests in parallel for reduced waiting time. Sometimes,
 # this fails for some race condition which I have not spent time figuring out.

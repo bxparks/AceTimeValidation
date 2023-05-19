@@ -17,6 +17,9 @@
         * Move top-level `BasicXxxTest` and `ExtendedXxxtest` to be under new
           `tests/` subdirectory.
         * Rename `{Basic,Extended}XxxTest` to `Xxx{Basic,Extended}Test`.
+        * Add AcetimecExtendedTest to `tests` and `runtests` targets.
+            * Assumes that the acetimec library will be kept up to date with the
+              latest TZDB version.
     * Rename `AceTimePython` library to `acetimepy`.
     * Rename `AceTimeC` library to `acetimec`.
 * 1.5.2 (2023-04-01, TZDB 2023c)
