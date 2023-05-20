@@ -46,13 +46,13 @@ The timezone libraries supported by this project are:
     * [zoneinfo](https://docs.python.org/3/library/zoneinfo.html) for Python
 
 Each supported timezone library is represented by an associated `compare_xxx`
-tool under the [./tools/](tools) directeory:
+tool under the [./tools/](tools) directory:
 
 * First party (libraries written by me)
     * `compare_acetime` - AceTime library
     * `compare_acetimec` - acetimec library
-    * `compare_acetz` - AceTimePython library
-    * `compare_gotz` - (TBD) AceTimeGo library
+    * `compare_acetz` - acetimepy library
+    * `compare_acetimego` - acetimego library (TBD)
 * Third party (libraries written by others)
     * `compare_libc` - C GNU libc library
     * `compare_dateutil` - Python `python-dateutil` library
