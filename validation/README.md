@@ -72,10 +72,10 @@ The following libraries are supported:
     * files: `acetz.json`, `acetz.txt`
     * target: `make diff_acetz`
     * script: `tools/compare_acetz`
-* AceTimeGo (TBD)
-    * files: `gotz.json`, `gotz.txt`
-    * target: `make diff_gotz`
-    * script: `tools/compare_gotz`
+* acetimego (TBD)
+    * files: `acetimego.json`, `acetimego.txt`
+    * target: `make diff_acetimego`
+    * script: `tools/compare_acetimego`
 
 **Third Party**
 
