@@ -21,7 +21,7 @@ different languages:
 
 * [acetimepy](https://github.com/bxparks/acetimepy) for Python
 * [acetimec](https://github.com/bxparks/acetimec) for C
-* [AceTimeGo](https://github.com/bxparks/AceTimeGo) for Go and TinyGo
+* [acetimego](https://github.com/bxparks/acetimego) for Go and TinyGo
 
 These additional libraries required more general validation tests which are
 placed in the `validations/` subdirectory. The purpose that infrastructure is to
@@ -34,7 +34,7 @@ The timezone libraries supported by this project are:
     * [AceTime](https://github.com/bxparks/AceTime) for Arduino
     * [acetimec](https://github.com/bxparks/acetimec) for C
     * [acetimepy](https://github.com/bxparks/acetimepy) for Python
-    * [AceTimeGo](https://github.com/bxparks/AceTimeGo) for Go and TinyGo
+    * [acetimego](https://github.com/bxparks/acetimego) for Go and TinyGo
 * Third party (libraries written by others)
     * [GNU libc](https://www.gnu.org/software/libc/manual/2.35/html_node/Calendar-Time.html) for C lang
     * [dateutil](https://pypi.org/project/python-dateutil/) for Python
