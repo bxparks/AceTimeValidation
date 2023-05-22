@@ -12,6 +12,18 @@ VALIDATION_TOOLS := $(abspath ../tools)
 
 #------------------------------------------------------------------------------
 
+# Extract the 'Zone' entries from the TZDB files.
+zones.txt: tzdb
+	echo '# Zones from TZDB $(TZDB_VERSION)' > $@
+	grep --no-filename '^Zone' tzdb/* | awk '{print $$2}' | sort | uniq >> $@
+
+# Copy the TZDB data files into the ./tzdb/ directory.
+tzdb: $(TOOLS_DIR)/copytz.sh $(TZ_REPO)
+	$(TOOLS_DIR)/copytz.sh --tag $(TZDB_VERSION) $(TZ_REPO) $@
+	echo $(TZDB_VERSION) > $@/version.txt
+
+#------------------------------------------------------------------------------
+
 observed.json: zone.txt Makefile
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
 		--start_year $(VAL_START_YEAR) \
@@ -298,3 +310,9 @@ diff_zoneinfo: zoneinfo.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed zoneinfo.json \
 		--expected baseline.json
+
+#------------------------------------------------------------------------------
+
+clean:
+	rm -rf tzdb
+	rm -f tz*.nzd

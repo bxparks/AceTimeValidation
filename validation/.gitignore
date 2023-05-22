@@ -1,4 +1,5 @@
 *.txt
 *.json
+tzdb
 !zone.txt
 !zones.txt
