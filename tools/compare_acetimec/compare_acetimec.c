@@ -8,6 +8,7 @@
  *    --start_year start
  *    --until_year until
  *    --epoch_year year
+ *    --zonedb (zonedb|zonedball)
  *    < zones.txt
  *    > validation_data.json
  */
@@ -24,6 +25,7 @@
 int16_t start_year = 2000;
 int16_t until_year = 2100;
 int16_t epoch_year = 2050;
+const char *zonedb = NULL; // "zonedb", "zonedball"
 const int SAMPLING_INTERVAL_HOURS = 22;
 
 AtcZoneRegistrar registrar;
@@ -111,6 +113,7 @@ void usage_and_exit() {
   fprintf(stderr,
     "Usage: compare_acetimec.out [--install_dir {dir}]\n"
     "   --start_year start --until_year until --epoch_year year\n"
+    "   --zonedb (zonedb|zonedball)\n"
     "   < zones.txt\n");
   exit(1);
 }
@@ -130,6 +133,7 @@ int main(int argc, const char* const* argv) {
   const char *start = "";
   const char *until = "";
   const char *epoch = "";
+  const char *db = "";
 
   SHIFT(argc, argv);
   while (argc > 0) {
@@ -145,6 +149,10 @@ int main(int argc, const char* const* argv) {
       SHIFT(argc, argv);
       if (argc == 0) usage_and_exit();
       epoch = argv[0];
+    } else if (argEquals(argv[0], "--zonedb")) {
+      SHIFT(argc, argv);
+      if (argc == 0) usage_and_exit();
+      db = argv[0];
     } else if (argEquals(argv[0], "--")) {
       SHIFT(argc, argv);
       break;
@@ -169,19 +177,34 @@ int main(int argc, const char* const* argv) {
     fprintf(stderr, "Required flag: --epoch_year\n");
     usage_and_exit();
   }
+  if (strlen(db) == 0) {
+    fprintf(stderr, "Required flag: --zonedb\n");
+    usage_and_exit();
+  }
 
   start_year = atoi(start);
   until_year = atoi(until);
   epoch_year = atoi(epoch);
+  zonedb = db;
 
   // Configure the current epoch year.
   atc_set_current_epoch_year(epoch_year);
 
   // Set up registry.
-  atc_registrar_init(
-      &registrar,
-      kAtcZoneAndLinkRegistry,
-      kAtcZoneAndLinkRegistrySize);
+  if (strcmp(zonedb, "zonedb") == 0) {
+    atc_registrar_init(
+        &registrar,
+        kAtcZoneAndLinkRegistry,
+        kAtcZoneAndLinkRegistrySize);
+  } else if (strcmp(zonedb, "zonedball") == 0) {
+    atc_registrar_init(
+        &registrar,
+        kAtcAllZoneAndLinkRegistry,
+        kAtcAllZoneAndLinkRegistrySize);
+  } else {
+    fprintf(stderr, "Invalid zonedb '%s'\n", zonedb);
+    usage_and_exit();
+  }
 
   // Initialize an AtcZoneProcessor instance.
   AtcZoneProcessor processor;

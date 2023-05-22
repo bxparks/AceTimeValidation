@@ -19,6 +19,7 @@ validation_data.json: compare_acetimec.out small.txt
 		--start_year 2000 \
 		--until_year 2100 \
 		--epoch_year 2050 \
+		--zonedb zonedb \
 		< small.txt \
 		> $@
 
