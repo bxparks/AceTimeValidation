@@ -26,7 +26,6 @@ int16_t start_year = 2000;
 int16_t until_year = 2100;
 int16_t epoch_year = 2050;
 const char *zonedb = NULL; // "zonedb", "zonedball"
-const int SAMPLING_INTERVAL_HOURS = 22;
 
 AtcZoneRegistrar registrar;
 
@@ -57,8 +56,7 @@ int8_t process_zone(
       zone_name,
       &tz,
       start_year,
-      until_year,
-      SAMPLING_INTERVAL_HOURS);
+      until_year);
 
   add_monthly_samples(
       &entry->samples,

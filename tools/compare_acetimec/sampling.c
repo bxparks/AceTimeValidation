@@ -4,6 +4,8 @@
 #include <acetimec.h>
 #include "sampling.h"
 
+static const int SAMPLING_INTERVAL_HOURS = 22;
+
 static int8_t create_test_item_from_epoch_seconds(
     TestItem *ti,
     const AtcTimeZone *tz,
@@ -131,8 +133,7 @@ void add_transitions(
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
-    int16_t until_year,
-    int sampling_hours)
+    int16_t until_year)
 {
   AtcLocalDateTime ldt = {start_year, 1, 1, 0, 0, 0, 0 /*fold*/};
   AtcZonedDateTime zdt;
@@ -145,7 +146,7 @@ void add_transitions(
   atc_zoned_date_time_from_epoch_seconds(&zdt, t, tz);
   if (atc_zoned_date_time_is_error(&zdt)) return;
   for (;;) {
-    atc_time_t nextt = t + sampling_hours * 3600;
+    atc_time_t nextt = t + SAMPLING_INTERVAL_HOURS * 3600;
     AtcZonedDateTime nextzdt;
     atc_zoned_date_time_from_epoch_seconds(&nextzdt, nextt, tz);
     if (atc_zoned_date_time_is_error(&nextzdt)) continue;

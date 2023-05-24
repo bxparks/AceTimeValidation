@@ -16,8 +16,7 @@ void add_transitions(
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
-    int16_t until_year,
-    int sampling_hours);
+    int16_t until_year);
 
 /**
  * Add a TestItem for the 1st of each month (using the local time)
