@@ -108,29 +108,6 @@ void test_data_delete_entry(TestData *data)
 
 //-----------------------------------------------------------------------------
 
-/*
-static int compare_test_item(const void *a, const void *b)
-{
-  const TestItem *ta = a;
-  const TestItem *tb = b;
-  if (ta->epoch_seconds < tb->epoch_seconds) return -1;
-  if (ta->epoch_seconds > tb->epoch_seconds) return 1;
-  return 0;
-}
-
-void test_collection_sort_items(TestCollection *test_data)
-{
-  for (int i = 0; i < test_data->num_entries; i++) {
-    TestCollection *collection = &test_data->entries[i];
-    qsort(
-        entry->items,
-        entry->num_items,
-        sizeof(TestItem),
-        compare_test_item);
-  }
-}
-*/
-
 static void print_item(const char *indent, const TestItem *item)
 {
   printf("%s\"epoch\": %ld,\n", indent, item->epoch_seconds);

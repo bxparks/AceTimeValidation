@@ -14,12 +14,12 @@ sampling.o: sampling.c sampling.h
 
 test_data.o: test_data.c test_data.h
 
-validation_data.json: compare_acetimec.out small.txt
+validation_data.json: compare_acetimec.out small.txt Makefile
 	./compare_acetimec.out \
 		--start_year 2000 \
 		--until_year 2100 \
 		--epoch_year 2050 \
-		--zonedb zonedb \
+		--zonedb zonedball \
 		< small.txt \
 		> $@
 

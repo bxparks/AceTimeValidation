@@ -51,19 +51,27 @@ int8_t process_zone(
   strncpy(entry->zone_name, zone_name, ZONE_NAME_SIZE - 1);
   entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
 
+  // Number of seconds to add to unix seconds to get the requested epoch
+  // seconds.
+  int64_t epoch_offset = -(int64_t) 86400
+      * atc_local_date_to_unix_days(epoch_year, 1, 1);
+
   add_transitions(
       &entry->transitions,
       zone_name,
       &tz,
       start_year,
-      until_year);
+      until_year,
+      epoch_offset);
 
   add_monthly_samples(
       &entry->samples,
       zone_name,
       &tz,
       start_year,
-      until_year);
+      until_year,
+      epoch_offset);
+
   return kAtcErrOk;
 }
 

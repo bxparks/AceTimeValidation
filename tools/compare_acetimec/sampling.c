@@ -10,13 +10,15 @@ static int8_t create_test_item_from_epoch_seconds(
     TestItem *ti,
     const AtcTimeZone *tz,
     atc_time_t epoch_seconds,
-    char type)
+    char type,
+    int64_t epoch_offset)
 {
   AtcZonedDateTime zdt;
   atc_zoned_date_time_from_epoch_seconds(&zdt, epoch_seconds, tz);
   if (atc_zoned_date_time_is_error(&zdt)) return kAtcErrGeneric;
 
-  ti->epoch_seconds = epoch_seconds;
+  int64_t unix_seconds = atc_unix_seconds_from_epoch_seconds(epoch_seconds);
+  ti->epoch_seconds = unix_seconds + epoch_offset;
   ti->year = zdt.year;
   ti->month = zdt.month;
   ti->day = zdt.day;
@@ -26,7 +28,7 @@ static int8_t create_test_item_from_epoch_seconds(
   ti->type = type;
 
   AtcZonedExtra zet;
-  atc_zoned_extra_from_epoch_seconds(&zet, epoch_seconds, tz);
+  atc_zoned_extra_from_unix_seconds(&zet, unix_seconds, tz);
   if ((atc_zoned_date_time_is_error(&zdt))) return kAtcErrGeneric;
 
   strncpy(ti->abbrev, zet.abbrev, kAtcAbbrevSize);
@@ -42,11 +44,13 @@ static int8_t add_test_item_from_epoch_seconds(
     const char *zone_name,
     const AtcTimeZone *tz,
     atc_time_t epoch_seconds,
-    char type)
+    char type,
+    int64_t epoch_offset)
 {
   (void) zone_name;
   TestItem *ti = test_collection_new_item(collection);
-  int8_t err = create_test_item_from_epoch_seconds(ti, tz, epoch_seconds, type);
+  int8_t err = create_test_item_from_epoch_seconds(ti, tz, epoch_seconds, type,
+      epoch_offset);
   if (err) {
     test_collection_delete_item(collection);
     return err;
@@ -128,12 +132,13 @@ static int8_t binary_search_transition(
   return result;
 }
 
-void add_transitions(
+static void add_transitions_for_chunk(
     TestCollection *collection,
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
-    int16_t until_year)
+    int16_t until_year,
+    int64_t epoch_offset)
 {
   AtcLocalDateTime ldt = {start_year, 1, 1, 0, 0, 0, 0 /*fold*/};
   AtcZonedDateTime zdt;
@@ -146,32 +151,53 @@ void add_transitions(
   atc_zoned_date_time_from_epoch_seconds(&zdt, t, tz);
   if (atc_zoned_date_time_is_error(&zdt)) return;
   for (;;) {
-    atc_time_t nextt = t + SAMPLING_INTERVAL_HOURS * 3600;
+    atc_time_t tnext = t + SAMPLING_INTERVAL_HOURS * 3600;
     AtcZonedDateTime nextzdt;
-    atc_zoned_date_time_from_epoch_seconds(&nextzdt, nextt, tz);
+    atc_zoned_date_time_from_epoch_seconds(&nextzdt, tnext, tz);
     if (atc_zoned_date_time_is_error(&nextzdt)) continue;
     if (nextzdt.year >= until_year) break;
 
     // Look for utc offset transition
-    int8_t result = is_transition(t, nextt, tz);
+    int8_t result = is_transition(t, tnext, tz);
     if (result < 0) break;
 
     // Check if transition found
     if (result > 0) {
       atc_time_t left, right;
-      int8_t result = binary_search_transition(t, nextt, &left, &right, tz);
-      if (result == 1) {
-        // normal transition
-        add_test_item_from_epoch_seconds(collection, zone_name, tz, left, 'A');
-        add_test_item_from_epoch_seconds(collection, zone_name, tz, right, 'B');
-      } else if (result == 2) {
-        // silent transition
-        add_test_item_from_epoch_seconds(collection, zone_name, tz, left, 'a');
-        add_test_item_from_epoch_seconds(collection, zone_name, tz, right, 'b');
+      int8_t result = binary_search_transition(t, tnext, &left, &right, tz);
+      if (result == 1) { // normal transition
+        add_test_item_from_epoch_seconds(
+            collection, zone_name, tz, left, 'A', epoch_offset);
+        add_test_item_from_epoch_seconds(
+            collection, zone_name, tz, right, 'B', epoch_offset);
+      } else if (result == 2) { // silent transition
+        add_test_item_from_epoch_seconds(
+            collection, zone_name, tz, left, 'a', epoch_offset);
+        add_test_item_from_epoch_seconds(
+            collection, zone_name, tz, right, 'b', epoch_offset);
       }
     }
 
-    t = nextt;
+    t = tnext;
+  }
+}
+
+void add_transitions(
+    TestCollection *collection,
+    const char *zone_name,
+    const AtcTimeZone *tz,
+    int16_t start_year,
+    int16_t until_year,
+    int64_t epoch_offset)
+{
+  // Loop in chunks of 100 years, to avoid overflowing unix_seconds.
+  for (int16_t start = start_year; start < until_year; start += 100) {
+    int16_t epoch_year = start + 50;
+    atc_set_current_epoch_year(epoch_year);
+    int16_t until = start + 100;
+    if (until > until_year) until = until_year;
+    add_transitions_for_chunk(collection, zone_name, tz, start, until,
+        epoch_offset);
   }
 }
 
@@ -239,12 +265,13 @@ void add_transitions(
 // But if that day of the month (with the time of 00:00) is ambiguous, I use a
 // loop to try subsequent days of month to find a day that works.  The first
 // attempt is marked with a type 'S'; subsequent attempts are marked with a 'T'.
-void add_monthly_samples(
+static void add_monthly_samples_for_chunk(
     TestCollection *collection,
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
-    int16_t until_year)
+    int16_t until_year,
+    int64_t epoch_offset)
 {
   for (int y = start_year; y < until_year; y++) {
     for (int m = 1; m <= 12; m++) {
@@ -262,7 +289,7 @@ void add_monthly_samples(
                 atc_zoned_date_time_to_epoch_seconds(&zdt);
             if (epoch_seconds != kAtcInvalidEpochSeconds) {
               add_test_item_from_epoch_seconds(
-                  collection, zone_name, tz, epoch_seconds, type);
+                  collection, zone_name, tz, epoch_seconds, type, epoch_offset);
               break;
             }
           }
@@ -270,5 +297,24 @@ void add_monthly_samples(
         type = 'T';
       }
     }
+  }
+}
+
+void add_monthly_samples(
+    TestCollection *collection,
+    const char *zone_name,
+    const AtcTimeZone *tz,
+    int16_t start_year,
+    int16_t until_year,
+    int64_t epoch_offset)
+{
+  // Loop in chunks of 100 years, to avoid overflowing unix_seconds.
+  for (int16_t start = start_year; start < until_year; start += 100) {
+    int16_t epoch_year = start + 50;
+    atc_set_current_epoch_year(epoch_year);
+    int16_t until = start + 100;
+    if (until > until_year) until = until_year;
+    add_monthly_samples_for_chunk(
+        collection, zone_name, tz, start, until, epoch_offset);
   }
 }

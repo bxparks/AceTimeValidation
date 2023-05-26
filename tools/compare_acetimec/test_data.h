@@ -3,9 +3,6 @@
 
 #define MAX_ABBREV_SIZE 7 /* 6 + NUL */
 
-/** Difference between Unix epoch (1970-01-1) and AceTime Epoch (2000-01-01). */
-#define SECONDS_SINCE_UNIX_EPOCH 946684800
-
 /** Buffer size of each line from zones.txt file. */
 #define MAX_LINE_SIZE 512
 
