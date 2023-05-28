@@ -25,7 +25,6 @@ using namespace ace_time;
 int16_t startYear = 2000;
 int16_t untilYear = 2100;
 int16_t epochYear = 2050;
-const int SAMPLING_INTERVAL_HOURS = 22;
 
 // Cache and buffers for AceTime
 constexpr uint8_t CACHE_SIZE = 2;
@@ -56,8 +55,7 @@ int8_t processZone(TestData *testData, int i, const char *zoneName) {
       zoneName,
       tz,
       startYear,
-      untilYear,
-      SAMPLING_INTERVAL_HOURS);
+      untilYear);
 
   addMonthlySamples(
       &entry->samples,

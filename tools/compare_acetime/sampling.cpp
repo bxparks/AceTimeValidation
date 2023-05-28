@@ -7,6 +7,8 @@
 
 using namespace ace_time;
 
+static const int SAMPLING_INTERVAL_HOURS = 22;
+
 static int8_t createTestItemFromEpochSeconds(
     TestItem *ti,
     const TimeZone& tz,
@@ -131,8 +133,7 @@ void addTransitions(
     const char *zoneName,
     const TimeZone &tz,
     int16_t startYear,
-    int16_t untilYear,
-    int samplingHours) {
+    int16_t untilYear) {
 
   auto zdt = ZonedDateTime::forComponents(startYear, 1, 1, 0, 0, 0, tz);
   if (zdt.isError()) return;
@@ -143,7 +144,7 @@ void addTransitions(
   zdt = ZonedDateTime::forEpochSeconds(t, tz);
   if (zdt.isError()) return;
   for (;;) {
-    acetime_t nextt = t + samplingHours * 3600;
+    acetime_t nextt = t + SAMPLING_INTERVAL_HOURS * 3600;
     ZonedDateTime nextzdt = ZonedDateTime::forEpochSeconds(nextt, tz);
     if (nextzdt.isError()) continue;
     if (nextzdt.year() >= untilYear) break;
