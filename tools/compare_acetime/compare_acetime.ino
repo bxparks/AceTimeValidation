@@ -50,19 +50,27 @@ int8_t processZone(TestData *testData, int i, const char *zoneName) {
   strncpy(entry->zone_name, zoneName, ZONE_NAME_SIZE - 1);
   entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
 
+  // Number of seconds to add to unix seconds to get the requested epoch
+  // seconds.
+  int64_t epochOffset = - LocalDate::forComponents(epochYear, 1, 1)
+      .toUnixSeconds64();
+
   addTransitions(
       &entry->transitions,
       zoneName,
       tz,
       startYear,
-      untilYear);
+      untilYear,
+      epochOffset);
 
   addMonthlySamples(
       &entry->samples,
       zoneName,
       tz,
       startYear,
-      untilYear);
+      untilYear,
+      epochOffset);
+
   return 0;
 }
 

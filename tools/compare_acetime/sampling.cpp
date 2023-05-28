@@ -13,12 +13,15 @@ static int8_t createTestItemFromEpochSeconds(
     TestItem *ti,
     const TimeZone& tz,
     acetime_t epochSeconds,
-    char type) {
+    char type,
+    int64_t epochOffset) {
 
   ZonedDateTime zdt = ZonedDateTime::forEpochSeconds(epochSeconds, tz);
   if (zdt.isError()) return 1;
 
-  ti->epochSeconds = epochSeconds;
+  int64_t unixSeconds = epochSeconds
+      + Epoch::secondsToCurrentEpochFromUnixEpoch64();
+  ti->epochSeconds = unixSeconds + epochOffset;
   ti->year = zdt.year();
   ti->month = zdt.month();
   ti->day = zdt.day();
@@ -43,11 +46,13 @@ static int8_t addTestItemFromEpochSeconds(
     const char *zoneName,
     const TimeZone& tz,
     acetime_t epochSeconds,
-    char type) {
+    char type,
+    int64_t epochOffset) {
 
   (void) zoneName;
   TestItem *ti = testCollectionNewItem(collection);
-  int8_t err = createTestItemFromEpochSeconds(ti, tz, epochSeconds, type);
+  int8_t err = createTestItemFromEpochSeconds(ti, tz, epochSeconds, type,
+      epochOffset);
   if (err) {
     testCollectionDeleteItem(collection);
     return err;
@@ -128,12 +133,13 @@ static int8_t binarySearchTransition(
   return result;
 }
 
-void addTransitions(
+void addTransitionsForChunk(
     TestCollection *collection,
     const char *zoneName,
     const TimeZone &tz,
     int16_t startYear,
-    int16_t untilYear) {
+    int16_t untilYear,
+    int64_t epochOffset) {
 
   auto zdt = ZonedDateTime::forComponents(startYear, 1, 1, 0, 0, 0, tz);
   if (zdt.isError()) return;
@@ -159,16 +165,38 @@ void addTransitions(
       int8_t result = binarySearchTransition(t, nextt, &left, &right, tz);
       if (result == 1) {
         // normal transition
-        addTestItemFromEpochSeconds(collection, zoneName, tz, left, 'A');
-        addTestItemFromEpochSeconds(collection, zoneName, tz, right, 'B');
+        addTestItemFromEpochSeconds(
+            collection, zoneName, tz, left, 'A', epochOffset);
+        addTestItemFromEpochSeconds(
+            collection, zoneName, tz, right, 'B', epochOffset);
       } else if (result == 2) {
         // silent transition
-        addTestItemFromEpochSeconds(collection, zoneName, tz, left, 'a');
-        addTestItemFromEpochSeconds(collection, zoneName, tz, right, 'b');
+        addTestItemFromEpochSeconds(
+            collection, zoneName, tz, left, 'a', epochOffset);
+        addTestItemFromEpochSeconds(
+            collection, zoneName, tz, right, 'b', epochOffset);
       }
     }
 
     t = nextt;
+  }
+}
+
+void addTransitions(
+    TestCollection *collection,
+    const char *zoneName,
+    const TimeZone &tz,
+    int16_t startYear,
+    int16_t untilYear,
+    int64_t epochOffset) {
+
+  // Loop in chunks of 100 years, to avoid overflowing unix_seconds.
+  for (int16_t start = startYear; start < untilYear; start += 100) {
+    int16_t epochYear = start + 50;
+    Epoch::currentEpochYear(epochYear);
+    int16_t until = start + 100;
+    if (until > untilYear) until = untilYear;
+    addTransitionsForChunk(collection, zoneName, tz, start, until, epochOffset);
   }
 }
 
@@ -186,12 +214,13 @@ void addTransitions(
 // But if that day of the month (with the time of 00:00) is ambiguous, I use a
 // loop to try subsequent days of month to find a day that works.  The first
 // attempt is marked with a type 'S'; subsequent attempts are marked with a 'T'.
-void addMonthlySamples(
+void addMonthlySamplesForChunk(
     TestCollection *collection,
     const char* zoneName,
     const TimeZone& tz,
     int16_t startYear,
-    int16_t untilYear) {
+    int16_t untilYear,
+    int64_t epochOffset) {
 
   for (int y = startYear; y < untilYear; y++) {
     for (int m = 1; m <= 12; m++) {
@@ -206,7 +235,7 @@ void addMonthlySamples(
             acetime_t epochSeconds = zdt.toEpochSeconds();
             if (epochSeconds != LocalDate::kInvalidEpochSeconds) {
               addTestItemFromEpochSeconds(
-                  collection, zoneName, tz, epochSeconds, type);
+                  collection, zoneName, tz, epochSeconds, type, epochOffset);
               break;
             }
           }
@@ -214,5 +243,24 @@ void addMonthlySamples(
         type = 'T';
       }
     }
+  }
+}
+
+void addMonthlySamples(
+    TestCollection *collection,
+    const char* zoneName,
+    const TimeZone& tz,
+    int16_t startYear,
+    int16_t untilYear,
+    int64_t epochOffset) {
+
+  // Loop in chunks of 100 years, to avoid overflowing unix_seconds.
+  for (int16_t start = startYear; start < untilYear; start += 100) {
+    int16_t epochYear = start + 50;
+    Epoch::currentEpochYear(epochYear);
+    int16_t until = start + 100;
+    if (until > untilYear) until = untilYear;
+    addMonthlySamplesForChunk(
+        collection, zoneName, tz, start, until, epochOffset);
   }
 }

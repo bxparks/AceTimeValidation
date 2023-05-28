@@ -16,7 +16,8 @@ void addTransitions(
     const char *zoneName,
     const ace_time::TimeZone& tz,
     int16_t startYear,
-    int16_t untilYear);
+    int16_t untilYear,
+    int64_t epochOffset);
 
 /**
  * Add a TestItem for the 1st of each month (using the local time)
@@ -28,6 +29,7 @@ void addMonthlySamples(
     const char *zoneName,
     const ace_time::TimeZone& tz,
     int16_t startYear,
-    int16_t untilYear);
+    int16_t untilYear,
+    int64_t epochOffset);
 
 #endif
