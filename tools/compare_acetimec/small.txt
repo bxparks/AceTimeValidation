@@ -4,6 +4,7 @@
 #
 # for testing purposes.
 
+Africa/Cairo
 Africa/Johannesburg
 Africa/Tunis
 America/Costa_Rica

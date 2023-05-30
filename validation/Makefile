@@ -1,14 +1,12 @@
-# Define the scope of the test data.
-SCOPE := basic
-TZ_VERSION := 2023c
-ACE_TIME_EPOCH_YEAR := 2050
-DB_START_YEAR := 2000
-DB_UNTIL_YEAR := 10000
+TZDB_VERSION := 2023c
+TZ_REPO := ../../tz
+ACETIME_TOOLS := ../../AceTimeTools
+VALIDATION_TOOLS := $(abspath ../tools)
+
+EPOCH_YEAR := 1970
 VAL_START_YEAR := 2000
 VAL_UNTIL_YEAR := 2100
 
-# Location of TZDB and various tools.
-VALIDATION_TOOLS := $(abspath ../tools)
 
 #------------------------------------------------------------------------------
 
@@ -18,8 +16,8 @@ zones.txt: tzdb
 	grep --no-filename '^Zone' tzdb/* | awk '{print $$2}' | sort | uniq >> $@
 
 # Copy the TZDB data files into the ./tzdb/ directory.
-tzdb: $(TOOLS_DIR)/copytz.sh $(TZ_REPO)
-	$(TOOLS_DIR)/copytz.sh --tag $(TZDB_VERSION) $(TZ_REPO) $@
+tzdb: $(ACETIME_TOOLS)/copytz.sh $(TZ_REPO)
+	$(ACETIME_TOOLS)/copytz.sh --tag $(TZDB_VERSION) $(TZ_REPO) $@
 	echo $(TZDB_VERSION) > $@/version.txt
 
 #------------------------------------------------------------------------------
@@ -28,7 +26,7 @@ observed.json: zone.txt Makefile
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		--use_internal_transition \
 		< zone.txt \
 		> $@
@@ -41,7 +39,7 @@ expected.json: zone.txt Makefile
 	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zone.txt \
 		> $@
 
@@ -51,13 +49,20 @@ expected.txt: expected.json
 
 #------------------------------------------------------------------------------
 
-# Use acetimec as the baseline. Previouslky used Hinnant date until I
-# discovered bugs with its detection of date-time in overlap or gap.
-baseline.json: acetimec.json
-	cp -f $< $@
+# Use acetimec as the baseline. Previously used Hinnant date library but it is
+# too slow. The acetimec library produces identical results as Hinnant date.
+baseline.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		--zonedb zonedball\
+		< zones.txt \
+		> $@
 
-baseline.txt: acetimec.txt
-	cp -f $< $@
+baseline.txt: baseline.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
 
 #------------------------------------------------------------------------------
 
@@ -66,7 +71,7 @@ acetime.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -81,7 +86,8 @@ acetimec.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		--zonedb zonedball \
 		< zones.txt \
 		> $@
 
@@ -97,7 +103,7 @@ acetz.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		--use_internal_transition \
 		< zones.txt \
 		> $@
@@ -112,7 +118,7 @@ acetzb.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -127,7 +133,7 @@ dateutil.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_dateutil/compare_dateutil.py \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -142,7 +148,7 @@ gotime.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -157,7 +163,7 @@ hinnant.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_hinnant/compare_hinnant.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -172,7 +178,7 @@ java.json: zones.txt
 	java -cp $(VALIDATION_TOOLS)/compare_java CompareJava \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -187,7 +193,7 @@ libc.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_libc/compare_libc.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -216,7 +222,7 @@ tzdata$(TZ_VERSION).nzd
 		-- \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		--nzd_file tzdata$(TZ_VERSION).nzd \
 		< zones.txt \
 		> $@
@@ -246,7 +252,7 @@ zoneinfo.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_zoneinfo/compare_zoneinfo.py \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(ACE_TIME_EPOCH_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
 
@@ -255,6 +261,11 @@ zoneinfo.txt: zoneinfo.json
 		< $< > $@
 
 #------------------------------------------------------------------------------
+
+# Run the validation targets which are expected to pass after a new TZDB is
+# released. This can be invoked with 'make -j4' to run the dependent targets in
+# parallel because they are independent.
+validation: diff_acetime diff_acetimec diff_acetz diff_hinnant
 
 diff: expected.txt observed.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \

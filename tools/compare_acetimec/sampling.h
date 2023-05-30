@@ -1,6 +1,7 @@
 #ifndef COMPARE_ACETIMEC_SAMPLING_H
 #define COMPARE_ACETIMEC_SAMPLING_H
 
+#include <stdint.h>
 #include <acetimec.h>
 #include "test_data.h"
 
@@ -17,7 +18,7 @@ void add_transitions(
     const AtcTimeZone *tz,
     int16_t start_year,
     int16_t until_year,
-    int sampling_hours);
+    int64_t epoch_offset);
 
 /**
  * Add a TestItem for the 1st of each month (using the local time)
@@ -29,6 +30,7 @@ void add_monthly_samples(
     const char *zone_name,
     const AtcTimeZone *tz,
     int16_t start_year,
-    int16_t until_year);
+    int16_t until_year,
+    int64_t epoch_offset);
 
 #endif
