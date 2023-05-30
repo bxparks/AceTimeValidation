@@ -1,7 +1,7 @@
 # Changelog
 
 * Unreleased
-* 1.6.0 (2023-05-19, TZDB 2023c)
+* 1.6.0 (2023-05-30, TZDB 2023c)
     * Split the `test_data` component of `validation_data.json` into 2 lists:
         * `transitions` containing DST transitions of the timezone, and
         * `samples` containing samples from `start_year` to `until_year`
@@ -14,6 +14,9 @@
         * Rename `compare_go` to `compare_gotime`
     * `./validation`
         * Add files to support peer-to-peer validation.
+        * Add 'make validation' target which compares raw JSON files from
+          `compare_acetime`, `compare_acetimec`, `compare_acetz`, and
+          `compare_hinnant`.
     * `./tests/`
         * Move top-level `BasicXxxTest` and `ExtendedXxxtest` to be under new
           `tests/` subdirectory.
