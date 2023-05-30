@@ -70,6 +70,7 @@ jobs:
     - name: Build Other Compare tools
       run: |
         make -C ../acetimec/src
+        make -C tools/compare_acetime
         make -C tools/compare_acetimec
         make -C tools/compare_libc
         make -C tools/compare_gotime
