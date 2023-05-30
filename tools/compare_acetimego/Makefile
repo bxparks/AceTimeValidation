@@ -1,4 +1,4 @@
-compare_acetimego.out: compare_acetimego.go transitions.go
+compare_acetimego.out: compare_acetimego.go
 	go build -o $@
 
 validation_data.json: small.txt compare_acetimego.out
