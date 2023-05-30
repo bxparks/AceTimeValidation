@@ -289,7 +289,7 @@ func createSamples(tz *acetime.TimeZone) []TestItem {
 }
 
 func createTestItem(
-	epochSeconds acetime.ATime, itemType string, tz *acetime.TimeZone) TestItem {
+	epochSeconds acetime.Time, itemType string, tz *acetime.TimeZone) TestItem {
 
 	zdt := acetime.NewZonedDateTimeFromEpochSeconds(epochSeconds, tz)
 	extra := acetime.NewZonedExtraFromEpochSeconds(epochSeconds, tz)

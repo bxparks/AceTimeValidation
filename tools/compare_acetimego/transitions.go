@@ -6,8 +6,8 @@ import (
 
 // A tuple that represents the before and after time of a timezone transition.
 type TransitionTimes struct {
-	before acetime.ATime
-	after  acetime.ATime
+	before acetime.Time
+	after  acetime.Time
 	result int8
 }
 
@@ -28,7 +28,7 @@ func findTransitions(
 	}
 	t := zdt.EpochSeconds()
 
-	samplingIntervalSeconds := acetime.ATime(samplingInterval * 3600)
+	samplingIntervalSeconds := acetime.Time(samplingInterval * 3600)
 	for {
 		tNext := t + samplingIntervalSeconds
 		zdtNext := acetime.NewZonedDateTimeFromEpochSeconds(tNext, tz)
@@ -58,7 +58,7 @@ func findTransitions(
 // * 1 - regular transition (total UTC offset is different)
 // * 2 - silent transition (both STD or DST changed and canceled each other)
 func isTransition(
-	t1 acetime.ATime, t2 acetime.ATime, tz *acetime.TimeZone) int8 {
+	t1 acetime.Time, t2 acetime.Time, tz *acetime.TimeZone) int8 {
 
 	ze1 := acetime.NewZonedExtraFromEpochSeconds(t1, tz)
 	if ze1.Zetype == acetime.ZonedExtraErr {
@@ -85,10 +85,10 @@ func isTransition(
 // * 1 - transition (total UTC offset is different)
 // * 2 - silent transition (both STD and DST changed and cancelled each other)
 func binarySearchTransition(
-	left acetime.ATime,
-	right acetime.ATime,
+	left acetime.Time,
+	right acetime.Time,
 	tz *acetime.TimeZone,
-) (acetime.ATime, acetime.ATime, int8) {
+) (acetime.Time, acetime.Time, int8) {
 
 	var result int8
 	for {
