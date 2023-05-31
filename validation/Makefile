@@ -97,7 +97,9 @@ acetimec.txt: acetimec.json
 
 #------------------------------------------------------------------------------
 
-# Takes about 8 secs to process 350 zones on a dual-core i5-6300U computer.
+# Takes about 6.4 secs to process 350 zones on a dual-core i5-6300U computer.
+# (This is faster than the 8.1 seconds if ZonedExtra is included inside
+# ZonedDateTime.)
 acetimego.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetimego/compare_acetimego.out \
 		--start_year $(VAL_START_YEAR) \

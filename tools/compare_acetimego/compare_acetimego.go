@@ -319,18 +319,18 @@ func findTransitions(
 func isTransition(
 	t1 acetime.Time, t2 acetime.Time, tz *acetime.TimeZone) int8 {
 
-	zdt1 := acetime.NewZonedDateTimeFromEpochSeconds(t1, tz)
-	if zdt1.IsError() {
+	extra1 := acetime.NewZonedExtraFromEpochSeconds(t1, tz)
+	if extra1.IsError() {
 		return -1
 	}
-	zdt2 := acetime.NewZonedDateTimeFromEpochSeconds(t2, tz)
-	if zdt2.IsError() {
+	extra2 := acetime.NewZonedExtraFromEpochSeconds(t2, tz)
+	if extra2.IsError() {
 		return -1
 	}
 
-	if zdt1.OffsetSeconds != zdt2.OffsetSeconds {
+	if extra1.OffsetSeconds() != extra2.OffsetSeconds() {
 		return 1
-	} else if zdt1.DstOffsetSeconds != zdt2.DstOffsetSeconds {
+	} else if extra1.DstOffsetSeconds != extra2.DstOffsetSeconds {
 		return 2
 	}
 	return 0
@@ -383,11 +383,12 @@ func createSamples(tz *acetime.TimeZone) []TestItem {
 			// we find one that is not in a gap.
 			for day := uint8(2); day <= 28; day++ {
 				ldt := acetime.LocalDateTime{year, month, day, 0, 0, 0, 0 /*Fold*/}
-				zdt := acetime.NewZonedDateTimeFromLocalDateTime(&ldt, tz)
+				extra := acetime.NewZonedExtraFromLocalDateTime(&ldt, tz)
 
-				if zdt.FoldType == acetime.FoldTypeExact ||
-					zdt.FoldType == acetime.FoldTypeOverlap {
+				if extra.FoldType == acetime.FoldTypeExact ||
+					extra.FoldType == acetime.FoldTypeOverlap {
 
+					zdt := acetime.NewZonedDateTimeFromLocalDateTime(&ldt, tz)
 					sampleTestItem := createTestItem(zdt.EpochSeconds(), itemType, tz)
 					testItems = append(testItems, sampleTestItem)
 					break
@@ -406,18 +407,19 @@ func createTestItem(
 	epochSeconds acetime.Time, itemType string, tz *acetime.TimeZone) TestItem {
 
 	zdt := acetime.NewZonedDateTimeFromEpochSeconds(epochSeconds, tz)
+	extra := acetime.NewZonedExtraFromEpochSeconds(epochSeconds, tz)
 
 	return TestItem{
 		EpochSeconds: int64(epochSeconds) + epochOffset,
 		TotalOffset:  zdt.OffsetSeconds,
-		DstOffset:    zdt.DstOffsetSeconds,
+		DstOffset:    extra.DstOffsetSeconds,
 		Year:         zdt.Year,
 		Month:        zdt.Month,
 		Day:          zdt.Day,
 		Hour:         zdt.Hour,
 		Minute:       zdt.Minute,
 		Second:       zdt.Second,
-		Abbrev:       zdt.Abbrev,
+		Abbrev:       extra.Abbrev,
 		ItemType:     itemType,
 	}
 }
