@@ -72,6 +72,7 @@ jobs:
         make -C ../acetimec/src
         make -C tools/compare_acetime
         make -C tools/compare_acetimec
+        make -C tools/compare_acetimego
         make -C tools/compare_libc
         make -C tools/compare_gotime
         make -C tools/compare_hinnant

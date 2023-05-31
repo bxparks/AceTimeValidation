@@ -97,6 +97,21 @@ acetimec.txt: acetimec.json
 
 #------------------------------------------------------------------------------
 
+# Takes about 8 secs to process 350 zones on a dual-core i5-6300U computer.
+acetimego.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetimego/compare_acetimego.out \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		< zones.txt \
+		> $@
+
+acetimego.txt: acetimego.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+#------------------------------------------------------------------------------
+
 # Takes about 40 secs to process 350 zones on a dual-core i5-6300U computer.
 # The result must be identical to acetzb.json.
 acetz.json: zones.txt
@@ -265,7 +280,7 @@ zoneinfo.txt: zoneinfo.json
 # Run the validation targets which are expected to pass after a new TZDB is
 # released. This can be invoked with 'make -j4' to run the dependent targets in
 # parallel because they are independent.
-validation: diff_acetime diff_acetimec diff_acetz diff_hinnant
+validation: diff_acetime diff_acetimec diff_acetime_go diff_acetz diff_hinnant
 
 diff: expected.txt observed.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
@@ -280,6 +295,11 @@ diff_acetime: acetime.txt baseline.txt
 diff_acetimec: acetimec.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed acetimec.json \
+		--expected baseline.json
+
+diff_acetimego: acetimego.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetimego.json \
 		--expected baseline.json
 
 diff_acetz: acetz.txt baseline.txt
