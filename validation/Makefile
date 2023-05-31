@@ -280,7 +280,7 @@ zoneinfo.txt: zoneinfo.json
 # Run the validation targets which are expected to pass after a new TZDB is
 # released. This can be invoked with 'make -j4' to run the dependent targets in
 # parallel because they are independent.
-validation: diff_acetime diff_acetimec diff_acetz diff_hinnant
+validation: diff_acetime diff_acetimec diff_acetime_go diff_acetz diff_hinnant
 
 diff: expected.txt observed.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
