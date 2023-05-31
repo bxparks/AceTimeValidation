@@ -320,11 +320,11 @@ func isTransition(
 	t1 acetime.Time, t2 acetime.Time, tz *acetime.TimeZone) int8 {
 
 	zdt1 := acetime.NewZonedDateTimeFromEpochSeconds(t1, tz)
-	if zdt1.ZonedExtra.IsError() {
+	if zdt1.IsError() {
 		return -1
 	}
 	zdt2 := acetime.NewZonedDateTimeFromEpochSeconds(t2, tz)
-	if zdt2.ZonedExtra.IsError() {
+	if zdt2.IsError() {
 		return -1
 	}
 
@@ -385,8 +385,8 @@ func createSamples(tz *acetime.TimeZone) []TestItem {
 				ldt := acetime.LocalDateTime{year, month, day, 0, 0, 0, 0 /*Fold*/}
 				zdt := acetime.NewZonedDateTimeFromLocalDateTime(&ldt, tz)
 
-				if zdt.Zetype == acetime.ZonedExtraExact ||
-					zdt.Zetype == acetime.ZonedExtraOverlap {
+				if zdt.FoldType == acetime.FoldTypeExact ||
+					zdt.FoldType == acetime.FoldTypeOverlap {
 
 					sampleTestItem := createTestItem(zdt.EpochSeconds(), itemType, tz)
 					testItems = append(testItems, sampleTestItem)
