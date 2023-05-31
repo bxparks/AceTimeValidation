@@ -208,7 +208,12 @@ func readZones() []string {
 // ProcessZones() iterates over the list of zones and calls processZone().
 func processZones(zones []string) TestData {
 	testData := make(TestData)
-	for _, zoneName := range zones {
+	for i, zoneName := range zones {
+		print("[")
+		print(i)
+		print("]")
+		print(" ")
+		println(zoneName)
 		testItems, err := processZone(zoneName)
 		if err != nil {
 			fmt.Printf("Unable to process zone '%s'\n", zoneName)
@@ -314,20 +319,18 @@ func findTransitions(
 func isTransition(
 	t1 acetime.Time, t2 acetime.Time, tz *acetime.TimeZone) int8 {
 
-	ze1 := acetime.NewZonedExtraFromEpochSeconds(t1, tz)
-	if ze1.Zetype == acetime.ZonedExtraErr {
+	zdt1 := acetime.NewZonedDateTimeFromEpochSeconds(t1, tz)
+	if zdt1.ZonedExtra.IsError() {
 		return -1
 	}
-	ze2 := acetime.NewZonedExtraFromEpochSeconds(t2, tz)
-	if ze2.Zetype == acetime.ZonedExtraErr {
+	zdt2 := acetime.NewZonedDateTimeFromEpochSeconds(t2, tz)
+	if zdt2.ZonedExtra.IsError() {
 		return -1
 	}
 
-	offset1 := ze1.StdOffsetSeconds + ze1.DstOffsetSeconds
-	offset2 := ze2.StdOffsetSeconds + ze2.DstOffsetSeconds
-	if offset1 != offset2 {
+	if zdt1.OffsetSeconds != zdt2.OffsetSeconds {
 		return 1
-	} else if ze1.DstOffsetSeconds != ze2.DstOffsetSeconds {
+	} else if zdt1.DstOffsetSeconds != zdt2.DstOffsetSeconds {
 		return 2
 	}
 	return 0
@@ -379,14 +382,12 @@ func createSamples(tz *acetime.TimeZone) []TestItem {
 			// If the second day of the month is in the gap, try subsequent days until
 			// we find one that is not in a gap.
 			for day := uint8(2); day <= 28; day++ {
-				// TODO: Absorbe ZonedExtra into ZoneDateTime
 				ldt := acetime.LocalDateTime{year, month, day, 0, 0, 0, 0 /*Fold*/}
-				extra := acetime.NewZonedExtraFromLocalDateTime(&ldt, tz)
+				zdt := acetime.NewZonedDateTimeFromLocalDateTime(&ldt, tz)
 
-				if extra.Zetype == acetime.ZonedExtraExact ||
-					extra.Zetype == acetime.ZonedExtraOverlap {
+				if zdt.Zetype == acetime.ZonedExtraExact ||
+					zdt.Zetype == acetime.ZonedExtraOverlap {
 
-					zdt := acetime.NewZonedDateTimeFromLocalDateTime(&ldt, tz)
 					sampleTestItem := createTestItem(zdt.EpochSeconds(), itemType, tz)
 					testItems = append(testItems, sampleTestItem)
 					break
@@ -405,19 +406,18 @@ func createTestItem(
 	epochSeconds acetime.Time, itemType string, tz *acetime.TimeZone) TestItem {
 
 	zdt := acetime.NewZonedDateTimeFromEpochSeconds(epochSeconds, tz)
-	extra := acetime.NewZonedExtraFromEpochSeconds(epochSeconds, tz)
 
 	return TestItem{
 		EpochSeconds: int64(epochSeconds) + epochOffset,
 		TotalOffset:  zdt.OffsetSeconds,
-		DstOffset:    extra.DstOffsetSeconds,
+		DstOffset:    zdt.DstOffsetSeconds,
 		Year:         zdt.Year,
 		Month:        zdt.Month,
 		Day:          zdt.Day,
 		Hour:         zdt.Hour,
 		Minute:       zdt.Minute,
 		Second:       zdt.Second,
-		Abbrev:       extra.Abbrev,
+		Abbrev:       zdt.Abbrev,
 		ItemType:     itemType,
 	}
 }
