@@ -280,8 +280,8 @@ static void add_monthly_samples_for_chunk(
         AtcZonedExtra extra;
         AtcLocalDateTime ldt = {y, m, d, 0, 0, 0, 0 /*fold*/};
         atc_zoned_extra_from_local_date_time(&extra, &ldt, tz);
-        if (extra.type == kAtcZonedExtraExact
-            || extra.type == kAtcZonedExtraOverlap) {
+        if (extra.fold_type == kAtcFoldTypeExact
+            || extra.fold_type == kAtcFoldTypeOverlap) {
           AtcZonedDateTime zdt;
           atc_zoned_date_time_from_local_date_time(&zdt, &ldt, tz);
           if (!atc_zoned_date_time_is_error(&zdt)) {
