@@ -27,13 +27,14 @@ jobs:
       run: |
         cd ..
         git clone --depth 1 https://github.com/HowardHinnant/date
-        git clone --depth 1 https://github.com/bxparks/EpoxyDuino
         git clone --depth 1 https://github.com/bxparks/AUnit
         git clone --depth 1 https://github.com/bxparks/AceCommon
         git clone --depth 1 https://github.com/bxparks/AceSorting
         git clone --depth 1 https://github.com/bxparks/AceTime
         git clone --depth 1 https://github.com/bxparks/AceTimeTools
+        git clone --depth 1 https://github.com/bxparks/EpoxyDuino
         git clone --depth 1 https://github.com/bxparks/acetimec
+        git clone --depth 1 https://github.com/bxparks/acetimego
         git clone --depth 1 https://github.com/bxparks/acetimepy
         git clone https://github.com/eggert/tz
 
