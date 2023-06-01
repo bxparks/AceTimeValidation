@@ -117,6 +117,7 @@ void printJson(
   int startYear,
   int untilYear,
   int epochYear,
+  const char *scope,
   const char *version, // library version
   const char *tzVersion); // TZDB version
 

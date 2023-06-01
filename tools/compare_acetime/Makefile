@@ -11,13 +11,25 @@ sampling.o: sampling.cpp sampling.h
 
 test_data.o: test_data.cpp test_data.h
 
-validation_data.json: compare_acetime.out small.txt
+# This is the default.
+validation_extended.json: compare_acetime.out small.txt
 	./compare_acetime.out \
 		--start_year 2000 \
 		--until_year 2100 \
 		--epoch_year 2050 \
+		--scope extended \
+		< small.txt \
+		> $@
+
+# This requires --scope flag.
+validation_basic.json: compare_acetime.out small.txt
+	./compare_acetime.out \
+		--start_year 2000 \
+		--until_year 2100 \
+		--epoch_year 2050 \
+		--scope basic \
 		< small.txt \
 		> $@
 
 more_clean:
-	rm -f validation_data.json
+	rm -f validation_basic.json validation_extended.json

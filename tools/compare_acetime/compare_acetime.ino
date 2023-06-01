@@ -12,7 +12,7 @@
  *    > validation_data.json
  */
 
-#include <string.h>
+#include <string.h> // strcmp()
 #include <stdio.h> // fgets()
 #include <Arduino.h>
 #include <AceTime.h>
@@ -26,29 +26,49 @@ int16_t startYear = 2000;
 int16_t untilYear = 2100;
 int16_t epochYear = 2050;
 
+const int kScopeTypeBasic = 0;
+const int kScopeTypeExtended = 1;
+const char *scopeString = "extended";
+int scopeType = kScopeTypeExtended;
+
 // Cache and buffers for AceTime
 constexpr uint8_t CACHE_SIZE = 2;
 ExtendedZoneProcessorCache<CACHE_SIZE> extendedZoneProcessorCache;
-ExtendedZoneManager zoneManager(
+ExtendedZoneManager extendedZoneManager(
     zonedbx::kZoneAndLinkRegistrySize,
     zonedbx::kZoneAndLinkRegistry,
     extendedZoneProcessorCache);
+
+BasicZoneProcessorCache<CACHE_SIZE> basicZoneProcessorCache;
+BasicZoneManager basicZoneManager(
+    zonedb::kZoneAndLinkRegistrySize,
+    zonedb::kZoneAndLinkRegistry,
+    basicZoneProcessorCache);
 
 //-----------------------------------------------------------------------------
 
 /** Insert TestItems for the given 'zoneName' into test_data. */
 int8_t processZone(TestData *testData, int i, const char *zoneName) {
-  fprintf(stderr, "[%d] Zone %s\n", i, zoneName);
-  TimeZone tz = zoneManager.createForZoneName(zoneName);
-  if (tz.isError()) {
-    fprintf(stderr, "ERROR: Zone %s: not found\n", zoneName);
-    return 1;
+  fprintf(stderr, "[%d] Zone %s", i, zoneName);
+  TimeZone tz;
+  if (scopeType == kScopeTypeBasic) {
+    tz = basicZoneManager.createForZoneName(zoneName);
+  } else if (scopeType == kScopeTypeExtended) {
+    tz = extendedZoneManager.createForZoneName(zoneName);
   }
 
   // Create entry for a single zone
   TestEntry *entry = testDataNewEntry(testData);
   strncpy(entry->zone_name, zoneName, ZONE_NAME_SIZE - 1);
   entry->zone_name[ZONE_NAME_SIZE - 1] = '\0';
+
+  // If zone is not supported, retain the empty entry.
+  if (tz.isError()) {
+    fprintf(stderr, ": not found\n");
+    return 1;
+  } else {
+    fprintf(stderr, "\n");
+  }
 
   // Number of seconds to add to unix seconds to get the requested epoch
   // seconds.
@@ -101,11 +121,7 @@ int8_t readAndProcessZones(TestData *testData) {
     // Skip over comments
     if (line[0] == '#') continue;
 
-    int8_t err = processZone(testData, i, line);
-    if (err) {
-      fprintf(stderr, "Error processor zone '%s'\n", line);
-      return err;
-    }
+    processZone(testData, i, line);
     i++;
   }
 
@@ -136,6 +152,7 @@ void processCommandLine(int argc, const char* const* argv) {
   const char *start = "";
   const char *until = "";
   const char *epoch = "";
+  const char *scope = "";
 
   shift(argc, argv);
   while (argc > 0) {
@@ -151,6 +168,10 @@ void processCommandLine(int argc, const char* const* argv) {
       shift(argc, argv);
       if (argc == 0) usageAndExit();
       epoch = argv[0];
+    } else if (argEquals(argv[0], "--scope")) {
+      shift(argc, argv);
+      if (argc == 0) usageAndExit();
+      scope = argv[0];
     } else if (argEquals(argv[0], "--")) {
       shift(argc, argv);
       break;
@@ -175,10 +196,24 @@ void processCommandLine(int argc, const char* const* argv) {
     fprintf(stderr, "Required flag: --epoch_year\n");
     usageAndExit();
   }
+  if (strlen(scope) == 0) {
+    fprintf(stderr, "Required flag: --scope\n");
+    usageAndExit();
+  }
 
   startYear = atoi(start);
   untilYear = atoi(until);
   epochYear = atoi(epoch);
+  if (strcmp(scope, "basic") == 0) {
+    scopeType = kScopeTypeBasic;
+    scopeString = scope;
+  } else if (strcmp(scope, "extended") == 0) {
+    scopeType = kScopeTypeExtended;
+    scopeString = scope;
+  } else {
+    fprintf(stderr, "Invalid --scope: %s\n", scope);
+    usageAndExit();
+  }
 
   // Configure the current epoch year.
   Epoch::currentEpochYear(epochYear);
@@ -189,7 +224,7 @@ void processCommandLine(int argc, const char* const* argv) {
   int8_t err = readAndProcessZones(&testData);
   if (err) exit(1);
 
-  printJson(&testData, startYear, untilYear, epochYear,
+  printJson(&testData, startYear, untilYear, epochYear, scope,
     ACE_TIME_VERSION_STRING, zonedbx::kZoneContext.tzVersion);
 
   // Cleanup
