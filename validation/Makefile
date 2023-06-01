@@ -67,15 +67,30 @@ baseline.txt: baseline.json
 #------------------------------------------------------------------------------
 
 # Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
-acetime.json: zones.txt
+acetime_basic.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
 		--start_year $(VAL_START_YEAR) \
 		--until_year $(VAL_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
+		--scope basic \
 		< zones.txt \
 		> $@
 
-acetime.txt: acetime.json
+acetime_basic.txt: acetime_basic.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+# Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
+acetime_extended.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
+		--start_year $(VAL_START_YEAR) \
+		--until_year $(VAL_UNTIL_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		--scope extended \
+		< zones.txt \
+		> $@
+
+acetime_extended.txt: acetime_extended.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
@@ -282,16 +297,25 @@ zoneinfo.txt: zoneinfo.json
 # Run the validation targets which are expected to pass after a new TZDB is
 # released. This can be invoked with 'make -j4' to run the dependent targets in
 # parallel because they are independent.
-validation: diff_acetime diff_acetimec diff_acetz diff_hinnant
+validation: diff_acetime_basic \
+diff_acetime_extended \
+diff_acetimec \
+diff_acetz \
+diff_hinnant
 
 diff: expected.txt observed.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed observed.json \
 		--expected expected.json
 
-diff_acetime: acetime.txt baseline.txt
+diff_acetime_basic: acetime_basic.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetime.json \
+		--observed acetime_basic.json \
+		--expected baseline.json
+
+diff_acetime_extended: acetime_extended.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetime_extended.json \
 		--expected baseline.json
 
 diff_acetimec: acetimec.txt baseline.txt
@@ -348,4 +372,4 @@ diff_zoneinfo: zoneinfo.txt baseline.txt
 
 clean:
 	rm -rf tzdb
-	rm -f tz*.nzd
+	rm -f tz*.nzd *.json

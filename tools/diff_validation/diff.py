@@ -30,19 +30,16 @@ def main() -> None:
         description='Diff validation data of observed against expected'
     )
 
-    # DST blacklist JSON file.
     parser.add_argument(
         '--observed',
         type=str,
-        help='Subject validation data file'
+        help='Subject validation data JSON file'
     )
 
-    # Ignore blacklist. Useful for debugging 3rd party timezones which have
-    # inconsistencies with AceTime (or Hinnant date).
     parser.add_argument(
         '--expected',
         type=str,
-        help='Baseline validation data file',
+        help='Baseline validation data JSON file',
     )
 
     # Parse the command line arguments
@@ -57,9 +54,9 @@ def main() -> None:
 
     differ = Differ(observed, expected)
     differ.diff()
+    print('Done')
     if not differ.valid:
         sys.exit(1)
-    print('Done')
 
 
 class Differ:
@@ -111,11 +108,22 @@ class Differ:
         print('Diff test_data')
         obs_test_data = self.observed['test_data']
         exp_test_data = self.expected['test_data']
+
+        skipped: List[str] = []
+        # Loop over observed, and validated against expected.
         for zone, obs_entry in obs_test_data.items():
             exp_entry = exp_test_data[zone]
 
-            # transitions
+            # If both transitions and samples are empty from observed, this
+            # indicates that the zone is not supported by the observed. Note
+            # this, but don't terminate.
             obs_transitions = obs_entry['transitions']
+            obs_samples = obs_entry['samples']
+            if len(obs_transitions) == 0 and len(obs_samples) == 0:
+                skipped.append(zone)
+                continue
+
+            # transitions
             exp_transitions = exp_entry['transitions']
             # if len(obs_transitions) != len(exp_transitions):
             #     print(f'ERROR {zone}: num transitions not equal')
@@ -125,7 +133,6 @@ class Differ:
                 zone, "transitions", obs_transitions, exp_transitions)
 
             # samples
-            obs_samples = obs_entry['samples']
             exp_samples = exp_entry['samples']
             # if len(obs_samples) != len(exp_samples):
             #     print(f'ERROR {zone}: num samples not equal')
@@ -133,6 +140,9 @@ class Differ:
             #     continue
             self.diff_test_items(
                 zone, "samples", obs_samples, exp_samples)
+
+        if skipped:
+            print(f'Skipped {len(skipped)} zones')
 
     def diff_test_items(
         self,
