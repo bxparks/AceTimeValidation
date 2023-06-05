@@ -28,22 +28,30 @@ int16_t epochYear = 2050;
 
 const int kScopeTypeBasic = 0;
 const int kScopeTypeExtended = 1;
-const char *scopeString = "extended";
+const int kScopeTypeComplete = 2;
 int scopeType = kScopeTypeExtended;
+const char *scopeString = "extended";
 
 // Cache and buffers for AceTime
 constexpr uint8_t CACHE_SIZE = 2;
-ExtendedZoneProcessorCache<CACHE_SIZE> extendedZoneProcessorCache;
-ExtendedZoneManager extendedZoneManager(
-    zonedbx::kZoneAndLinkRegistrySize,
-    zonedbx::kZoneAndLinkRegistry,
-    extendedZoneProcessorCache);
 
 BasicZoneProcessorCache<CACHE_SIZE> basicZoneProcessorCache;
 BasicZoneManager basicZoneManager(
     zonedb::kZoneAndLinkRegistrySize,
     zonedb::kZoneAndLinkRegistry,
     basicZoneProcessorCache);
+
+ExtendedZoneProcessorCache<CACHE_SIZE> extendedZoneProcessorCache;
+ExtendedZoneManager extendedZoneManager(
+    zonedbx::kZoneAndLinkRegistrySize,
+    zonedbx::kZoneAndLinkRegistry,
+    extendedZoneProcessorCache);
+
+CompleteZoneProcessorCache<CACHE_SIZE> completeZoneProcessorCache;
+CompleteZoneManager completeZoneManager(
+    zonedbc::kZoneAndLinkRegistrySize,
+    zonedbc::kZoneAndLinkRegistry,
+    completeZoneProcessorCache);
 
 //-----------------------------------------------------------------------------
 
@@ -55,6 +63,8 @@ int8_t processZone(TestData *testData, int i, const char *zoneName) {
     tz = basicZoneManager.createForZoneName(zoneName);
   } else if (scopeType == kScopeTypeExtended) {
     tz = extendedZoneManager.createForZoneName(zoneName);
+  } else if (scopeType == kScopeTypeComplete) {
+    tz = completeZoneManager.createForZoneName(zoneName);
   }
 
   // Create entry for a single zone
@@ -209,6 +219,9 @@ void processCommandLine(int argc, const char* const* argv) {
     scopeString = scope;
   } else if (strcmp(scope, "extended") == 0) {
     scopeType = kScopeTypeExtended;
+    scopeString = scope;
+  } else if (strcmp(scope, "complete") == 0) {
+    scopeType = kScopeTypeComplete;
     scopeString = scope;
   } else {
     fprintf(stderr, "Invalid --scope: %s\n", scope);
