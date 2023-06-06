@@ -6,6 +6,8 @@ VALIDATION_TOOLS := $(abspath ../tools)
 EPOCH_YEAR := 1970
 VAL_START_YEAR := 2000
 VAL_UNTIL_YEAR := 2100
+COMPLETE_START_YEAR := 1800
+COMPLETE_UNTIL_YEAR := 2100
 
 
 #------------------------------------------------------------------------------
@@ -19,6 +21,21 @@ zones.txt: tzdb
 tzdb: $(ACETIME_TOOLS)/copytz.sh $(TZ_REPO)
 	$(ACETIME_TOOLS)/copytz.sh --tag $(TZDB_VERSION) $(TZ_REPO) $@
 	echo $(TZDB_VERSION) > $@/version.txt
+
+#------------------------------------------------------------------------------
+
+# Run the validation targets which are expected to pass after a new TZDB is
+# released. This can be invoked with 'make -j4' to run the dependent targets in
+# parallel because they are independent.
+validation: \
+diff_acetime_basic \
+diff_acetime_extended \
+diff_acetime_complete \
+diff_acetz \
+diff_hinnant_complete
+# diff_acetimec # No need to diff with itself
+# diff_acetimego_complete
+# diff_acetimego
 
 #------------------------------------------------------------------------------
 
@@ -47,6 +64,13 @@ expected.txt: expected.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+diff: expected.txt observed.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed observed.json \
+		--expected expected.json
+
+#------------------------------------------------------------------------------
+# Baseline (acetimec)
 #------------------------------------------------------------------------------
 
 # Use acetimec as the baseline. Previously used Hinnant date library but it is
@@ -64,6 +88,22 @@ baseline.txt: baseline.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+# Generate validation for the entire TZDB from year [1800,2100).
+baseline_complete.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		--zonedb zonedball\
+		< zones.txt \
+		> $@
+
+baseline_complete.txt: baseline_complete.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+#------------------------------------------------------------------------------
+# AceTime library
 #------------------------------------------------------------------------------
 
 # Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
@@ -94,6 +134,38 @@ acetime_extended.txt: acetime_extended.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+# Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
+acetime_complete.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		--scope complete \
+		< zones.txt \
+		> $@
+
+acetime_complete.txt: acetime_complete.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+
+diff_acetime_basic: acetime_basic.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetime_basic.json \
+		--expected baseline.json
+
+diff_acetime_extended: acetime_extended.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetime_extended.json \
+		--expected baseline.json
+
+diff_acetime_complete: acetime_complete.txt baseline_complete.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetime_complete.json \
+		--expected baseline_complete.json
+
+#------------------------------------------------------------------------------
+# acetimec library
 #------------------------------------------------------------------------------
 
 # Takes about 9 secs to process 350 zones on a dual-core i5-6300U computer.
@@ -110,6 +182,13 @@ acetimec.txt: acetimec.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+diff_acetimec: acetimec.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetimec.json \
+		--expected baseline.json
+
+#------------------------------------------------------------------------------
+# acetimego library
 #------------------------------------------------------------------------------
 
 # Takes about 6.4 secs to process 350 zones on a dual-core i5-6300U computer.
@@ -127,6 +206,33 @@ acetimego.txt: acetimego.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+# Takes about 22 secs to process 350 zones on a dual-core i5-6300U computer.
+# (This is faster than the 8.1 seconds if ZonedExtra is included inside
+# ZonedDateTime.)
+acetimego_complete.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_acetimego/compare_acetimego.out \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		< zones.txt \
+		> $@
+
+acetimego_complete.txt: acetimego_complete.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+diff_acetimego: acetimego.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetimego.json \
+		--expected baseline.json
+
+diff_acetimego_complete: acetimego_complete.txt baseline_complete.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetimego_complete.json \
+		--expected baseline_complete.json
+
+#------------------------------------------------------------------------------
+# acetimepy library
 #------------------------------------------------------------------------------
 
 # Takes about 40 secs to process 350 zones on a dual-core i5-6300U computer.
@@ -158,6 +264,13 @@ acetzb.txt: acetzb.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+diff_acetz: acetz.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed acetz.json \
+		--expected baseline.json
+
+#------------------------------------------------------------------------------
+# dateutil library
 #------------------------------------------------------------------------------
 
 # Takes about 7 mins to process 350 zones on a dual-core i5-6300U computer.
@@ -173,6 +286,13 @@ dateutil.txt: dateutil.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+diff_dateutil: dateutil.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed dateutil.json \
+		--expected baseline.json
+
+#------------------------------------------------------------------------------
+# Go time library
 #------------------------------------------------------------------------------
 
 # Takes about 8 secs to process 350 zones.
@@ -188,6 +308,13 @@ gotime.txt: gotime.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+diff_gotime: gotime.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed gotime.json \
+		--expected baseline.json
+
+#------------------------------------------------------------------------------
+# Hinnant date library
 #------------------------------------------------------------------------------
 
 # Takes about 70 secs to processor 350 zones on a dual-core i5-6300U computer.
@@ -203,6 +330,31 @@ hinnant.txt: hinnant.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+# Takes about 90 secs to processor 350 zones on a dual-core i5-6300U computer.
+hinnant_complete.json: zones.txt
+	$(VALIDATION_TOOLS)/compare_hinnant/compare_hinnant.out \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
+		--epoch_year $(EPOCH_YEAR) \
+		< zones.txt \
+		> $@
+
+hinnant_complete.txt: hinnant_complete.json
+	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
+		< $< > $@
+
+diff_hinnant: hinnant.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed hinnant.json \
+		--expected baseline.json
+
+diff_hinnant_complete: hinnant_complete.txt baseline_complete.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed hinnant_complete.json \
+		--expected baseline_complete.json
+
+#------------------------------------------------------------------------------
+# Java time library
 #------------------------------------------------------------------------------
 
 # Takes about 10 secs to processor 350 zones on a dual-core i5-6300U computer.
@@ -218,6 +370,13 @@ java.txt: java.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+diff_java: java.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed java.json \
+		--expected baseline.json
+
+#------------------------------------------------------------------------------
+# libc library
 #------------------------------------------------------------------------------
 
 # Takes about 13 secs to process 350 zones on a dual-core i5-6300U computer.
@@ -233,6 +392,13 @@ libc.txt: libc.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
+diff_libc: libc.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed libc.json \
+		--expected baseline.json
+
+#------------------------------------------------------------------------------
+# NodaTime library
 #------------------------------------------------------------------------------
 
 # These Makefile targets copied from ../tests/NodaBasicTest and
@@ -277,6 +443,13 @@ $(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler:
 	cd $(NODA_COMPILER_DIR); \
 	dotnet build
 
+diff_noda: noda.txt baseline.txt
+	$(VALIDATION_TOOLS)/diff_validation/diff.py \
+		--observed noda.json \
+		--expected baseline.json
+
+#------------------------------------------------------------------------------
+# zoneinfo library
 #------------------------------------------------------------------------------
 
 # Takes about 40 secs to process 350 zones on a dual-core i5-6300U computer.
@@ -291,77 +464,6 @@ zoneinfo.json: zones.txt
 zoneinfo.txt: zoneinfo.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
-
-#------------------------------------------------------------------------------
-
-# Run the validation targets which are expected to pass after a new TZDB is
-# released. This can be invoked with 'make -j4' to run the dependent targets in
-# parallel because they are independent.
-validation: diff_acetime_basic \
-diff_acetime_extended \
-diff_acetimec \
-diff_acetz \
-diff_hinnant
-
-diff: expected.txt observed.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed observed.json \
-		--expected expected.json
-
-diff_acetime_basic: acetime_basic.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetime_basic.json \
-		--expected baseline.json
-
-diff_acetime_extended: acetime_extended.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetime_extended.json \
-		--expected baseline.json
-
-diff_acetimec: acetimec.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetimec.json \
-		--expected baseline.json
-
-diff_acetimego: acetimego.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetimego.json \
-		--expected baseline.json
-
-diff_acetz: acetz.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetz.json \
-		--expected baseline.json
-
-diff_dateutil: dateutil.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed dateutil.json \
-		--expected baseline.json
-
-diff_gotime: gotime.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed gotime.json \
-		--expected baseline.json
-
-diff_hinnant: hinnant.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed hinnant.json \
-		--expected baseline.json
-
-diff_java: java.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed java.json \
-		--expected baseline.json
-
-diff_libc: libc.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed libc.json \
-		--expected baseline.json
-
-diff_noda: noda.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed noda.json \
-		--expected baseline.json
 
 diff_zoneinfo: zoneinfo.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
