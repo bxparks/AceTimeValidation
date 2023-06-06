@@ -25,10 +25,7 @@ include ../../../EpoxyDuino/EpoxyDuino.mk
 
 #.PHONY: $(GENERATED)
 
-# Define the scope of the test data.
-#	* openjdk 11.0.6 2020-01-14 uses 2019c
-#	* openjdk 11.0.8 2020-07-14 uses 2020a
-#	* openjdk 11.0.10 2020-07-14 uses 2020d
+# Configuration parameters of the AceTime zonedb.
 #	* openjdk 11.0.17 2022-10-18 uses 2022c
 SCOPE := extended
 TZ_VERSION := 2022c
@@ -92,7 +89,6 @@ $(DB_NAMESPACE)/zone_infos.h:
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
-		--generate_int16_year \
 		--start_year $(DB_START_YEAR) \
 		--until_year $(DB_UNTIL_YEAR)
 

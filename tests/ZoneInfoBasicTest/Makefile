@@ -25,7 +25,7 @@ include ../../../EpoxyDuino/EpoxyDuino.mk
 
 #.PHONY: $(GENERATED)
 
-# Define the scope of the test data.
+# Configuration parameters of the AceTime zonedb.
 SCOPE := basic
 TZ_VERSION := 2022f
 ACE_TIME_EPOCH_YEAR := 2050
@@ -84,7 +84,6 @@ $(DB_NAMESPACE)/zone_infos.h:
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
-		--generate_int16_year \
 		--start_year $(DB_START_YEAR) \
 		--until_year $(DB_UNTIL_YEAR)
 

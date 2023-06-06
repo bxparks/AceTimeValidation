@@ -25,24 +25,14 @@ include ../../../EpoxyDuino/EpoxyDuino.mk
 
 #.PHONY: $(GENERATED)
 
-# Define the scope of the test data.
-#
-# dateutil works until 2037, then fails the DST offsets in 2037 for the
-# following zones:
-#	Australia_Adelaide failed.
-#	Australia_Broken_Hill failed.
-#	Australia_Currie failed.
-#	Australia_Hobart failed.
-#	Australia_Melbourne failed.
-#	Australia_Sydney failed.
-#	Europe_Dublin failed.
-#	Pacific_Auckland failed.
+# Configuration parameters of the AceTime zonedb.
 SCOPE := basic
 TZ_VERSION := 2022f
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 10000
 VAL_START_YEAR := 2000
+# dateutil works until 2037 because it uses 32-bit offset from Unix epoch 1970.
 VAL_UNTIL_YEAR := 2037
 
 # Location of TZDB and various tools.
@@ -95,7 +85,6 @@ $(DB_NAMESPACE)/zone_infos.h:
 		--language arduino,zonelist \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
-		--generate_int16_year \
 		--start_year $(DB_START_YEAR) \
 		--until_year $(DB_UNTIL_YEAR)
 

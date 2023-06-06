@@ -31,13 +31,22 @@ SHELL=bash
 #
 # $ make alltests-serial
 
-# Build the deterministic validation tests. These can be trusted to pass no
-# matter which OS version is running in the docker image on GitHub. Validation
-# only ExtendedZoneProcessor of AceTime, to reduce the time taken by this
-# validation test.
-tests:
+# Build the deterministic validation tests which can be trusted to always pass
+# regardless of the OS version of the docker image on GitHub. Validate only
+# ExtendedZoneProcessor of AceTime, to reduce the run time. Use something like
+# 'make -j2' to run in parallel.
+tests: \
+HinnantExtendedTest/all \
+AcetzExtendedTest/all \
+AcetimecExtendedTest/all
+
+HinnantExtendedTest/all:
 	$(MAKE) -C HinnantExtendedTest
+
+AcetzExtendedTest/all:
 	$(MAKE) -C AcetzExtendedTest
+
+AcetimecExtendedTest/all:
 	$(MAKE) -C AcetimecExtendedTest
 
 # Run the deterministic validation tests. These are used in the GitHub CI
@@ -47,20 +56,7 @@ runtests:
 	$(MAKE) -C AcetzExtendedTest run
 	$(MAKE) -C AcetimecExtendedTest run
 
-# Build *all* validation tests in parallel for reduced waiting time. Sometimes,
-# this fails for some race condition which I have not spent time figuring out.
-# When that happens, use the 'alltests-serial' instead.
-alltests:
-	(set -e; \
-	trap 'kill 0' SIGHUP SIGINT SIGQUIT SIGKILL SIGTERM; \
-	for i in */Makefile; do \
-		echo '==== Making:' $$(dirname $$i); \
-		$(MAKE) -C $$(dirname $$i) & \
-	done; \
-	wait)
-
-# Same as 'make alltests' but in series not in parallel. Useful when
-# 'alltests` fails due to some sporadic race condition.
+# Build all validation tests.
 alltests-serial:
 	set -e; \
 	for i in */Makefile; do \
@@ -68,7 +64,7 @@ alltests-serial:
 		$(MAKE) -C $$(dirname $$i); \
 	done
 
-# Run *all* validation tests.
+# Run all validation tests.
 runalltests:
 	set -e; \
 	for i in */Makefile; do \
