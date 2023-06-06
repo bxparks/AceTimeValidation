@@ -80,7 +80,7 @@ jobs:
 
     - name: Build Tests
       run: |
-        make -C -j2 tests tests # use 2 threads
+        make -j2 -C tests tests # use 2 threads
 
     # Run the 'tests' target which will always succeed when the TZDB version is
     # updated. We don't run the others because when a new TZDB version comes
