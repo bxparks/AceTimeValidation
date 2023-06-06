@@ -36,9 +36,21 @@ SHELL=bash
 # ExtendedZoneProcessor of AceTime, to reduce the run time. Use something like
 # 'make -j2' to run in parallel.
 tests: \
+HinnantBasicTest/all \
+AcetzBasicTest/all \
+AcetimecBasicTest/all \
 HinnantExtendedTest/all \
 AcetzExtendedTest/all \
 AcetimecExtendedTest/all
+
+HinnantBasicTest/all:
+	$(MAKE) -C HinnantBasicTest
+
+AcetzBasicTest/all:
+	$(MAKE) -C AcetzBasicTest
+
+AcetimecBasicTest/all:
+	$(MAKE) -C AcetimecBasicTest
 
 HinnantExtendedTest/all:
 	$(MAKE) -C HinnantExtendedTest
@@ -52,6 +64,9 @@ AcetimecExtendedTest/all:
 # Run the deterministic validation tests. These are used in the GitHub CI
 # workflow.
 runtests:
+	$(MAKE) -C HinnantBasicTest run
+	$(MAKE) -C AcetzBasicTest run
+	$(MAKE) -C AcetimecBasicTest run
 	$(MAKE) -C HinnantExtendedTest run
 	$(MAKE) -C AcetzExtendedTest run
 	$(MAKE) -C AcetimecExtendedTest run
