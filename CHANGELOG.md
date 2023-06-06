@@ -1,6 +1,18 @@
 # Changelog
 
 * Unreleased
+    * tools
+        * Add `compare_acetimego`.
+    * validation:
+        * Support `--scope complete` and the `zonedbc` database for AceTime.
+        * Add validation tests for the full year range of TZDB `[1844,2180)` or
+          so.
+            * `diff_acetz_complete`
+            * `diff_acetimego_complete`
+            * `diff_acetime_complete`
+            * `diff_hinnant_complete`
+        * Add separate `diff_acetime_basic` and `diff_acetime_extended` to test
+          the `zonedb` and `zonedbx` databases.
 * 1.6.0 (2023-05-30, TZDB 2023c)
     * Split the `test_data` component of `validation_data.json` into 2 lists:
         * `transitions` containing DST transitions of the timezone, and
