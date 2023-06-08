@@ -17,7 +17,7 @@ import argparse
 import sys
 import json
 
-from acetimetools.data_types.validation_types import (
+from acetimetools.datatypes.valtyping import (
     TestItem,
     # TestEntry,
     ValidationData

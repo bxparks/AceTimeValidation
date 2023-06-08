@@ -20,7 +20,7 @@ from acetime.timezone import acetz
 from acetime.common import to_unix_seconds
 from acetime.typing import ZoneInfoMap
 from acetime.zonedb.zone_registry import ZONE_AND_LINK_REGISTRY
-from acetimetools.data_types.validation_types import (
+from acetimetools.datatypes.valtyping import (
     TestItem, TestData, ValidationData
 )
 

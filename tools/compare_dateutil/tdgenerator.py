@@ -17,7 +17,7 @@ import dateutil
 from dateutil.tz import gettz, resolve_imaginary, UTC
 from typing import Any, Tuple, List
 
-from acetimetools.data_types.validation_types import (
+from acetimetools.datatypes.valtyping import (
     TestItem, TestData, ValidationData
 )
 

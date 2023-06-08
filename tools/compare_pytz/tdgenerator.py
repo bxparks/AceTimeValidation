@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 import pytz
 from typing import Any, Tuple, List
 
-from acetimetools.data_types.validation_types import (
+from acetimetools.datatypes.valtyping import (
     TestItem, TestData, ValidationData
 )
 

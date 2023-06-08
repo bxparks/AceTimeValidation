@@ -5,7 +5,7 @@
         * Add `compare_acetimego`.
     * validation:
         * Support `--scope complete` and the `zonedbc` database for AceTime.
-        * Add validation tests for the full year range of TZDB `[1844,2180)` or
+        * Add validation tests for the full year range of TZDB `[1844,2080)` or
           so.
             * `diff_acetz_complete`
             * `diff_acetimego_complete`

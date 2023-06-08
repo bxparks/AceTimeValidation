@@ -23,7 +23,7 @@ if sys.version_info >= (3, 9):
 else:
     from backports import zoneinfo
 
-from acetimetools.data_types.validation_types import (
+from acetimetools.datatypes.valtyping import (
     TestItem, TestData, ValidationData
 )
 
