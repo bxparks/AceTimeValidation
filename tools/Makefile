@@ -24,7 +24,7 @@ python: mypy flake8 tests
 # I am not convinced that mypy actually does anything with that flag. Python
 # packaging is so confusing, it's impossible to figure out how to do anything.
 mypy:
-	mypy --strict \
+	python3 -m mypy --strict \
 		-m compare_acetz \
 		-m compare_pytz \
 		-m compare_dateutil \
@@ -41,7 +41,7 @@ tests:
 # E501 uses 79 columns by default, but 80 is the default line wrap in
 # vim, so change the line-length.
 flake8:
-	flake8 . \
+	python3 -m flake8 . \
 		--count \
 		--ignore W503 \
 		--show-source \
