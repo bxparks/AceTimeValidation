@@ -23,14 +23,12 @@ ARDUINO_LIBS := AUnit AceCommon AceTime AceSorting
 MORE_CLEAN := more_clean
 include ../../../EpoxyDuino/EpoxyDuino.mk
 
-#.PHONY: $(GENERATED)
-
 # Configuration parameters of the AceTime zonedb.
 SCOPE := extended
 TZ_VERSION := 2022f
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
-DB_UNTIL_YEAR := 10000
+DB_UNTIL_YEAR := 2200
 VAL_START_YEAR := 2000
 VAL_UNTIL_YEAR := 2100
 
