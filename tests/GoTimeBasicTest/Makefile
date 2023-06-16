@@ -83,7 +83,8 @@ $(DB_NAMESPACE)/zone_infos.h:
 	$(ACE_TIME_TOOLS)/tzcompiler.sh \
 		--tzrepo $(TZ_REPO) \
 		--tag $(TZ_VERSION) \
-		--language arduino,zonelist \
+		--actions zonedb,zonelist \
+		--languages arduino \
 		--scope $(SCOPE) \
 		--db_namespace $(DB_NAMESPACE) \
 		--start_year $(DB_START_YEAR) \
