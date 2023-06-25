@@ -4,11 +4,12 @@ ACETIME_TOOLS := ../../AceTimeTools
 VALIDATION_TOOLS := $(abspath ../tools)
 
 EPOCH_YEAR := 1970
-VAL_START_YEAR := 2000
-VAL_UNTIL_YEAR := 2100
+BASIC_START_YEAR := 2000
+BASIC_UNTIL_YEAR := 2100
+EXTENDED_START_YEAR := 2000
+EXTENDED_UNTIL_YEAR := 2200
 COMPLETE_START_YEAR := 1800
-COMPLETE_UNTIL_YEAR := 2100
-
+COMPLETE_UNTIL_YEAR := 2200
 
 #------------------------------------------------------------------------------
 
@@ -31,18 +32,18 @@ validation: \
 diff_acetime_basic \
 diff_acetime_extended \
 diff_acetime_complete \
-diff_acetz \
-diff_hinnant_complete
-# diff_acetimec # No need to diff with itself
-# diff_acetimego_complete
-# diff_acetimego
+diff_acetimec
+#diff_acetz \
+#diff_hinnant \
+#diff_libc
+#diff_acetimego
 
 #------------------------------------------------------------------------------
 
 observed.json: zone.txt Makefile
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		--use_internal_transition \
 		< zone.txt \
@@ -54,8 +55,8 @@ observed.txt: observed.json
 
 expected.json: zone.txt Makefile
 	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zone.txt \
 		> $@
@@ -70,37 +71,14 @@ diff: expected.txt observed.txt
 		--expected expected.json
 
 #------------------------------------------------------------------------------
-# Baseline (acetimec)
+# Baseline (acetime_complete)
 #------------------------------------------------------------------------------
 
-# Use acetimec as the baseline. Previously used Hinnant date library but it is
-# too slow. The acetimec library produces identical results as Hinnant date.
-baseline.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(EPOCH_YEAR) \
-		--zonedb zonedball\
-		< zones.txt \
-		> $@
+baseline.json: acetime_complete.json
+	cp $< $@
 
-baseline.txt: baseline.json
-	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
-		< $< > $@
-
-# Generate validation for the entire TZDB from year [1800,2100).
-baseline_complete.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
-		--start_year $(COMPLETE_START_YEAR) \
-		--until_year $(COMPLETE_UNTIL_YEAR) \
-		--epoch_year $(EPOCH_YEAR) \
-		--zonedb zonedball\
-		< zones.txt \
-		> $@
-
-baseline_complete.txt: baseline_complete.json
-	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
-		< $< > $@
+baseline.txt: acetime_complete.txt
+	cp $< $@
 
 #------------------------------------------------------------------------------
 # AceTime library
@@ -109,8 +87,8 @@ baseline_complete.txt: baseline_complete.json
 # Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
 acetime_basic.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		--scope basic \
 		< zones.txt \
@@ -123,8 +101,8 @@ acetime_basic.txt: acetime_basic.json
 # Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
 acetime_extended.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		--scope extended \
 		< zones.txt \
@@ -159,10 +137,10 @@ diff_acetime_extended: acetime_extended.txt baseline.txt
 		--observed acetime_extended.json \
 		--expected baseline.json
 
-diff_acetime_complete: acetime_complete.txt baseline_complete.txt
+diff_acetime_complete: acetime_complete.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed acetime_complete.json \
-		--expected baseline_complete.json
+		--expected baseline.json
 
 #------------------------------------------------------------------------------
 # acetimec library
@@ -171,8 +149,8 @@ diff_acetime_complete: acetime_complete.txt baseline_complete.txt
 # Takes about 9 secs to process 350 zones on a dual-core i5-6300U computer.
 acetimec.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		--zonedb zonedball \
 		< zones.txt \
@@ -191,13 +169,11 @@ diff_acetimec: acetimec.txt baseline.txt
 # acetimego library
 #------------------------------------------------------------------------------
 
-# Takes about 6.4 secs to process 350 zones on a dual-core i5-6300U computer.
-# (This is faster than the 8.1 seconds if ZonedExtra is included inside
-# ZonedDateTime.)
+# Takes about 22 secs to process 350 zones on a dual-core i5-6300U computer.
 acetimego.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetimego/compare_acetimego.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -206,30 +182,10 @@ acetimego.txt: acetimego.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
-# Takes about 22 secs to process 350 zones on a dual-core i5-6300U computer.
-# (This is faster than the 8.1 seconds if ZonedExtra is included inside
-# ZonedDateTime.)
-acetimego_complete.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_acetimego/compare_acetimego.out \
-		--start_year $(COMPLETE_START_YEAR) \
-		--until_year $(COMPLETE_UNTIL_YEAR) \
-		--epoch_year $(EPOCH_YEAR) \
-		< zones.txt \
-		> $@
-
-acetimego_complete.txt: acetimego_complete.json
-	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
-		< $< > $@
-
-diff_acetimego: acetimego.txt baseline.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetimego.json \
-		--expected baseline.json
-
-diff_acetimego_complete: acetimego_complete.txt baseline_complete.txt
+diff_acetimego: acetimego_complete.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed acetimego_complete.json \
-		--expected baseline_complete.json
+		--expected baseline.json
 
 #------------------------------------------------------------------------------
 # acetimepy library
@@ -239,28 +195,14 @@ diff_acetimego_complete: acetimego_complete.txt baseline_complete.txt
 # The result must be identical to acetzb.json.
 acetz.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		--use_internal_transition \
 		< zones.txt \
 		> $@
 
 acetz.txt: acetz.json
-	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
-		< $< > $@
-
-# Same as acetz.json, but use binary search to find transtions, which takes
-# about 7 minutes on a dual-core i5-6300U processor.
-acetzb.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
-		--epoch_year $(EPOCH_YEAR) \
-		< zones.txt \
-		> $@
-
-acetzb.txt: acetzb.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
@@ -276,8 +218,8 @@ diff_acetz: acetz.txt baseline.txt
 # Takes about 7 mins to process 350 zones on a dual-core i5-6300U computer.
 dateutil.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_dateutil/compare_dateutil.py \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -298,8 +240,8 @@ diff_dateutil: dateutil.txt baseline.txt
 # Takes about 8 secs to process 350 zones.
 gotime.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -320,8 +262,8 @@ diff_gotime: gotime.txt baseline.txt
 # Takes about 70 secs to processor 350 zones on a dual-core i5-6300U computer.
 hinnant.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_hinnant/compare_hinnant.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -330,28 +272,10 @@ hinnant.txt: hinnant.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
-# Takes about 90 secs to processor 350 zones on a dual-core i5-6300U computer.
-hinnant_complete.json: zones.txt
-	$(VALIDATION_TOOLS)/compare_hinnant/compare_hinnant.out \
-		--start_year $(COMPLETE_START_YEAR) \
-		--until_year $(COMPLETE_UNTIL_YEAR) \
-		--epoch_year $(EPOCH_YEAR) \
-		< zones.txt \
-		> $@
-
-hinnant_complete.txt: hinnant_complete.json
-	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
-		< $< > $@
-
 diff_hinnant: hinnant.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed hinnant.json \
 		--expected baseline.json
-
-diff_hinnant_complete: hinnant_complete.txt baseline_complete.txt
-	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed hinnant_complete.json \
-		--expected baseline_complete.json
 
 #------------------------------------------------------------------------------
 # Java time library
@@ -360,8 +284,8 @@ diff_hinnant_complete: hinnant_complete.txt baseline_complete.txt
 # Takes about 10 secs to processor 350 zones on a dual-core i5-6300U computer.
 java.json: zones.txt
 	java -cp $(VALIDATION_TOOLS)/compare_java CompareJava \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -382,8 +306,8 @@ diff_java: java.txt baseline.txt
 # Takes about 13 secs to process 350 zones on a dual-core i5-6300U computer.
 libc.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_libc/compare_libc.out \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -418,8 +342,8 @@ tzdata$(TZ_VERSION).nzd
 		--framework net6.0 \
 		--project $(VALIDATION_TOOLS)/compare_noda/compare_noda.csproj \
 		-- \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		--nzd_file tzdata$(TZ_VERSION).nzd \
 		< zones.txt \
@@ -455,8 +379,8 @@ diff_noda: noda.txt baseline.txt
 # Takes about 40 secs to process 350 zones on a dual-core i5-6300U computer.
 zoneinfo.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_zoneinfo/compare_zoneinfo.py \
-		--start_year $(VAL_START_YEAR) \
-		--until_year $(VAL_UNTIL_YEAR) \
+		--start_year $(BASIC_START_YEAR) \
+		--until_year $(BASIC_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -474,4 +398,4 @@ diff_zoneinfo: zoneinfo.txt baseline.txt
 
 clean:
 	rm -rf tzdb
-	rm -f tz*.nzd *.json
+	rm -f tz*.nzd *.json *.txt
