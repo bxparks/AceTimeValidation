@@ -203,13 +203,16 @@ class Differ:
             # as the 'A' and 'B' (normal) transitions.
             #
             # if obs['type'] != exp['type']:
-            #     self.fail(f"ERROR {zone} {label} type: obs[{io}] != exp[{ie}]")
+            #     self.fail(
+            #         f"ERROR {zone} {label} type: obs[{io}] != exp[{ie}]")
 
             if obs['epoch'] != exp['epoch']:
-                self.fail(f"ERROR {zone} {label} 'epoch': obs[{io}] != exp[{ie}]")
+                self.fail(
+                    f"ERROR {zone} {label} 'epoch': obs[{io}] != exp[{ie}]")
 
             if obs['total_offset'] != exp['total_offset']:
-                self.fail(f"ERROR {zone} {label} 'total': obs[{io}] != exp[{ie}]")
+                self.fail(
+                    f"ERROR {zone} {label} 'total': obs[{io}] != exp[{ie}]")
 
             if self.check_dst and obs['dst_offset'] != exp['dst_offset']:
                 self.fail(f"ERROR {zone} {label} 'dst': obs[{io}] != exp[{ie}]")
@@ -233,7 +236,8 @@ class Differ:
                 self.fail(f"ERROR {zone} {label} 's': obs[{io}] != exp[{ie}]")
 
             if self.check_abbrev and obs['abbrev'] != exp['abbrev']:
-                self.fail(f"ERROR {zone} {label} 'abbrev': obs[{io}] != exp[{ie}]")
+                self.fail(
+                    f"ERROR {zone} {label} 'abbrev': obs[{io}] != exp[{ie}]")
 
             io += 1
             ie += 1
@@ -242,7 +246,8 @@ class Differ:
         # expected.
         if not self.is_subset:
             if ie < len(expected):
-                self.fail(f"ERROR {zone} {label} unmatched trailing in expected")
+                self.fail(
+                    f"ERROR {zone} {label} unmatched trailing in expected")
 
         # Verify number of test items ignoring silent transitions of type 'a'
         # and 'b'.
