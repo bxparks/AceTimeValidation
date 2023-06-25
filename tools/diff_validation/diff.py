@@ -24,6 +24,10 @@ from acetimetools.datatypes.valtyping import (
 )
 
 
+class DiffFailed(Exception):
+    pass
+
+
 def main() -> None:
     # Configure command line flags.
     parser = argparse.ArgumentParser(
@@ -48,6 +52,7 @@ def main() -> None:
     print(f'Reading {args.observed}')
     with open(args.observed) as f:
         observed = json.load(f)
+
     print(f'Reading {args.expected}')
     with open(args.expected) as f:
         expected = json.load(f)
@@ -65,6 +70,13 @@ class Differ:
         self.observed = observed
         self.expected = expected
 
+        if self.expected['scope'] != 'complete':
+            self.fail("expected['scope'] must be 'complete'")
+
+        self.is_subset = (self.observed['scope'] != 'complete')
+        if self.is_subset:
+            print('Observed is a subset of Expected')
+
         self.check_abbrev = observed['has_valid_abbrev'] and \
             expected['has_valid_abbrev']
         if not self.check_abbrev:
@@ -74,35 +86,48 @@ class Differ:
         if not self.check_dst:
             print('Disabling validation for DST offset')
 
+    def fail(self, s: str) -> None:
+        self.valid = False
+        print(s)
+        raise DiffFailed()
+
     def diff(self):
-        self.diff_header()
-        self.diff_zone_names()
-        self.diff_test_data()
+        try:
+            self.diff_header()
+            self.diff_zone_names()
+            self.diff_test_data()
+        except DiffFailed:
+            pass
 
     def diff_header(self):
         print('Diff header')
-        if self.observed['start_year'] != self.expected['start_year']:
-            print('start_year different')
-            self.valid = False
-        if self.observed['until_year'] != self.expected['until_year']:
-            print('until_year different')
-            self.valid = False
+
+        if self.is_subset:
+            if self.observed['start_year'] < self.expected['start_year']:
+                self.fail("observed[start_year] < expected[start_year]")
+            if self.observed['until_year'] > self.expected['until_year']:
+                self.fail("observed[until_year] > expected[until_year]")
+        else:
+            if self.observed['start_year'] != self.expected['start_year']:
+                self.fail("start_year different")
+            if self.observed['until_year'] != self.expected['until_year']:
+                self.fail('until_year different')
         if self.observed['epoch_year'] != self.expected['epoch_year']:
-            print('epoch_year different')
-            self.valid = False
+            self.fail('epoch_year different')
 
     def diff_zone_names(self):
         print('Diff zone_names')
         observed = set(self.observed['test_data'].keys())
         expected = set(self.expected['test_data'].keys())
-        if observed != expected:
-            self.valid = False
+
+        if not self.is_subset:
             missing = expected - observed
             if missing:
-                print(f'Missing zones compared to expected: {missing}')
-            extra = observed - expected
-            if extra:
-                print(f'Extra zones compared to expected: {extra}')
+                self.fail(f'Missing zones compared to expected: {missing}')
+
+        extra = observed - expected
+        if extra:
+            self.fail(f'Extra zones compared to expected: {extra}')
 
     def diff_test_data(self):
         print('Diff test_data')
@@ -110,13 +135,13 @@ class Differ:
         exp_test_data = self.expected['test_data']
 
         skipped: List[str] = []
-        # Loop over observed, and validated against expected.
+        # Loop over observed zones, and validate against the expected zones.
         for zone, obs_entry in obs_test_data.items():
             exp_entry = exp_test_data[zone]
 
-            # If both transitions and samples are empty from observed, this
-            # indicates that the zone is not supported by the observed. Note
-            # this, but don't terminate.
+            # If transitions and samples are empty in observed, this indicates
+            # that the zone is not supported by the observed. Note this, but
+            # don't terminate.
             obs_transitions = obs_entry['transitions']
             obs_samples = obs_entry['samples']
             if len(obs_transitions) == 0 and len(obs_samples) == 0:
@@ -126,8 +151,7 @@ class Differ:
             # transitions
             exp_transitions = exp_entry['transitions']
             # if len(obs_transitions) != len(exp_transitions):
-            #     print(f'ERROR {zone}: num transitions not equal')
-            #     self.valid = False
+            #     self.fail(f'ERROR {zone}: num transitions not equal')
             #     continue
             self.diff_test_items(
                 zone, "transitions", obs_transitions, exp_transitions)
@@ -135,8 +159,7 @@ class Differ:
             # samples
             exp_samples = exp_entry['samples']
             # if len(obs_samples) != len(exp_samples):
-            #     print(f'ERROR {zone}: num samples not equal')
-            #     self.valid = False
+            #     self.fail(f'ERROR {zone}: num samples not equal')
             #     continue
             self.diff_test_items(
                 zone, "samples", obs_samples, exp_samples)
@@ -154,6 +177,18 @@ class Differ:
         # 2 pointers to traverse the observed and expected lists of TestItem
         io = 0
         ie = 0
+
+        # Synchronize the year if observed is a subset of expected
+        if self.is_subset and len(observed) != 0:
+            obs = observed[io]
+            year = obs['y']
+            while ie < len(expected):
+                exp = expected[ie]
+                if exp['y'] >= year:
+                    break
+                ie += 1
+
+        # Validate each observed TestItem against the expected TestItem.
         while io < len(observed) and ie < len(expected):
             obs = observed[io]
             exp = expected[ie]
@@ -168,51 +203,46 @@ class Differ:
             # as the 'A' and 'B' (normal) transitions.
             #
             # if obs['type'] != exp['type']:
-            #     self.valid = False
-            #     print(f"ERROR {zone} {label} type: obs[{io}] != exp[{ie}]")
+            #     self.fail(f"ERROR {zone} {label} type: obs[{io}] != exp[{ie}]")
 
             if obs['epoch'] != exp['epoch']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'epoch': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'epoch': obs[{io}] != exp[{ie}]")
 
             if obs['total_offset'] != exp['total_offset']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'total': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'total': obs[{io}] != exp[{ie}]")
 
             if self.check_dst and obs['dst_offset'] != exp['dst_offset']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'dst': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'dst': obs[{io}] != exp[{ie}]")
 
             if obs['y'] != exp['y']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'y': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'y': obs[{io}] != exp[{ie}]")
 
             if obs['M'] != exp['M']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'M': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'M': obs[{io}] != exp[{ie}]")
 
             if obs['d'] != exp['d']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'd': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'd': obs[{io}] != exp[{ie}]")
 
             if obs['h'] != exp['h']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'h': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'h': obs[{io}] != exp[{ie}]")
 
             if obs['m'] != exp['m']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'm': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'm': obs[{io}] != exp[{ie}]")
 
             if obs['s'] != exp['s']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 's': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 's': obs[{io}] != exp[{ie}]")
 
             if self.check_abbrev and obs['abbrev'] != exp['abbrev']:
-                self.valid = False
-                print(f"ERROR {zone} {label} 'abbrev': obs[{io}] != exp[{ie}]")
+                self.fail(f"ERROR {zone} {label} 'abbrev': obs[{io}] != exp[{ie}]")
 
             io += 1
             ie += 1
+
+        # Verify any trailing expected TestItems, unless observed is a subset of
+        # expected.
+        if not self.is_subset:
+            if ie < len(expected):
+                self.fail(f"ERROR {zone} {label} unmatched trailing in expected")
 
         # Verify number of test items ignoring silent transitions of type 'a'
         # and 'b'.
@@ -226,11 +256,16 @@ class Differ:
             for item in expected
             if item['type'] in ['A', 'B', 'S', 'T']
         ])
-        if len_observed != len_expected:
-            self.valid = False
-            print(
-                f"ERROR {zone} {label}: len(observed) ({len_observed}) != "
-                f"len(expected) ({len_expected})")
+        if self.is_subset:
+            if len_observed > len_expected:
+                self.fail(
+                    f"ERROR {zone} {label}: len(observed) ({len_observed}) > "
+                    f"len(expected) ({len_expected})")
+        else:
+            if len_observed != len_expected:
+                self.fail(
+                    f"ERROR {zone} {label}: len(observed) ({len_observed}) != "
+                    f"len(expected) ({len_expected})")
 
 
 if __name__ == '__main__':
