@@ -104,6 +104,7 @@ class Flattener:
         print('start_year', validation_data['start_year'])
         print('until_year', validation_data['until_year'])
         print('epoch_year', validation_data['epoch_year'])
+        print('scope', validation_data['scope'])
         print('has_valid_abbrev', validation_data['has_valid_abbrev'])
         print('has_valid_dst', validation_data['has_valid_dst'])
         print()
