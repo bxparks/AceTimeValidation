@@ -77,8 +77,10 @@ diff: expected.txt observed.txt
 baseline.json: acetime_complete.json
 	cp $< $@
 
-baseline.txt: acetime_complete.txt
-	cp $< $@
+# The extra dependency to 'baseline.json' is needed to guarantee that
+# baseline.json to exist if baseline.txt exists.
+baseline.txt: acetime_complete.txt baseline.json
+	cp acetime_complete.txt $@
 
 #------------------------------------------------------------------------------
 # AceTime library
