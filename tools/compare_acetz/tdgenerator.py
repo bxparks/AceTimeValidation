@@ -19,7 +19,8 @@ from acetime.timezone import ZoneManager
 from acetime.timezone import acetz
 from acetime.common import to_unix_seconds
 from acetime.typing import ZoneInfoMap
-from acetime.zonedb.zone_registry import ZONE_AND_LINK_REGISTRY
+from acetime.zonedball.zone_registry import ZONE_AND_LINK_REGISTRY
+from acetime.zonedball.zone_infos import TZDB_VERSION
 from acetimetools.datatypes.valtyping import (
     TestItem, TestData, ValidationData
 )
@@ -64,8 +65,9 @@ class TestDataGenerator:
             'until_year': self.until_year,
             'epoch_year': self.epoch_year,
             'source': 'acetimepy',
+            'scope': 'complete',
             'version': str(acetime.version.__version__),
-            'tz_version': 'unknown',
+            'tz_version': TZDB_VERSION,
             'has_valid_abbrev': True,
             'has_valid_dst': True,
             'test_data': test_data,

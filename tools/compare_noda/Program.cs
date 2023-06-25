@@ -318,6 +318,7 @@ namespace compare_noda
             Console.WriteLine($"{indent0}\"start_year\": {startYear},");
             Console.WriteLine($"{indent0}\"until_year\": {untilYear},");
             Console.WriteLine($"{indent0}\"epoch_year\": {epochYear},");
+            Console.WriteLine($"{indent0}\"scope\": \"complete\",");
             Console.WriteLine($"{indent0}\"source\": \"NodaTime\",");
             Console.WriteLine($"{indent0}\"version\": \"3.1\",");
             Console.WriteLine($"{indent0}\"tz_version\": \"{tzVersion}\",");

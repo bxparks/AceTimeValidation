@@ -62,6 +62,7 @@ class TestDataGenerator():
             'start_year': self.start_year,
             'until_year': self.until_year,
             'epoch_year': self.epoch_year,
+            'scope': 'complete',
             'source': 'zoneinfo',
             'version': '3.9',  # type: ignore
             'tz_version': 'unknown',

@@ -61,6 +61,7 @@ class TestDataGenerator():
             'start_year': self.start_year,
             'until_year': self.until_year,
             'epoch_year': self.epoch_year,
+            'scope': 'complete',
             'source': 'pytz',
             'version': str(pytz.__version__),  # type: ignore
             'tz_version': 'unknown',
@@ -74,7 +75,9 @@ class TestDataGenerator():
         For [2000, 2038], this generates about 100,000 data points.
         """
         test_data: TestData = {}
+        i = 0
         for zone_name in zones:
+            logging.info(f"[{i}] {zone_name}")
             try:
                 tz = pytz.timezone(zone_name)
             except pytz.UnknownTimeZoneError:
@@ -88,6 +91,8 @@ class TestDataGenerator():
                     "transitions": transitions,
                     "samples": samples,
                 }
+            i += 1
+
         return test_data
 
     def _create_samples_for_zone(self, tz: Any) -> List[TestItem]:

@@ -146,6 +146,7 @@ type ValidationData struct {
 	StartYear      int      `json:"start_year"`
 	UntilYear      int      `json:"until_year"`
 	EpochYear      int      `json:"epoch_year"`
+	Scope          string   `json:"scope"`
 	Source         string   `json:"source"`
 	Version        string   `json:"version"`
 	TzVersion      string   `json:"tz_version"`
@@ -340,8 +341,9 @@ func createValidationData(testData TestData) ValidationData {
 		UntilYear:      untilYear,
 		EpochYear:      epochYear,
 		Source:         "go",
-		Version:        "",
-		TzVersion:      "",
+		Scope:          "complete",
+		Version:        "unknown",
+		TzVersion:      "unknown",
 		HasValidAbbrev: true,
 		HasValidDst:    false,
 		TData:          testData,

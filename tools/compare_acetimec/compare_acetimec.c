@@ -96,11 +96,21 @@ int8_t process_zones(AtcZoneProcessor *processor, TestData *test_data) {
       len--;
     }
 
-    // Skip over blank lines
+    // Remove comments
+    char* comment = strchr(line, '#');
+    if (comment != NULL) {
+      comment[0] = '\0';
+    }
+
+    // Skip over blank lines or comment lines
     if (line[0] == '\0') continue;
 
-    // Skip over comments
-    if (line[0] == '#') continue;
+    // Select the first word, stripped of preceding or trailing spaces.
+    char *str = line;
+    char *saveptr;
+    const char delim[] = " \t";
+    char* word = strtok_r(str, delim, &saveptr);
+    if (word == NULL) continue;
 
     int8_t err = process_zone(processor, test_data, i, line);
     if (err) {

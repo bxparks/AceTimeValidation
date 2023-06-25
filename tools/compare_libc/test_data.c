@@ -165,6 +165,7 @@ void print_json(
   printf("%s\"start_year\": %d,\n", indent0, start_year);
   printf("%s\"until_year\": %d,\n", indent0, until_year);
   printf("%s\"epoch_year\": %d,\n", indent0, epoch_year);
+  printf("%s\"scope\": \"complete\",\n", indent0);
   printf("%s\"source\": \"%s\",\n", indent0, source);
   printf("%s\"version\": \"%s\",\n", indent0, version);
   printf("%s\"tz_version\": \"%s\",\n", indent0, tz_version);

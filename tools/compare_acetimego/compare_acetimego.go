@@ -144,6 +144,7 @@ type ValidationData struct {
 	UntilYear      int      `json:"until_year"`
 	EpochYear      int      `json:"epoch_year"`
 	Source         string   `json:"source"`
+	Scope          string   `json:"scope"`
 	Version        string   `json:"version"`
 	TzVersion      string   `json:"tz_version"`
 	HasValidAbbrev bool     `json:"has_valid_abbrev"`
@@ -431,6 +432,7 @@ func createValidationData(testData TestData) ValidationData {
 		StartYear:      startYear,
 		UntilYear:      untilYear,
 		EpochYear:      epochYear,
+		Scope:          "complete",
 		Source:         "acetimego",
 		Version:        "",
 		TzVersion:      zonedball.TzDatabaseVersion,

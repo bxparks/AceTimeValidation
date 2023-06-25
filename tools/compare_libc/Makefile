@@ -1,5 +1,4 @@
-CFLAGS := -Wall -Wextra -Werror -std=c11 \
-	-D _GNU_SOURCE
+CFLAGS := -Wall -Wextra -Werror -std=gnu11
 
 compare_libc.out: compare_libc.o sampling.o test_data.o
 	$(CC) -o $@ $^

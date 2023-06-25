@@ -1,4 +1,4 @@
-CFLAGS := -Wall -Wextra -Werror -std=c11 \
+CFLAGS := -Wall -Wextra -Werror -std=gnu11 \
 	-I../../../acetimec/src
 
 compare_acetimec.out: \

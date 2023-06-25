@@ -361,6 +361,7 @@ public class CompareJava {
       writer.printf("%s\"start_year\": %s,\n", indent0, startYear);
       writer.printf("%s\"until_year\": %s,\n", indent0, untilYear);
       writer.printf("%s\"epoch_year\": %s,\n", indent0, epochYear);
+      writer.printf("%s\"scope\": \"complete\",\n", indent0);
       writer.printf("%s\"source\": \"Java11/java.time\",\n", indent0);
       writer.printf("%s\"version\": \"%s\",\n", indent0, version);
       writer.printf("%s\"tz_version\": \"%s\",\n", indent0, tzDbVersion);

@@ -356,6 +356,7 @@ void printJson(const TestData& testData) {
   printf("%s\"start_year\": %d,\n", indent0, startYear);
   printf("%s\"until_year\": %d,\n", indent0, untilYear);
   printf("%s\"epoch_year\": %d,\n", indent0, epochYear);
+  printf("%s\"scope\": \"complete\",\n", indent0);
   printf("%s\"source\": \"Hinnant Date\",\n", indent0);
   printf("%s\"version\": \"%s\",\n", indent0, version.c_str());
   printf("%s\"tz_version\": \"%s\",\n", indent0, tzVersion.c_str());
