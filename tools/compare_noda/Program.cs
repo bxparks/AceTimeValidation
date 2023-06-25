@@ -152,7 +152,7 @@ namespace compare_noda
     {
         // Number of seconds from Unix epoch (1970-01-01T00:00:00Z) to AceTime epoch (usually
         // 2050-01-01T00:00:00Z). Non-static, will be calculated in the constructor.
-        private static int secondsToAceTimeEpochFromUnixEpoch = 946684800;
+        private static long secondsToAceTimeEpochFromUnixEpoch = 946684800;
 
         private const string indent0 = "  ";
         private const string indent1 = "    ";
@@ -170,7 +170,7 @@ namespace compare_noda
 
             var epochInstant = new LocalDateTime(epochYear, 1, 1, 0, 0)
                 .InUtc().ToInstant();
-            secondsToAceTimeEpochFromUnixEpoch = (int) epochInstant.ToUnixTimeSeconds();
+            secondsToAceTimeEpochFromUnixEpoch = epochInstant.ToUnixTimeSeconds();
         }
 
         public IDictionary<string, TestEntry> CreateTestData(List<string> zones)
@@ -386,9 +386,9 @@ namespace compare_noda
             Console.WriteLine($"{indent}\"type\": \"{item.type}\"");
         }
 
-        private static int ToAceTimeEpochSeconds(long unixEpochSeconds)
+        private static long ToAceTimeEpochSeconds(long unixEpochSeconds)
         {
-            return (int) (unixEpochSeconds - secondsToAceTimeEpochFromUnixEpoch);
+            return unixEpochSeconds - secondsToAceTimeEpochFromUnixEpoch;
         }
 
         private readonly int startYear;
@@ -405,7 +405,7 @@ namespace compare_noda
 
     struct TestItem
     {
-        internal int epochSeconds; // seconds from AceTime epoch (2000-01-01T00:00:00Z)
+        internal long epochSeconds; // seconds from requested epoch_yaer
         internal int utcOffset; // total UTC offset in seconds
         internal int dstOffset; // DST shift from standard offset in seconds
         internal int year;
