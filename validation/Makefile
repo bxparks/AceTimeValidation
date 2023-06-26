@@ -32,11 +32,16 @@ validation: \
 diff_acetime_basic \
 diff_acetime_extended \
 diff_acetime_complete \
-diff_acetimec
-#diff_acetz \
-#diff_hinnant \
-#diff_libc
-#diff_acetimego
+diff_acetimec \
+diff_acetz \
+diff_hinnant
+
+# Additional targets which need to be recompiled, or need to wait for an OS
+# update before they become comformant with the latest TZDB_VERSION.
+allvalidation: \
+diff_libc \
+diff_noda \
+diff_acetimego
 
 #------------------------------------------------------------------------------
 
@@ -186,7 +191,7 @@ acetimego.txt: acetimego.json
 
 diff_acetimego: acetimego_complete.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetimego_complete.json \
+		--observed acetimego.json \
 		--expected baseline.json
 
 #------------------------------------------------------------------------------
@@ -242,8 +247,8 @@ diff_dateutil: dateutil.txt baseline.txt
 # Takes about 8 secs to process 350 zones.
 gotime.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out \
-		--start_year $(BASIC_START_YEAR) \
-		--until_year $(BASIC_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -335,11 +340,13 @@ diff_libc: libc.txt baseline.txt
 NODA_TIME_DIR := $(abspath ../../nodatime)
 NODA_COMPILER_DIR := $(NODA_TIME_DIR)/src/NodaTime.TzdbCompiler
 
-# Takes about ?? secs to process 350 zones on a dual-core i5-6300U computer.
+# Takes about ~120 (!) secs to process 350 zones on a dual-core i5-6300U
+# computer. The main bottleneck is the Console.WriteLine() function which seems
+# to be incredibly slow on Csharp.
 noda.json: \
 zones.txt \
 $(VALIDATION_TOOLS)/compare_noda/Program.cs \
-tzdata$(TZ_VERSION).nzd
+tzdata$(TZDB_VERSION).nzd
 	dotnet run \
 		--framework net6.0 \
 		--project $(VALIDATION_TOOLS)/compare_noda/compare_noda.csproj \
@@ -347,7 +354,7 @@ tzdata$(TZ_VERSION).nzd
 		--start_year $(COMPLETE_START_YEAR) \
 		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
-		--nzd_file tzdata$(TZ_VERSION).nzd \
+		--nzd_file tzdata$(TZDB_VERSION).nzd \
 		< zones.txt \
 		> $@
 
@@ -355,10 +362,10 @@ noda.txt: noda.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
-# Generate the custom tzdata{xxx}.nzd file, depending on TZ_VERSION.
-tzdata$(TZ_VERSION).nzd: $(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler
+# Generate the custom tzdata{xxx}.nzd file, depending on TZDB_VERSION.
+tzdata$(TZDB_VERSION).nzd: $(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler
 	$(NODA_COMPILER_DIR)/bin/Debug/net6.0/NodaTime.TzdbCompiler \
-		-s https://data.iana.org/time-zones/releases/tzdata$(TZ_VERSION).tar.gz \
+		-s https://data.iana.org/time-zones/releases/tzdata$(TZDB_VERSION).tar.gz \
 		-w $(NODA_TIME_DIR)/data/cldr/windowsZones-42.xml \
 		-o $@
 
