@@ -322,7 +322,7 @@ public class CompareJava {
     String abbrev = zoneId.getDisplayName(TextStyle.SHORT_STANDALONE, Locale.US);
 
     TestItem item = new TestItem();
-    item.epochSeconds = (int) (instant.getEpochSecond() - secondsToAceTimeEpochFromUnixEpoch);
+    item.epochSeconds = instant.getEpochSecond() - secondsToAceTimeEpochFromUnixEpoch;
     item.utcOffset = offset.getTotalSeconds();
     item.dstOffset = (int) dst.getSeconds();
     item.year = dateTime.getYear();
@@ -440,7 +440,7 @@ class TestEntry {
 }
 
 class TestItem {
-  int epochSeconds; // seconds from AceTime epoch (2000-01-01T00:00:00Z)
+  long epochSeconds; // seconds from specified epoch
   int utcOffset; // total UTC offset in seconds
   int dstOffset; // DST shift from standard offset in seconds
   int year;
