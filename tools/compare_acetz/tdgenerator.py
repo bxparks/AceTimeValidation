@@ -70,6 +70,7 @@ class TestDataGenerator:
             'tz_version': TZDB_VERSION,
             'has_valid_abbrev': True,
             'has_valid_dst': True,
+            'offset_granularity': 1,
             'test_data': test_data,
         }
 

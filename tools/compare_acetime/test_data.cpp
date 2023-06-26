@@ -149,6 +149,10 @@ void printJson(
   printf("%s\"tz_version\": \"%s\",\n", indent0, tzVersion);
   printf("%s\"has_valid_abbrev\": true,\n", indent0);
   printf("%s\"has_valid_dst\": true,\n", indent0);
+  // Set offset_granularity to 1 for all scopes (i.e. zonedb*), because the
+  // results are exact over the year intervals used by the corresponding zonedb*
+  // databases.
+  printf("%s\"offset_granularity\": 1,\n", indent0);
   printf("%s\"test_data\": {\n", indent0);
 
   // Print each zone

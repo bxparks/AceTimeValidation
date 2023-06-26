@@ -107,6 +107,7 @@ class Flattener:
         print('scope', validation_data['scope'])
         print('has_valid_abbrev', validation_data['has_valid_abbrev'])
         print('has_valid_dst', validation_data['has_valid_dst'])
+        print('offset_granularity', validation_data['offset_granularity'])
         print()
 
     def print_zone_data(self, zone: str, entry: TestEntry) -> None:

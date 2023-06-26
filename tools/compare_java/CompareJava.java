@@ -369,6 +369,7 @@ public class CompareJava {
       // than the ones provided by the TZ Database files.
       writer.printf("%s\"has_valid_abbrev\": false,\n", indent0);
       writer.printf("%s\"has_valid_dst\": true,\n", indent0);
+      writer.printf("%s\"offset_granularity\": 1,\n", indent0);
       writer.printf("%s\"test_data\": {\n", indent0);
 
       // Print each zone

@@ -324,6 +324,7 @@ namespace compare_noda
             Console.WriteLine($"{indent0}\"tz_version\": \"{tzVersion}\",");
             Console.WriteLine($"{indent0}\"has_valid_abbrev\": true,");
             Console.WriteLine($"{indent0}\"has_valid_dst\": true,");
+            Console.WriteLine($"{indent0}\"offset_granularity\": 1,");
             Console.WriteLine($"{indent0}\"test_data\": {{");
 
             int zoneCount = 1;

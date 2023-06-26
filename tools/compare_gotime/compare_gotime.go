@@ -143,16 +143,17 @@ func parseArgs() []string {
 
 // The collection of all zones and their test items.
 type ValidationData struct {
-	StartYear      int      `json:"start_year"`
-	UntilYear      int      `json:"until_year"`
-	EpochYear      int      `json:"epoch_year"`
-	Scope          string   `json:"scope"`
-	Source         string   `json:"source"`
-	Version        string   `json:"version"`
-	TzVersion      string   `json:"tz_version"`
-	HasValidAbbrev bool     `json:"has_valid_abbrev"`
-	HasValidDst    bool     `json:"has_valid_dst"`
-	TData          TestData `json:"test_data"`
+	StartYear         int      `json:"start_year"`
+	UntilYear         int      `json:"until_year"`
+	EpochYear         int      `json:"epoch_year"`
+	Scope             string   `json:"scope"`
+	Source            string   `json:"source"`
+	Version           string   `json:"version"`
+	TzVersion         string   `json:"tz_version"`
+	HasValidAbbrev    bool     `json:"has_valid_abbrev"`
+	HasValidDst       bool     `json:"has_valid_dst"`
+	OffsetGranularity int      `json:"offset_granularity"`
+	TData             TestData `json:"test_data"`
 }
 
 // A map of zoneName to an array of TestItems.
@@ -338,16 +339,17 @@ func abbreviation(t time.Time) string {
 
 func createValidationData(testData TestData) ValidationData {
 	return ValidationData{
-		StartYear:      startYear,
-		UntilYear:      untilYear,
-		EpochYear:      epochYear,
-		Source:         "go",
-		Scope:          "complete",
-		Version:        "unknown",
-		TzVersion:      "unknown",
-		HasValidAbbrev: true,
-		HasValidDst:    false,
-		TData:          testData,
+		StartYear:         startYear,
+		UntilYear:         untilYear,
+		EpochYear:         epochYear,
+		Source:            "go",
+		Scope:             "complete",
+		Version:           "unknown",
+		TzVersion:         "unknown",
+		HasValidAbbrev:    true,
+		HasValidDst:       false,
+		OffsetGranularity: 60,
+		TData:             testData,
 	}
 }
 
