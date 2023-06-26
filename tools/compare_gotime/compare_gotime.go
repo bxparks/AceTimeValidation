@@ -214,7 +214,8 @@ func readZones() []string {
 // ProcessZones() iterates over the list of zones and calls processZone().
 func processZones(zones []string) TestData {
 	testData := make(TestData)
-	for _, zoneName := range zones {
+	for i, zoneName := range zones {
+		fmt.Fprintf(os.Stderr, "[%d] Zone %s\n", i, zoneName)
 		testItems, err := processZone(zoneName)
 		if err != nil {
 			fmt.Printf("Unable to process zone '%s'\n", zoneName)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -88,23 +89,27 @@ func binarySearchTransition(
 // utcOffsetMinutes() returns the UTC offset of the given time as minutes.
 func utcOffsetMinutes(t time.Time) int {
 	utcOffsetString := t.Format("-07:00")
+	length := len(utcOffsetString)
+	if length != 6 {
+		panic(fmt.Sprintf("len(\"%v\")=%v; should be 6", utcOffsetString, length))
+	}
 	return convertOffsetStringToMinutes(utcOffsetString)
 }
 
 func convertOffsetStringToMinutes(offset string) int {
-	hourString := offset[0:3]
+	signString := offset[0:1]
+	var sign int
+	if signString == "-" {
+		sign = -1
+	} else {
+		sign = 1
+	}
+
+	hourString := offset[1:3]
 	minuteString := offset[4:6]
 	hour, _ := strconv.Atoi(hourString)
 	minute, _ := strconv.Atoi(minuteString)
-	return convertHourMinuteToMinutes(hour, minute)
-}
 
-func convertHourMinuteToMinutes(hour int, minute int) int {
-	sign := 1
-	if hour < 0 {
-		sign = -1
-		hour = -hour
-	}
-	minutes := hour*60 + minute
-	return sign * minutes
+	minutes := sign * (hour*60 + minute)
+	return minutes
 }
