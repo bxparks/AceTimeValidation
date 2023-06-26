@@ -255,9 +255,11 @@ class Differ:
         len_expected = len([
             item
             for item in expected
-            if item['type'] in ['A', 'B', 'S', 'T'] \
-                and item['y'] >= self.start_year \
+            if (
+                item['type'] in ['A', 'B', 'S', 'T']
+                and item['y'] >= self.start_year
                 and item['y'] < self.until_year
+            )
         ])
         if self.is_subset:
             if len_observed > len_expected:
