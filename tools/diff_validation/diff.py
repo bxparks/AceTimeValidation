@@ -86,6 +86,9 @@ class Differ:
         if not self.check_dst:
             print('Disabling validation for DST offset')
 
+        self.start_year = observed['start_year']
+        self.until_year = observed['until_year']
+
     def fail(self, s: str) -> None:
         self.valid = False
         print(s)
@@ -242,13 +245,6 @@ class Differ:
             io += 1
             ie += 1
 
-        # Verify any trailing expected TestItems, unless observed is a subset of
-        # expected.
-        if not self.is_subset:
-            if ie < len(expected):
-                self.fail(
-                    f"ERROR {zone} {label} unmatched trailing in expected")
-
         # Verify number of test items ignoring silent transitions of type 'a'
         # and 'b'.
         len_observed = len([
@@ -259,7 +255,9 @@ class Differ:
         len_expected = len([
             item
             for item in expected
-            if item['type'] in ['A', 'B', 'S', 'T']
+            if item['type'] in ['A', 'B', 'S', 'T'] \
+                and item['y'] >= self.start_year \
+                and item['y'] < self.until_year
         ])
         if self.is_subset:
             if len_observed > len_expected:
