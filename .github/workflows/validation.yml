@@ -34,7 +34,7 @@ jobs:
         git clone --depth 1 https://github.com/bxparks/AceTimeTools
         git clone --depth 1 https://github.com/bxparks/EpoxyDuino
         git clone --depth 1 https://github.com/bxparks/acetimec
-        # git clone --depth 1 https://github.com/bxparks/acetimego
+        git clone --depth 1 https://github.com/bxparks/acetimego
         git clone --depth 1 https://github.com/bxparks/acetimepy
         git clone https://github.com/eggert/tz
 
@@ -73,7 +73,7 @@ jobs:
         make -C ../acetimec/src
         make -C tools/compare_acetime
         make -C tools/compare_acetimec
-        # make -C tools/compare_acetimego
+        make -C tools/compare_acetimego
         make -C tools/compare_libc
         make -C tools/compare_gotime
         make -C tools/compare_hinnant

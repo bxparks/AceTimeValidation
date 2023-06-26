@@ -43,7 +43,8 @@ The timezone libraries supported by this project are:
     * [Java 11 Time](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/package-summary.html) for Java
     * [Noda Time](https://nodatime.org) for C#
     * [pytz](https://pypi.org/project/pytz/) for Python
-    * [zoneinfo](https://docs.python.org/3/library/zoneinfo.html) for Python
+    * [zoneinfo](https://docs.python.org/3/library/zoneinfo.html) standard
+      library for Python 3.9
 
 Each supported timezone library is represented by an associated `compare_xxx`
 tool under the [./tools/](tools) directory:
@@ -52,7 +53,7 @@ tool under the [./tools/](tools) directory:
     * `compare_acetime` - AceTime library
     * `compare_acetimec` - acetimec library
     * `compare_acetz` - acetimepy library
-    * `compare_acetimego` - acetimego library (TBD)
+    * `compare_acetimego` - acetimego library
 * Third party (libraries written by others)
     * `compare_libc` - C GNU libc library
     * `compare_dateutil` - Python `python-dateutil` library
