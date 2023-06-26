@@ -215,10 +215,14 @@ class Differ:
             obs = observed[io]
             exp = expected[ie]
 
-            # Skip silent transitions if not supported by observed algorithm.
-            if not self.check_dst and exp['type'] in ['a', 'b']:
-                ie += 1
-                continue
+            # Skip silent transitions if not supported by observed dataset.
+            if not self.check_dst:
+                if exp['type'] in ['a', 'b']:
+                    ie += 1
+                    continue
+                if obs['type'] in ['a', 'b']:
+                    io += 1
+                    continue
 
             # Ignore 'type' specifier until the compare_xxx binaries are all
             # upgraded to support the 'a' and 'b' (silent) transitions, as well
