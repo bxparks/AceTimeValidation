@@ -33,15 +33,31 @@ diff_acetime_basic \
 diff_acetime_extended \
 diff_acetime_complete \
 diff_acetimec \
-diff_acetz \
+diff_acetimego \
+diff_acetimepy \
 diff_hinnant
 
 # Additional targets which need to be recompiled, or need to wait for an OS
 # update before they become comformant with the latest TZDB_VERSION.
-allvalidation: \
-diff_libc \
-diff_noda \
-diff_acetimego
+
+# diff_libc
+# - conformant, ignoring DST offsets
+# - depends on OS version, so non-deterministic
+
+# diff_noda
+# - fully conformant
+# - not set up in GitHub Actions
+
+# diff_zoneinfo
+# - mismatched DST offset with 32 zones
+
+# diff_gotime
+# - mismatch 23 zones
+
+# diff_java
+# - 3 missing zones (EST, HST, MST)
+# - ~100 zones with mismatching DST offset
+# - 7 zones with mismatching epochSeconds, after ignoring DST offset
 
 #------------------------------------------------------------------------------
 
@@ -91,7 +107,7 @@ baseline.txt: acetime_complete.txt baseline.json
 # AceTime library
 #------------------------------------------------------------------------------
 
-# Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
+# Takes about 8 secs to process 350 zones on a dual-core i5-6300U computer.
 acetime_basic.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
 		--start_year $(BASIC_START_YEAR) \
@@ -105,7 +121,7 @@ acetime_basic.txt: acetime_basic.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
-# Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
+# Takes about 15 secs to process 350 zones on a dual-core i5-6300U computer.
 acetime_extended.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
 		--start_year $(BASIC_START_YEAR) \
@@ -119,7 +135,7 @@ acetime_extended.txt: acetime_extended.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
-# Takes about 15 secs to processor 350 zones on a dual-core i5-6300U computer.
+# Takes about 51 secs to process 350 zones on a dual-core i5-6300U computer.
 acetime_complete.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetime/compare_acetime.out \
 		--start_year $(COMPLETE_START_YEAR) \
@@ -153,7 +169,7 @@ diff_acetime_complete: acetime_complete.txt baseline.txt
 # acetimec library
 #------------------------------------------------------------------------------
 
-# Takes about 9 secs to process 350 zones on a dual-core i5-6300U computer.
+# Takes about 33 secs to process 350 zones on a dual-core i5-6300U computer.
 acetimec.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetimec/compare_acetimec.out \
 		--start_year $(COMPLETE_START_YEAR) \
@@ -176,7 +192,7 @@ diff_acetimec: acetimec.txt baseline.txt
 # acetimego library
 #------------------------------------------------------------------------------
 
-# Takes about 22 secs to process 350 zones on a dual-core i5-6300U computer.
+# Takes about 25 secs to process 350 zones on a dual-core i5-6300U computer.
 acetimego.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetimego/compare_acetimego.out \
 		--start_year $(COMPLETE_START_YEAR) \
@@ -189,7 +205,7 @@ acetimego.txt: acetimego.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
-diff_acetimego: acetimego_complete.txt baseline.txt
+diff_acetimego: acetimego.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
 		--observed acetimego.json \
 		--expected baseline.json
@@ -198,9 +214,9 @@ diff_acetimego: acetimego_complete.txt baseline.txt
 # acetimepy library
 #------------------------------------------------------------------------------
 
-# Takes about 40 secs to process 350 zones on a dual-core i5-6300U computer.
-# The result must be identical to acetzb.json.
-acetz.json: zones.txt
+# Takes about 140 secs to process 350 zones on a dual-core i5-6300U computer.
+# The result must be identical to acetimepy.json.
+acetimepy.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_acetz/compare_acetz.py \
 		--start_year $(COMPLETE_START_YEAR) \
 		--until_year $(COMPLETE_UNTIL_YEAR) \
@@ -209,17 +225,17 @@ acetz.json: zones.txt
 		< zones.txt \
 		> $@
 
-acetz.txt: acetz.json
+acetimepy.txt: acetimepy.json
 	$(VALIDATION_TOOLS)/flatten_validation/flatten.py \
 		< $< > $@
 
-diff_acetz: acetz.txt baseline.txt
+diff_acetimepy: acetimepy.txt baseline.txt
 	$(VALIDATION_TOOLS)/diff_validation/diff.py \
-		--observed acetz.json \
+		--observed acetimepy.json \
 		--expected baseline.json
 
 #------------------------------------------------------------------------------
-# dateutil library
+# dateutil library. Valid only until 2038 due to 32-bit epoch seconds.
 #------------------------------------------------------------------------------
 
 # Takes about 7 mins to process 350 zones on a dual-core i5-6300U computer.
@@ -241,10 +257,11 @@ diff_dateutil: dateutil.txt baseline.txt
 		--expected baseline.json
 
 #------------------------------------------------------------------------------
-# Go time library
+# Go time library.
+# * [1800,2200): Fails validation for 23 zones
 #------------------------------------------------------------------------------
 
-# Takes about 8 secs to process 350 zones.
+# Takes about 32 secs to process 350 zones.
 gotime.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_gotime/compare_gotime.out \
 		--start_year $(COMPLETE_START_YEAR) \
@@ -266,7 +283,7 @@ diff_gotime: gotime.txt baseline.txt
 # Hinnant date library
 #------------------------------------------------------------------------------
 
-# Takes about 70 secs to processor 350 zones on a dual-core i5-6300U computer.
+# Takes about 70 secs to process 350 zones on a dual-core i5-6300U computer.
 hinnant.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_hinnant/compare_hinnant.out \
 		--start_year $(COMPLETE_START_YEAR) \
@@ -288,11 +305,11 @@ diff_hinnant: hinnant.txt baseline.txt
 # Java time library
 #------------------------------------------------------------------------------
 
-# Takes about 10 secs to processor 350 zones on a dual-core i5-6300U computer.
+# Takes about 45 secs to process 350 zones on a dual-core i5-6300U computer.
 java.json: zones.txt
 	java -cp $(VALIDATION_TOOLS)/compare_java CompareJava \
-		--start_year $(BASIC_START_YEAR) \
-		--until_year $(BASIC_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
@@ -388,8 +405,8 @@ diff_noda: noda.txt baseline.txt
 # Takes about 40 secs to process 350 zones on a dual-core i5-6300U computer.
 zoneinfo.json: zones.txt
 	$(VALIDATION_TOOLS)/compare_zoneinfo/compare_zoneinfo.py \
-		--start_year $(BASIC_START_YEAR) \
-		--until_year $(BASIC_UNTIL_YEAR) \
+		--start_year $(COMPLETE_START_YEAR) \
+		--until_year $(COMPLETE_UNTIL_YEAR) \
 		--epoch_year $(EPOCH_YEAR) \
 		< zones.txt \
 		> $@
