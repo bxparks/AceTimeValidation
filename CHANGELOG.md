@@ -1,18 +1,41 @@
 # Changelog
 
 * Unreleased
+* 1.7.0 (2023-06-27, TZDB 2023c)
     * tools
         * Add `compare_acetimego`.
+        * Fix `int` overflow bugs when calculating the epochSeconds beyond a
+          32-bit signed integer:
+            * `compare_noda`
+            * `compare_java`
+        * Add `offset_granularity` to `validation_data.json` to allow
+          `acetime_basic.txt` and `acetime_extended.txt` to be compared
+          against `acetime_complete.txt` by truncating the expected offset
+          values.
     * validation:
+        * Set `START_YEAR`, `UNTIL_YEAR` to `[1800,2200)` which covers
+          all DST transitions in the IANA TZ database (`[1844,2087]`).
         * Support `--scope complete` and the `zonedbc` database for AceTime.
-        * Add validation tests for the full year range of TZDB `[1844,2080)` or
-          so.
-            * `diff_acetz_complete`
-            * `diff_acetimego_complete`
+        * Add validation tests for `[1800,2200)` which covers all DST
+          transitions in the IANA TZDB `[1844,2087)`.
             * `diff_acetime_complete`
-            * `diff_hinnant_complete`
-        * Add separate `diff_acetime_basic` and `diff_acetime_extended` to test
-          the `zonedb` and `zonedbx` databases.
+            * `diff_acetimec`
+            * `diff_acetimego`
+            * `diff_acetimepy`
+            * `diff_hinnant`
+        * Add validation tests that handle scope=basic and scope=extended
+          subsets:
+            * `diff_acetime_basic`
+            * `diff_acetime_extended`
+        * Implement targets for other third party libraries:
+            * `diff_libc` - conformant
+            * `diff_noda` - conformant
+            * `diff_zoneinfo` - errors on 32 zones
+            * `diff_gotime` - errors on 23 zones
+            * `diff_java` - errors on ~10 zones
+    * Set `baseline.txt` to be `acetime_complete.txt`.
+        * This allows us to validation AceTime (complete) against all other
+          third party libraries.
 * 1.6.0 (2023-05-30, TZDB 2023c)
     * Split the `test_data` component of `validation_data.json` into 2 lists:
         * `transitions` containing DST transitions of the timezone, and
