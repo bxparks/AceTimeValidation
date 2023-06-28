@@ -1,6 +1,7 @@
 # Changelog
 
 * Unreleased
+    * Wrap long invocation lines in `validation_data.*` files.
 * 1.7.0 (2023-06-27, TZDB 2023c)
     * tools
         * Add `compare_acetimego`.

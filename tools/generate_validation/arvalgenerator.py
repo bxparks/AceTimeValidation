@@ -61,7 +61,9 @@ class ArduinoValidationGenerator:
         test_class: str,
         test_class_include_dir: str,
     ):
-        self.invocation = invocation
+        wrapped_invocation = '\n//     --'.join(invocation.split(' --'))
+        self.invocation = wrapped_invocation
+
         self.tz_version = tz_version
         self.db_namespace = db_namespace
         self.validation_data = validation_data
