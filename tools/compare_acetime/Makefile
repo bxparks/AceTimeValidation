@@ -39,4 +39,4 @@ validation_complete.json: compare_acetime.out small.txt
 		> $@
 
 more_clean:
-	rm -f validation_basic.json validation_extended.json
+	rm -f validation_*.json
