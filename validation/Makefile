@@ -1,4 +1,4 @@
-TZDB_VERSION := 2023c
+TZDB_VERSION := 2023d
 TZ_REPO := ../../tz
 ACETIME_TOOLS := ../../AceTimeTools
 VALIDATION_TOOLS := $(abspath ../tools)
@@ -19,7 +19,7 @@ zones.txt: tzdb
 	grep --no-filename '^Zone' tzdb/* | awk '{print $$2}' | sort | uniq >> $@
 
 # Copy the TZDB data files into the ./tzdb/ directory.
-tzdb: $(ACETIME_TOOLS)/copytz.sh $(TZ_REPO)
+tzdb: # $(ACETIME_TOOLS)/copytz.sh $(TZ_REPO)/
 	$(ACETIME_TOOLS)/copytz.sh --tag $(TZDB_VERSION) $(TZ_REPO) $@
 	echo $(TZDB_VERSION) > $@/version.txt
 

@@ -1,4 +1,4 @@
-# Zones from TZDB 2023c
+# Zones from TZDB 2023d
 Africa/Abidjan
 Africa/Algiers
 Africa/Bissau
@@ -145,6 +145,7 @@ Antarctica/Mawson
 Antarctica/Palmer
 Antarctica/Rothera
 Antarctica/Troll
+Antarctica/Vostok
 Asia/Almaty
 Asia/Amman
 Asia/Anadyr
