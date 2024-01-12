@@ -36,40 +36,40 @@ SHELL=bash
 # ExtendedZoneProcessor of AceTime, to reduce the run time. Use something like
 # 'make -j2' to run in parallel.
 tests: \
-HinnantBasicTest/all \
-AcetzBasicTest/all \
 AcetimecBasicTest/all \
-HinnantExtendedTest/all \
+AcetimecExtendedTest/all \
+AcetzBasicTest/all \
 AcetzExtendedTest/all \
-AcetimecExtendedTest/all
-
-HinnantBasicTest/all:
-	$(MAKE) -C HinnantBasicTest
-
-AcetzBasicTest/all:
-	$(MAKE) -C AcetzBasicTest
+HinnantBasicTest/all \
+HinnantExtendedTest/all
 
 AcetimecBasicTest/all:
 	$(MAKE) -C AcetimecBasicTest
 
-HinnantExtendedTest/all:
-	$(MAKE) -C HinnantExtendedTest
+AcetimecExtendedTest/all:
+	$(MAKE) -C AcetimecExtendedTest
+
+AcetzBasicTest/all:
+	$(MAKE) -C AcetzBasicTest
 
 AcetzExtendedTest/all:
 	$(MAKE) -C AcetzExtendedTest
 
-AcetimecExtendedTest/all:
-	$(MAKE) -C AcetimecExtendedTest
+HinnantBasicTest/all:
+	$(MAKE) -C HinnantBasicTest
+
+HinnantExtendedTest/all:
+	$(MAKE) -C HinnantExtendedTest
 
 # Run the deterministic validation tests. These are used in the GitHub CI
 # workflow.
 runtests:
-	$(MAKE) -C HinnantBasicTest run
-	$(MAKE) -C AcetzBasicTest run
 	$(MAKE) -C AcetimecBasicTest run
-	$(MAKE) -C HinnantExtendedTest run
-	$(MAKE) -C AcetzExtendedTest run
 	$(MAKE) -C AcetimecExtendedTest run
+	$(MAKE) -C AcetzBasicTest run
+	$(MAKE) -C AcetzExtendedTest run
+	$(MAKE) -C HinnantBasicTest run
+	$(MAKE) -C HinnantExtendedTest run
 
 # Build all validation tests.
 alltests-serial:
