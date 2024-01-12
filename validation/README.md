@@ -2,7 +2,28 @@
 
 This directory allows different timezone libraries to be validated against each
 other in pairs. This slightly different than the [../tests](../tests) directory
-whose primary purpose is to validate the [AceTime](https://github.com/bxparks/AceTime) Arduino library against various third party timezone libraries.
+whose primary purpose is to validate the
+[AceTime](https://github.com/bxparks/AceTime) Arduino library against various
+third party timezone libraries.
+
+Although the underlying code is able to validate in pairs, for simplicity,
+the golden baseline dataset is computed using the `AceTime` library using the
+`zonedbc` (complete) database.
+
+## How to Run
+
+- Update the `zonedb` versions of various libraries: AceTime, acetimec,
+  acetimego, acetimepy
+- Recompile the `tools` binaries to pick up the latest TZDB version.
+    - `$ cd ../tools`
+    - `$ make clean`
+    - `$ make`
+- Run the diffs
+    - `$ cd ../validation`
+    - `$ vi Makefile`
+        - Update the `TZDB_VERSION` parameter in the `Makefile`
+    - `$ make clean`
+    - `$ make validation`
 
 ## Files
 
@@ -17,8 +38,8 @@ the `xxx.txt` file from the corresponding `xxx.json` file. The `.txt` file is
 In theory, any `xxx.json` file can be compared to any other `yyy.json` file
 using the [diff.py](../tools/diff_validation/diff.py) tool. But for simplicity,
 it is convenient to compare each library against a baseline. Currently, the
-`baseline.json` is copied from `acetimec.json` which is provided by the
-`acetimec` library.
+`baseline.json` is copied from `acetime_complete.json` which is provided by the
+`AceTime` library.
 
 The `Makefile` provides targets of the form `diff_xxx` which compare those
 validation files against the `baseline.json` file. For example, the `diff_libc`
@@ -118,21 +139,24 @@ Here are the diff result for the various targets which validate against the
 `baseline.json` (which is currently the `acetimec.json` file from acetimec):
 
 ```
-+-------------------+--------+--------------------------------+
-| target            | status | comment                        |
-+-------------------+--------+--------------------------------+
-| diff_acetime      | OK     |                                |
-| diff_acetimec     | OK     | comparison with self           |
-| diff_acetz        | OK     |                                |
-| diff_dateutil     | errors | supports only y <= 2038        |
-| diff_go           | OK     |                                |
-| diff_hinnant      | OK     |                                |
-| diff_java         | errors | old TZDB, invalid DST          |
-| diff_libc         | OK     |                                |
-| diff_noda         | OK     |                                |
-| diff_pytz         | errors | supports only y <= 2038        |
-| diff_zoneinfo     | errors | incorrect DST offsets          |
-+-------------------+--------+--------------------------------+
++-----------------------+--------+--------------------------------+
+| target                | status | comment                        |
++-----------------------+--------+--------------------------------+
+| diff_acetime_basic    | OK     |                                |
+| diff_acetime_complete | OK     | comparison with self           |
+| diff_acetime_extended | OK     |                                |
+| diff_acetimec         | OK     |                                |
+| diff_acetimego        | OK     |                                |
+| diff_acetimepy        | OK     |                                |
+| diff_dateutil         | errors | supports only y <= 2038        |
+| diff_go               | OK     |                                |
+| diff_hinnant          | OK     |                                |
+| diff_java             | errors | old TZDB, invalid DST          |
+| diff_libc             | OK     |                                |
+| diff_noda             | OK     |                                |
+| diff_pytz             | errors | supports only y <= 2038        |
+| diff_zoneinfo         | errors | incorrect DST offsets          |
++-------------------    +--------+--------------------------------+
 ```
 
 ## Debugging
