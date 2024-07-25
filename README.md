@@ -73,7 +73,7 @@ JSON files are consumed by:
 * the `./validation` directory to generate difference reports between pairs of
   timezone libraries.
 
-**Version**: v1.7.1 (2024-01-12, TZDB 2023d)
+**Version**: v1.7.2 (2024-07-25, TZDB 2024a)
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
