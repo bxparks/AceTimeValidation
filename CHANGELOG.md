@@ -1,6 +1,12 @@
 # Changelog
 
 - Unreleased
+    - Upgrade TZDB to 2024a
+        - https://mm.icann.org/pipermail/tz-announce/2024-February/000081.html
+        - "Kazakhstan unifies on UTC+5 beginning 2024-03-01. Palestine springs
+          forward a week later after Ramadan. zic no longer pretends to support
+          indefinite-past DST. localtime no longer mishandles Ciudad Juárez in
+          2422."
 - 1.7.1 (2024-01-12, TZDB 2023d)
     - Wrap long invocation lines in `validation_data.*` files.
     - Upgrade TZDB to 2023d
