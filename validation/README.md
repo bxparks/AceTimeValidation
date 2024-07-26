@@ -12,8 +12,11 @@ the golden baseline dataset is computed using the `AceTime` library using the
 
 ## How to Run
 
-- Update the `zonedb` versions of various libraries: AceTime, acetimec,
-  acetimego, acetimepy
+- Update the `zonedb` versions of various dependent libraries:
+    - AceTime
+    - acetimec
+    - acetimego
+    - acetimepy
 - Recompile the `tools` binaries to pick up the latest TZDB version.
     - `$ cd ../tools`
     - `$ make clean`
@@ -23,7 +26,7 @@ the golden baseline dataset is computed using the `AceTime` library using the
     - `$ vi Makefile`
         - Update the `TZDB_VERSION` parameter in the `Makefile`
     - `$ make clean`
-    - `$ make validation`
+    - `$ make -j2 validation`
 
 ## Files
 
@@ -93,7 +96,7 @@ The following libraries are supported:
     * files: `acetz.json`, `acetz.txt`
     * target: `make diff_acetz`
     * script: `tools/compare_acetz`
-* acetimego (TBD)
+* acetimego
     * files: `acetimego.json`, `acetimego.txt`
     * target: `make diff_acetimego`
     * script: `tools/compare_acetimego`
@@ -124,7 +127,7 @@ The following libraries are supported:
     * files: `noda.json`, `noda.txt`
     * target: `make diff_noda`
     * script: `tools/compare_noda`
-* pytz Python library (TBD)
+* pytz Python library
     * files: `pytz.json`, `pytz.txt`
     * target: `make diff_pytz`
     * script: `tools/compare_pytz`
@@ -133,7 +136,7 @@ The following libraries are supported:
     * target: `make diff_zoneinfo`
     * script: `tools/compare_zoneinfo`
 
-## Diff Status
+## Diff Results
 
 Here are the diff result for the various targets which validate against the
 `baseline.json` (which is currently the `acetimec.json` file from acetimec):
