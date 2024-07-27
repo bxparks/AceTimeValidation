@@ -9,6 +9,7 @@
           indefinite-past DST. localtime no longer mishandles Ciudad Juárez in
           2422."
     - Simplify [README.md](README.md).
+    - Increase minimum Python version to 3.10.
 - 1.7.1 (2024-01-12, TZDB 2023d)
     - Wrap long invocation lines in `validation_data.*` files.
     - Upgrade TZDB to 2023d
