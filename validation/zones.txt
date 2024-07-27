@@ -1,4 +1,4 @@
-# Zones from TZDB 2023d
+# Zones from TZDB 2024a
 Africa/Abidjan
 Africa/Algiers
 Africa/Bissau

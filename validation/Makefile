@@ -1,4 +1,4 @@
-TZDB_VERSION := 2023d
+TZDB_VERSION := 2024a
 TZ_REPO := ../../tz
 ACETIME_TOOLS := ../../AceTimeTools
 VALIDATION_TOOLS := $(abspath ../tools)
