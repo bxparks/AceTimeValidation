@@ -1,7 +1,7 @@
 #ifndef COMPARE_ACETIMEC_TEST_DATA_H
 #define COMPARE_ACETIMEC_TEST_DATA_H
 
-#define MAX_ABBREV_SIZE 7 /* 6 + NUL */
+#include <acetimec.h> // kAtcAbbrevSize
 
 /** Buffer size of each line from zones.txt file. */
 #define MAX_LINE_SIZE 512
@@ -36,7 +36,7 @@ typedef struct TestItem {
   int hour;
   int minute;
   int second;
-  char abbrev[MAX_ABBREV_SIZE];
+  char abbrev[kAtcAbbrevSize];
   char type; //'A', 'B', 'a', 'b', 'S'
 } TestItem;
 
