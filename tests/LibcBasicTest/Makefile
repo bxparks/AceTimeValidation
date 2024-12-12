@@ -1,7 +1,7 @@
 # See https://github.com/bxparks/EpoxyDuino for documentation about this
 # Makefile to compile and run Arduino programs natively on Linux or MacOS.
 
-DB_NAMESPACE := zonedbc
+DB_NAMESPACE := zonedblibc
 GENERATED := validation_data.cpp \
 	validation_data.h \
 	validation_tests.cpp \
@@ -25,7 +25,7 @@ include ../../../EpoxyDuino/EpoxyDuino.mk
 
 # Configuration parameters of the AceTime zonedb.
 SCOPE := basic
-TZ_VERSION := 2022g
+TZ_VERSION := 2024b
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 2200

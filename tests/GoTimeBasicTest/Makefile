@@ -25,7 +25,7 @@ include ../../../EpoxyDuino/EpoxyDuino.mk
 
 # Configuration parameters of the AceTime zonedb.
 SCOPE := basic
-TZ_VERSION := 2023c
+TZ_VERSION := 2024b
 ACE_TIME_EPOCH_YEAR := 2050
 DB_START_YEAR := 2000
 DB_UNTIL_YEAR := 2200
