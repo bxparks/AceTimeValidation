@@ -1,7 +1,10 @@
 #ifndef COMPARE_ACETIME_TEST_DATA_H
 #define COMPARE_ACETIME_TEST_DATA_H
 
-#define MAX_ABBREV_SIZE 7 /* 6 + NUL */
+#include <AceTime.h> // kAbbrevSize
+
+/** Buffer size of the abbreviation. Must be synchronized with AceTime.h */
+#define MAX_ABBREV_SIZE  ace_time::internal::kAbbrevSize
 
 /** Difference between Unix epoch (1970-01-1) and AceTime Epoch (2000-01-01). */
 #define SECONDS_SINCE_UNIX_EPOCH 946684800
@@ -9,6 +12,7 @@
 /** Buffer size of each line from zones.txt file. */
 #define MAX_LINE_SIZE 512
 
+/** Buffer to hold a zone name, e.g. "America/Toronto" */
 #define ZONE_NAME_SIZE 64
 
 //-----------------------------------------------------------------------------
