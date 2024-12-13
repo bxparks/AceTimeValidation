@@ -1,4 +1,4 @@
-TZDB_VERSION := 2024a
+TZDB_VERSION := 2024b
 TZ_REPO := ../../tz
 ACETIME_TOOLS := ../../AceTimeTools
 VALIDATION_TOOLS := $(abspath ../tools)
@@ -10,18 +10,6 @@ EXTENDED_START_YEAR := 2000
 EXTENDED_UNTIL_YEAR := 2200
 COMPLETE_START_YEAR := 1800
 COMPLETE_UNTIL_YEAR := 2200
-
-#------------------------------------------------------------------------------
-
-# Extract the 'Zone' entries from the TZDB files.
-zones.txt: tzdb
-	echo '# Zones from TZDB $(TZDB_VERSION)' > $@
-	grep --no-filename '^Zone' tzdb/* | awk '{print $$2}' | sort | uniq >> $@
-
-# Copy the TZDB data files into the ./tzdb/ directory.
-tzdb: # $(ACETIME_TOOLS)/copytz.sh $(TZ_REPO)/
-	$(ACETIME_TOOLS)/copytz.sh --tag $(TZDB_VERSION) $(TZ_REPO) $@
-	echo $(TZDB_VERSION) > $@/version.txt
 
 #------------------------------------------------------------------------------
 
@@ -58,6 +46,18 @@ diff_hinnant
 # - 3 missing zones (EST, HST, MST)
 # - ~100 zones with mismatching DST offset
 # - 7 zones with mismatching epochSeconds, after ignoring DST offset
+
+#------------------------------------------------------------------------------
+
+# Extract the 'Zone' entries from the TZDB files.
+zones.txt: tzdb
+	echo '# Zones from TZDB $(TZDB_VERSION)' > $@
+	grep --no-filename '^Zone' tzdb/* | awk '{print $$2}' | sort | uniq >> $@
+
+# Copy the TZDB data files into the ./tzdb/ directory.
+tzdb: # $(ACETIME_TOOLS)/copytz.sh $(TZ_REPO)/
+	$(ACETIME_TOOLS)/copytz.sh --tag $(TZDB_VERSION) $(TZ_REPO) $@
+	echo $(TZDB_VERSION) > $@/version.txt
 
 #------------------------------------------------------------------------------
 
