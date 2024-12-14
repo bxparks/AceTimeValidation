@@ -11,7 +11,7 @@ Both of them use the scripts and binaries in `tools` directory:
 
 - [./tools](tools)
 
-**Version**: v1.7.2 (2024-07-26, TZDB 2024a)
+**Version**: v1.8.0 (2024-12-13, TZDB 2024b)
 
 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 

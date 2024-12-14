@@ -1,6 +1,7 @@
 # Changelog
 
 - Unreleased
+- 1.8.0 (2024-12-13, TZDB 2024b)
     - update tools/{compare_actime,compare_acetimec} to use the abbrev buffer
       size defined in their respective libraries
     - Support new `%z` value in FORMAT column.
